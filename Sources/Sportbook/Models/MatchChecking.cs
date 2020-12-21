@@ -22,5 +22,11 @@ namespace AutoRefund.Models
         public bool IsMainMatchSettled { get; set; }
 
         public bool IsHoldResourceId { get; set; }
+
+        public bool IsConfirmed { get; set; }
+
+        public int finalHomeScore { get; set; }
+
+        public int finalAwayScore { get; set; }
     }
 }

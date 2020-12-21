@@ -2,9 +2,15 @@
 
 namespace AutoRefund.Criteria
 {
-    public class RefundCriteria : NonQueryCommand
+    public class RefundMPPushCriteria : NonQueryCommand
     {
         public int MatchId { get; set; }
+
+        public int IsAutoRefund { get; } = 1;
+
+        public string IP { get; } = string.Empty;
+
+        public int Admin { get; } = 0;
 
         public int ErrCode { get; set; }
 
@@ -12,7 +18,7 @@ namespace AutoRefund.Criteria
 
         public override string GetSettingKey()
         {
-            return "NAP_Admin_Settlement_Refund_All_Push";
+            return "NAP_Admin_Settlement_Refund_MP_Push";
         }
 
         public override bool IsValid()

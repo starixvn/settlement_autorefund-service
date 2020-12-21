@@ -21,7 +21,7 @@ namespace AutoRefund.Services
 
         public Result Push(Match match)
         {
-            var criteria = new RefundCriteria();
+            var criteria = new RefundPushCriteria();
             criteria.MatchId = match.MatchId;
             repository.Execute(criteria);
             return new Result

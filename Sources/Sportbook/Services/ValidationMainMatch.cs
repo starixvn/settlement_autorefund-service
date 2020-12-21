@@ -18,7 +18,7 @@ namespace AutoRefund.Services
                 throw new MainMatchNotCompletedException();
             }
 
-            if (match.finalawayscore == match.finalhomescore)
+            if (matchChecking.finalAwayScore == matchChecking.finalHomeScore)
             {
                 throw new MainMatchNotDecisiveException();
             }
