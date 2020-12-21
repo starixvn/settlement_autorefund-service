@@ -28,5 +28,8 @@ obj/
 _ReSharper*/
 [Tt]est[Rr]esult*
 .vs/
+.ionide/
+.info/
+
 #Nuget packages folder
 packages/
