@@ -33,7 +33,7 @@ namespace AutoRefund.UnitTests.Services
         public void Process_ThrowExceptionOnVerifyMatchButRetryNotEnough_NotInvokeRelatedMethods()
         {
             // Arrange
-            var match = new Models.Match { finalawayscore = 1, finalhomescore = 1, NumberOfRetries = 0};
+            var match = new Models.Match { NumberOfRetries = 0 };
             validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call => { throw new AutoRefundException(); });
 
             // Act
@@ -46,6 +46,5 @@ namespace AutoRefund.UnitTests.Services
                 matchPoolService.DidNotReceive().Remove(match);
             });
         }
-
     }
 }

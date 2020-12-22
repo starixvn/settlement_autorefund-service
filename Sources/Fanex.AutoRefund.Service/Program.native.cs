@@ -3,6 +3,8 @@ using Fanex.Data;
 using Fanex.Data.SqlServer;
 using Fanex.Logging;
 using Fanex.Logging.Sentry.RavenClient;
+using ONEbook.UM;
+using ONEbook.UM.Configurations;
 using SharpRaven;
 using System.Collections.Generic;
 
@@ -16,9 +18,21 @@ namespace Fanex.AutoRefund.Service
 
             StartDataBaseSetting();
 
+            UMSetting();
+
             LeagueSettingFactory.SettingFileWatcher();
 
             ConfigureService.Configure();
+        }
+
+        private static void UMSetting()
+        {
+            var umConfig = new UMClientConfiguration();
+            UMClientManager
+                .UseConfig(umConfig);
+            //.UseRestClient(new RestClient())
+            //.UseHttpContext(new HttpContextHelper(app.ApplicationServices.GetService<IHttpContextAccessor>()))
+            //.AddErrorHandler(errorHandler);
         }
 
         private static void StartDataBaseSetting()
@@ -27,7 +41,7 @@ namespace Fanex.AutoRefund.Service
               .StartNewSession()
               .Use(AppSettingKeys.ConnectionStrings)
               .WithSqlServer()
-              .UseDefaultDbSettingProvider(AppSettingKeys.StoredProcedurePath)
+              .UseDefaultDbSettingProvider(resourcePath: "~/App_Data")
               .Run();
         }
 

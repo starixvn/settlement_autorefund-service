@@ -8,7 +8,7 @@ namespace Fanex.AutoRefund.Service
 {
     public class MainService : IHostedService
     {
-        // private readonly MaintainanceService maintainanceService;
+        private readonly MaintainanceService maintainanceService;
 
         private readonly IAutoRefundController autoRefundController;
 
@@ -16,11 +16,10 @@ namespace Fanex.AutoRefund.Service
 
         private int counter;
 
-        public MainService(IAutoRefundController autoRefundController
-           )
+        public MainService(IAutoRefundController autoRefundController)
         {
             this.autoRefundController = autoRefundController;
-            //  this.maintainanceService = maintainanceService;
+            //this.maintainanceService = maintainanceService;
             InitializeExtraComponent();
         }
 

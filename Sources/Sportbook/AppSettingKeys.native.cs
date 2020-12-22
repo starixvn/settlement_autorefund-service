@@ -9,11 +9,10 @@ namespace Fanex.AutoRefund.Service
     {
         static AppSettingKeys()
         {
-            IConfigurationRoot configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder()
             .AddJsonFile("AppSettings\\appsettings.json", false, true)
             .Build();
 
-            StoredProcedurePath = configuration["StoredProcedurePath"];
             SiteCategory = configuration["SiteCategory"];
             Sentrytoken = configuration["Sentrytoken"];
             RetryCount = int.Parse(configuration["RetryCount"]);
@@ -29,8 +28,6 @@ namespace Fanex.AutoRefund.Service
         }
 
         public static Dictionary<string, ConnectionConfiguration> ConnectionStrings { get; private set; }
-
-        public static string StoredProcedurePath { get; private set; }
 
         public static string SiteCategory { get; private set; }
 

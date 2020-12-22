@@ -5,13 +5,13 @@ VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sources", "Sources", "{FD0CC91D-762B-4387-B75A-8DEDF9350500}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fanex.AutoRefund.Service", "Sources\Fanex.autoRefund.service\Fanex.AutoRefund.Service.csproj", "{080EB6EA-D67D-44C7-942B-E62BBA46C241}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fanex.AutoRefund.Service", "Sources\Fanex.AutoRefund.Service\Fanex.AutoRefund.Service.csproj", "{080EB6EA-D67D-44C7-942B-E62BBA46C241}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRefund", "Sources\Sportbook\AutoRefund.csproj", "{CDFFC7C3-1D4A-44C9-B097-5F92B053B597}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{0D9D12CF-8412-445F-BB18-14B637519A13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoRefund.UnitTests", "Test\AutoRefund.UnitTests\AutoRefund.UnitTests.csproj", "{8CC56F27-E32A-49CD-9FD7-283C3C760F71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRefund.UnitTests", "Test\AutoRefund.UnitTests\AutoRefund.UnitTests.csproj", "{8CC56F27-E32A-49CD-9FD7-283C3C760F71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
