@@ -51,7 +51,7 @@ namespace AutoRefund.Services
             catch (AutoRefundException exception)
             {
                 match.NumberOfRetries++;
-                if (match.NumberOfRetries == AppSettingKeys.RetryCount - 1)
+                if (match.NumberOfRetries == AppSettingKeys.RetryCount)
                 {
                     logService.ActionLog(match, exception);
                     matchPoolService.Remove(match);

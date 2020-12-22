@@ -1,6 +1,5 @@
 ﻿using Fanex.Data;
 using Microsoft.Extensions.Configuration;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,12 +9,8 @@ namespace Fanex.AutoRefund.Service
     {
         static AppSettingKeys()
         {
-            var environmentName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
-
             IConfigurationRoot configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", false, true)
-            .AddJsonFile($"appsettings.{environmentName}.json", true, true)
-            .AddEnvironmentVariables()
+            .AddJsonFile("AppSettings\\appsettings.json", false, true)
             .Build();
 
             StoredProcedurePath = configuration["StoredProcedurePath"];
