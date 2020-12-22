@@ -1,41 +1,38 @@
-﻿using AutoRefund.Models;
+﻿using AutoRefund.Constants;
+using AutoRefund.Criteria;
+using AutoRefund.Models;
+using Fanex.Data.Repository;
 
 namespace AutoRefund.Services
 {
     public interface IValidationService
     {
-        void VerifyMatchBeforeExecution(Match match);
+        Result VerifyMatchBeforeExecution(Match match);
     }
 
     public class ValidationServiceImp : IValidationService
     {
-        private readonly IValidationSettingMatchService validationSettingMatchService;
-
-        private readonly IValidationTicketMatchService validationTicketMatchService;
-
-        private readonly IValidationMainMatch validationMainMatch;
-
-        private readonly IMatchService matchService;
+        private readonly IDynamicRepository repository;
 
 
-        public ValidationServiceImp(
-            IValidationSettingMatchService validationSettingMatchService,
-            IValidationTicketMatchService validationTicketMatchService,
-            IValidationMainMatch validationMainMatch,
-            IMatchService matchService)
+        public ValidationServiceImp(IDynamicRepository repository)
         {
-            this.validationSettingMatchService = validationSettingMatchService;
-            this.validationTicketMatchService = validationTicketMatchService;
-            this.validationMainMatch = validationMainMatch;
-            this.matchService = matchService;
+            this.repository = repository;
         }
 
-        public void VerifyMatchBeforeExecution(Match match)
+        public Result VerifyMatchBeforeExecution(Match match)
         {
-            var matchChecking = matchService.GetMatchInfo(match);
-            validationMainMatch.VerifyMainMatch(match, matchChecking);
-            validationSettingMatchService.VerifySettingMatch(matchChecking);
-            validationTicketMatchService.VerifyTicketMatch(matchChecking);
+            if(match.TypeId == MatchType.AutoRefund)
+            {
+                var criteria = new MatchCheckingCriteria();
+                repository.Execute(criteria);
+                return new Result
+                {
+                    ErrCode = criteria.ErrCode,
+                    ErrMsg = criteria.ErrMsg
+                };
+            }
+            return new Result();
         }
     }
 }

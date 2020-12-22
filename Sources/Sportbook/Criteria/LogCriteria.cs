@@ -1,17 +1,10 @@
-﻿using AutoRefund.Exceptions;
-using AutoRefund.Models;
+﻿using AutoRefund.Models;
 using Fanex.Data.Repository;
 
 namespace AutoRefund.Criteria
 {
     public class LogCriteria : NonQueryCommand
     {
-        public LogCriteria(Match match, AutoRefundException exception)
-        {
-            MatchId = match.MatchId;
-            Remark = exception.Description ?? string.Empty;
-        }
-
         public LogCriteria(Match match, string errorMessage)
         {
             MatchId = match.MatchId;
@@ -25,6 +18,8 @@ namespace AutoRefund.Criteria
         public string Remark { get; set; }
 
         public string IP { get; } = string.Empty;
+
+        public int ActionId { get; } = 81022;
 
         public override bool IsValid()
         {

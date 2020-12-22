@@ -1,8 +1,5 @@
-﻿using AutoRefund.Exceptions;
-using AutoRefund.Models;
+﻿using AutoRefund.Models;
 using AutoRefund.Services;
-using Microsoft.Extensions.Configuration;
-using Moq;
 using NSubstitute;
 using Xunit;
 
@@ -34,7 +31,7 @@ namespace AutoRefund.UnitTests.Services
         {
             // Arrange
             var match = new Models.Match { NumberOfRetries = 0 };
-            validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call => { throw new AutoRefundException(); });
+            validationService.VerifyMatchBeforeExecution(match).Returns(new Result { ErrCode = 1 });
 
             // Act
             service.Process(match);
@@ -42,7 +39,7 @@ namespace AutoRefund.UnitTests.Services
             // Assert
             Received.InOrder(() =>
             {
-                logService.DidNotReceive().ActionLog(match, Arg.Any<AutoRefundException>());
+                logService.DidNotReceive().ActionLog(match, Arg.Any<string>());
                 matchPoolService.DidNotReceive().Remove(match);
             });
         }

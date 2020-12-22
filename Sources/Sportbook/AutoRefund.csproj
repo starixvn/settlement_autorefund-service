@@ -6,9 +6,18 @@
 
   <ItemGroup>
     <Compile Remove="AutoRefundInjector.native.cs" />
+    <Compile Remove="Exceptions\AutoRefundException.native.cs" />
+    <Compile Remove="Exceptions\MainMatchNotDecisiveException.cs" />
+    <Compile Remove="Exceptions\MarkedTicketException.cs" />
+    <Compile Remove="Exceptions\RemarkException.cs" />
+    <Compile Remove="Exceptions\SettingOffException.cs" />
+    <Compile Remove="Exceptions\SettledTicketException.cs" />
     <Compile Remove="MainService.cs" />
     <Compile Remove="Services\LogCriteriaService.cs" />
     <Compile Remove="Services\MatchRefundService.cs" />
+    <Compile Remove="Services\ValidationMainMatch.cs" />
+    <Compile Remove="Services\ValidationSettingMatchService.cs" />
+    <Compile Remove="Services\ValidationTicketMatchService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +27,10 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="ONEbook.UM" Version="3.0.0-beta7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Exceptions\" />
   </ItemGroup>
 
 </Project>

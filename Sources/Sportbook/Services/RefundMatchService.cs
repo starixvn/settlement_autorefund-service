@@ -1,4 +1,5 @@
-﻿using AutoRefund.Criteria;
+﻿using AutoRefund.Constants;
+using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
 
@@ -21,7 +22,7 @@ namespace AutoRefund.Services
 
         public Result Push(Match match)
         {
-            var criteria = new RefundPushCriteria();
+            var criteria = match.TypeId == MatchType.AutoRefund ? new RefundPushCriteria() : new RefundMPPushCriteria();
             criteria.MatchId = match.MatchId;
             repository.Execute(criteria);
             return new Result

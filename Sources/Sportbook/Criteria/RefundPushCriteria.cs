@@ -8,11 +8,10 @@ namespace AutoRefund.Criteria
 
         public int IsAutoRefund { get; } = 1;
 
-        public string IP { get; } = string.Empty;
-
-        public int Admin { get; } = 0;
+        public int AdminId { get; } = 0;
 
         public int ErrCode { get; set; }
+
         public string ErrMsg { get; set; }
 
         public override string GetSettingKey()

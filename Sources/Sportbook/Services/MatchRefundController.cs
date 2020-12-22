@@ -1,5 +1,4 @@
-﻿using AutoRefund.Exceptions;
-using AutoRefund.Models;
+﻿using AutoRefund.Models;
 using Fanex.AutoRefund.Service;
 
 namespace AutoRefund.Services
@@ -35,27 +34,31 @@ namespace AutoRefund.Services
 
         public void Process(Match match)
         {
-            try
+            var resultChecking = validationService.VerifyMatchBeforeExecution(match);
+            if(resultChecking.ErrCode == 0)
             {
-                validationService.VerifyMatchBeforeExecution(match);
                 var result = refundMatchService.Push(match);
-
-                if (!string.IsNullOrWhiteSpace(result.ErrMsg))
-                {
-                    logService.ActionLog(match, result.ErrMsg);
-                } else
-                {
-                    matchPoolService.Remove(match);
-                }
-            }
-            catch (AutoRefundException exception)
+                ProcessAfterRefund(match, result);
+            } else
             {
                 match.NumberOfRetries++;
                 if (match.NumberOfRetries == AppSettingKeys.RetryCount)
                 {
-                    logService.ActionLog(match, exception);
+                    logService.ActionLog(match, resultChecking.ErrMsg);
                     matchPoolService.Remove(match);
                 }
+            }
+        }
+
+        private void ProcessAfterRefund(Match match, Result result)
+        {
+            if (!string.IsNullOrWhiteSpace(result.ErrMsg))
+            {
+                logService.ActionLog(match, result.ErrMsg);
+            }
+            else
+            {
+                matchPoolService.Remove(match);
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿using AutoRefund.Criteria;
-using AutoRefund.Exceptions;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
 
@@ -8,8 +7,6 @@ namespace AutoRefund.Services
     public interface ILogService
     {
         void ActionLog(Match match, string message);
-
-        void ActionLog(Match match, AutoRefundException exception);
     }
 
     public class LogServiceImp : ILogService
@@ -24,12 +21,6 @@ namespace AutoRefund.Services
         public void ActionLog(Match match, string message)
         {
             var criteria = new LogCriteria(match, message);
-            repository.Execute(criteria);
-        }
-
-        public void ActionLog(Match match, AutoRefundException exception)
-        {
-            var criteria = new LogCriteria(match, exception);
             repository.Execute(criteria);
         }
     }

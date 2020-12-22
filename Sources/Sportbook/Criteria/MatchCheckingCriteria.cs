@@ -2,9 +2,13 @@
 
 namespace AutoRefund.Criteria
 {
-    public class MatchCheckingCriteria : CriteriaBase
+    public class MatchCheckingCriteria : NonQueryCommand
     {
         public int MatchId { get; set; }
+
+        public int ErrCode { get; set; }
+
+        public string ErrMsg { get; set; }
 
         public override bool IsValid()
         {
@@ -13,7 +17,7 @@ namespace AutoRefund.Criteria
 
         public override string GetSettingKey()
         {
-            return "NAP_Set_AutoRefund_ChildMatchInfo";
+            return "NAP_Set_AutoRefund_MatchChecking";
         }
     }
 }

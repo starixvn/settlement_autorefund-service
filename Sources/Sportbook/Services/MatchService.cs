@@ -11,6 +11,8 @@ namespace AutoRefund.Services
         List<Match> GetMatches();
 
         MatchChecking GetMatchInfo(Match match);
+
+        void UpdateStatus(Match match);
     }
 
     public class MatchServiceImp : IMatchService
@@ -51,6 +53,12 @@ namespace AutoRefund.Services
                 MatchId = match.MatchId,
             };
             return repository.Get<MatchChecking>(criteria) ?? new MatchChecking();
+        }
+
+        public void UpdateStatus (Match match)
+        {
+            var criteria = new UpdateStatusCriteria { MatchId = match.MatchId };
+            repository.Execute(criteria);
         }
     }
 }

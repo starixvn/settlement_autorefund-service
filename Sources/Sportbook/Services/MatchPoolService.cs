@@ -52,6 +52,7 @@ namespace AutoRefund.Services
             lock (lockObject)
             {
                 poolOfMatches.RemoveAll(m => m.MatchId == match.MatchId);
+                matchService.UpdateStatus(match);
             }
         }
     }
