@@ -7,6 +7,33 @@
 
 	<ItemGroup>
 		<None Remove="appsettings.LOCAL_PRO.json" />
+		<None Remove="AppSettings\appsettings.json" />
+		<None Remove="AppSettings\appsettings.LOCAL.json" />
+		<None Remove="AppSettings\appsettings.LOCAL_PRO.json" />
+		<None Remove="AppSettings\appsettings.PRO.json" />
+		<None Remove="AppSettings\appsettings.SIT.json" />
+		<None Remove="AppSettings\appsettings.UAT.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="AppSettings\appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="AppSettings\appsettings.LOCAL.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="AppSettings\appsettings.LOCAL_PRO.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="AppSettings\appsettings.PRO.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="AppSettings\appsettings.SIT.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="AppSettings\appsettings.UAT.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
