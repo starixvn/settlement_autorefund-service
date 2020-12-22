@@ -6,33 +6,28 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="appsettings.LOCAL_PRO.json" />
-		<None Remove="AppSettings\appsettings.json" />
-		<None Remove="AppSettings\appsettings.LOCAL.json" />
-		<None Remove="AppSettings\appsettings.LOCAL_PRO.json" />
-		<None Remove="AppSettings\appsettings.PRO.json" />
-		<None Remove="AppSettings\appsettings.SIT.json" />
-		<None Remove="AppSettings\appsettings.UAT.json" />
+		<None Remove="appsettings.json" />
+		<None Remove="appsettings.LOCAL.json" />
+		<None Remove="appsettings.PRO.json" />
+		<None Remove="appsettings.SIT.json" />
+		<None Remove="appsettings.UAT.json" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="AppSettings\appsettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="AppSettings\appsettings.LOCAL.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="AppSettings\appsettings.LOCAL_PRO.json">
+		<Content Include="appsettings.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="AppSettings\appsettings.PRO.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="appsettings.LOCAL.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="AppSettings\appsettings.SIT.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="appsettings.PRO.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="AppSettings\appsettings.UAT.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="appsettings.SIT.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="appsettings.UAT.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
 
@@ -52,30 +47,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Update="appsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="AppSettings\appsettings.PRO.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="AppSettings\appsettings.SIT.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="AppSettings\appsettings.UAT.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="AppSettings\appsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="AppSettings\appsettings.LOCAL.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="App_Configurations\Web.LOCAL.ConnectionStrings.config">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
 		<None Update="App_Data\SpName.xml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

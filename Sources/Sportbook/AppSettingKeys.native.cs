@@ -1,6 +1,7 @@
 ﻿using Fanex.Data;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Fanex.AutoRefund.Service
@@ -10,7 +11,7 @@ namespace Fanex.AutoRefund.Service
         static AppSettingKeys()
         {
             var configuration = new ConfigurationBuilder()
-            .AddJsonFile("AppSettings\\appsettings.json", false, true)
+            .AddJsonFile("appsettings.json", false, true)
             .Build();
 
             SiteCategory = configuration["SiteCategory"];
