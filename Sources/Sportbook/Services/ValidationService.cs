@@ -2,6 +2,7 @@
 using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
+using System.Threading.Tasks;
 
 namespace AutoRefund.Services
 {
@@ -32,7 +33,8 @@ namespace AutoRefund.Services
                     ErrMsg = criteria.ErrMsg
                 };
             }
-            return new Result();
+                
+           return new Result();
         }
     }
 }

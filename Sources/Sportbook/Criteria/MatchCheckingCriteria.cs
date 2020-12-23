@@ -1,10 +1,13 @@
-﻿using Fanex.Data.Repository;
+﻿using AutoRefund.Constants;
+using Fanex.Data.Repository;
 
 namespace AutoRefund.Criteria
 {
     public class MatchCheckingCriteria : NonQueryCommand
     {
         public int MatchId { get; set; }
+
+        public int TypeId { get; } = MatchType.AutoRefund;
 
         public int ErrCode { get; set; }
 

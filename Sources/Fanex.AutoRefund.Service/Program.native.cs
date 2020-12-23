@@ -3,6 +3,7 @@ using Fanex.Data;
 using Fanex.Data.SqlServer;
 using Fanex.Logging;
 using Fanex.Logging.Sentry.RavenClient;
+using Microsoft.Extensions.Hosting;
 using ONEbook.UM;
 using ONEbook.UM.Configurations;
 using SharpRaven;
@@ -22,7 +23,7 @@ namespace Fanex.AutoRefund.Service
 
             LeagueSettingFactory.SettingFileWatcher();
 
-            ConfigureService.Configure();
+            ConfigureService.CreateHostBuilder(args).Build().Run();
         }
 
         private static void UMSetting()

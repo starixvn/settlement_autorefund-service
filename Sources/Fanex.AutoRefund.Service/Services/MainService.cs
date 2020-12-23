@@ -19,7 +19,7 @@ namespace Fanex.AutoRefund.Service
         public MainService(IAutoRefundController autoRefundController)
         {
             this.autoRefundController = autoRefundController;
-            //this.maintainanceService = maintainanceService;
+            this.maintainanceService = maintainanceService;
             InitializeExtraComponent();
         }
 

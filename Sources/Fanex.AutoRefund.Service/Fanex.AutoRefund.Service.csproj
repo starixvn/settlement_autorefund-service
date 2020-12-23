@@ -6,14 +6,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="appsettings.json" />
-		<None Remove="appsettings.LOCAL.json" />
-		<None Remove="appsettings.PRO.json" />
-		<None Remove="appsettings.SIT.json" />
-		<None Remove="appsettings.UAT.json" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Content Include="appsettings.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -37,6 +29,7 @@
 		<PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="1.0.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="5.0.1" />
 		<PackageReference Include="RestSharp" Version="106.11.7" />
 		<PackageReference Include="Topshelf" Version="4.3.0" />
 		<PackageReference Include="Topshelf.Extensions.Hosting" Version="0.4.0" />
