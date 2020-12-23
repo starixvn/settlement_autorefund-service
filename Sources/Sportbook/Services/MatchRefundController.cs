@@ -1,5 +1,5 @@
-﻿using AutoRefund.Models;
-using Fanex.AutoRefund.Service;
+﻿using AutoRefund.Constants;
+using AutoRefund.Models;
 
 namespace AutoRefund.Services
 {
@@ -42,7 +42,7 @@ namespace AutoRefund.Services
             } else
             {
                 match.NumberOfRetries++;
-                if (match.NumberOfRetries == AppSettingKeys.RetryCount)
+                if (match.NumberOfRetries == SettingsKey.RetryCount)
                 {
                     logService.ActionLog(match, resultChecking.ErrMsg);
                     matchPoolService.Remove(match);

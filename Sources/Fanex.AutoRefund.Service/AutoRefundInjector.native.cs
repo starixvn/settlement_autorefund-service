@@ -9,16 +9,16 @@ namespace Fanex.AutoRefund
     {
         public static void InitializeServices(this IServiceCollection service)
         {
-            service.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            service.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
             service.AddTransient<IDynamicRepository, DynamicRepository>();
-            service.AddScoped<IMatchPoolService, MatchPoolServiceImp>();
-            service.AddScoped<ILogService, LogServiceImp>();
-            service.AddScoped<IValidationService, ValidationServiceImp>();
-            service.AddScoped<IAutoRefundController, AutoRefundControllerImp>();
-            service.AddScoped<MaintainanceService, MaintainanceServiceImp>();
-            service.AddScoped<IRefundMatchService, RefundMatchServiceImp>();
-            service.AddScoped<IMatchRefundController, MatchRefundControllerImp>();
-            service.AddScoped<IMatchService, MatchServiceImp>();
+            service.AddTransient<IMatchPoolService, MatchPoolServiceImp>();
+            service.AddTransient<ILogService, LogServiceImp>();
+            service.AddTransient<IValidationService, ValidationServiceImp>();
+            service.AddTransient<IAutoRefundController, AutoRefundControllerImp>();
+           // service.AddTransient<MaintainanceService, MaintainanceServiceImp>();
+            service.AddTransient<IRefundMatchService, RefundMatchServiceImp>();
+            service.AddTransient<IMatchRefundController, MatchRefundControllerImp>();
+            service.AddTransient<IMatchService, MatchServiceImp>();
         }
     }
 }

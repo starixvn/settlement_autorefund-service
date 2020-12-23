@@ -1,61 +1,49 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Worker">
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net5.0</TargetFramework>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <UserSecretsId>dotnet-Fanex.AutoRefund.WorkerSerivce-EE17F9E4-0959-4841-BE8D-5810BECA204F</UserSecretsId>
+  </PropertyGroup>
 
-	<ItemGroup>
-	  <Compile Remove="Startup.cs" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Fanex.Data.SqlServer" Version="4.2.2" />
+    <PackageReference Include="Fanex.Logging" Version="2.0.1" />
+    <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />
+    <PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="1.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="5.0.1" />
+    <PackageReference Include="ONEbook.UM" Version="3.0.0-beta7" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<Content Include="appsettings.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="appsettings.LOCAL.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="appsettings.PRO.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="appsettings.SIT.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="appsettings.UAT.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sportbook\AutoRefund.csproj" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Fanex.Data.SqlServer" Version="4.2.2" />
-		<PackageReference Include="Fanex.Logging" Version="2.0.1" />
-		<PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="1.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="5.0.1" />
-		<PackageReference Include="RestSharp" Version="106.11.7" />
-		<PackageReference Include="Topshelf" Version="4.3.0" />
-		<PackageReference Include="Topshelf.Extensions.Hosting" Version="0.4.0" />
-	</ItemGroup>
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.LOCAL.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.PRO.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.SIT.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.UAT.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Sportbook\AutoRefund.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="App_Data\SpName.xml">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-	</ItemGroup>
-
-	<ProjectExtensions>
-		<VisualStudio>
-			<UserProperties />
-		</VisualStudio>
-	</ProjectExtensions>
+  <ItemGroup>
+    <None Update="App_Data\SpName.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="LeagueSettings\auto-league-settings.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

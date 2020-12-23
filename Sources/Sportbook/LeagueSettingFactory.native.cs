@@ -1,5 +1,4 @@
 ﻿using AutoRefund.Models;
-using Fanex.AutoRefund.Service;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,7 +22,7 @@ namespace AutoRefund
 
         public static void SettingFileWatcher()
         {
-            watcher.Path = AppSettingKeys.LeagueSettingPath.Replace("/app/", "");
+            watcher.Path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LeagueSettings\\");
             watcher.NotifyFilter = NotifyFilters.LastAccess |
                                    NotifyFilters.LastWrite |
                                    NotifyFilters.FileName |
@@ -65,9 +64,8 @@ namespace AutoRefund
         {
             try
             {
-                var path = AppSettingKeys.LeagueSettingPath.Replace("/app/", "");
-                var fileName = AppSettingKeys.LeagueSettingFile;
-                using (var streamReader = new StreamReader($"{path}{fileName}"))
+                FileStream fileStream = new FileStream(@"LeagueSettings\auto-league-settings.ini", FileMode.Open);
+                using (var streamReader = new StreamReader(fileStream))
                 {
                     return new LeagueSetting
                     {

@@ -5,6 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AppSettingKeys.native.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="AppSettingKeys.native.cs.orig" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Fanex.Data" Version="4.2.2" />
     <PackageReference Include="Fanex.Data.Repository" Version="4.2.2" />
     <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />

@@ -31,7 +31,7 @@ namespace AutoRefund.Services
 
             if (leagueSetting.ExcludeLeagueIds.Any())
             {
-               matches = (from m in matches
+                matches = (from m in matches
                            where !leagueSetting.ExcludeLeagueIds.Any(id => m.LeagueId.Equals(id))
                            select m).ToList();
             }
@@ -43,7 +43,7 @@ namespace AutoRefund.Services
                            select m).ToList();
             }
 
-           return matches;
+            return matches;
         }
 
         public MatchChecking GetMatchInfo(Match match)

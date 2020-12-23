@@ -1,19 +1,23 @@
-﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Topshelf.Extensions.Hosting;
 
 namespace Fanex.AutoRefund.Service
 {
-    internal static class ConfigureService
+    public class Program
     {
+        private static void Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
+
         public static IHostBuilder CreateHostBuilder(string[] args) =>
        Host.CreateDefaultBuilder(args)
-           .ConfigureServices(services =>
+           .ConfigureServices((hostContext, services) =>
            {
-               services.AddHostedService<MainService>();
+               services.AddHostedService<Startup>();
                services.InitializeServices();
-           }).UseSystemd();
+           })
+            .UseSystemd();
 
     }
 }

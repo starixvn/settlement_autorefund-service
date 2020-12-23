@@ -1,22 +1,7 @@
 {
-  "EnvironmentsSample": {
-    "commandName": "Project",
-    "launchBrowser": true,
-    "applicationUrl": "https://localhost:5001;http://localhost:5000",
-    "environmentVariables": {
-      "DOTNET_ENVIRONMENT": "LOCAL"
-    }
-  },
   "profiles": {
     "Fanex.AutoRefund.Service": {
       "commandName": "Project"
-    },
-    "EnvironmentsSample": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "LOCAL",
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
     }
   }
 }

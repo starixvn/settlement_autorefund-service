@@ -1,0 +1,59 @@
+﻿using Fanex.Data;
+using Fanex.Data.SqlServer;
+using Fanex.Logging;
+using Fanex.Logging.Sentry;
+using Microsoft.Extensions.Configuration;
+using ONEbook.UM;
+using ONEbook.UM.Configurations;
+using Sentry;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Fanex.AutoRefund.Service
+{
+   public partial class Startup
+    {
+        private void UMSetting()
+        {
+            var umConfig = new UMClientConfiguration();
+            UMClientManager
+                .UseConfig(umConfig);
+            //.UseRestClient(new RestClient())
+            //.UseHttpContext(new HttpContextHelper(app.ApplicationServices.GetService<IHttpContextAccessor>()))
+            //.AddErrorHandler(errorHandler);
+        }
+
+        private void StartDataBaseSetting()
+        {
+            var connections = configuration.GetSection("ConnectionStrings")
+                                   .GetChildren()
+                                   .AsEnumerable()
+                                   .ToDictionary(
+                                            x => x.GetValue<string>("Name"),
+                                            y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
+                                    );
+            DbSettingProviderManager
+              .StartNewSession()
+              .Use(connections)
+              .WithSqlServer()
+              .UseDefaultDbSettingProvider(resourcePath: "~/App_Data")
+              .Run();
+        }
+
+        private void StartLogSetting()
+        {
+            var logEngine = new List<ILogEngine>();
+
+            var sentryEngineOptions = new SentryEngineOptions
+            {
+                Dsn = new Dsn(configuration.GetSection("Sentrytoken").Value)
+            };
+
+            logEngine.Add(new SentryLogging(sentryEngineOptions));
+
+            LogManager.SetDefaultLogCategory(configuration.GetSection("SiteCategory").Value).Use(logEngine);
+        }
+
+
+    }
+}

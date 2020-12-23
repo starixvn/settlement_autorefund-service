@@ -1,4 +1,7 @@
-﻿using AutoRefund.Services;
+﻿using AutoRefund;
+using AutoRefund.Constants;
+using AutoRefund.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
@@ -6,21 +9,32 @@ using System.Threading.Tasks;
 
 namespace Fanex.AutoRefund.Service
 {
-    public class MainService : IHostedService
+    public partial class Startup : IHostedService
     {
         private readonly MaintainanceService maintainanceService;
 
         private readonly IAutoRefundController autoRefundController;
+        public IConfiguration configuration { get; }
 
         private bool running;
 
         private int counter;
 
-        public MainService(IAutoRefundController autoRefundController)
+        public Startup(IAutoRefundController autoRefundController, IConfiguration configuration)
         {
             this.autoRefundController = autoRefundController;
-            this.maintainanceService = maintainanceService;
+            //this.maintainanceService = maintainanceService;
+            this.configuration = configuration;
             InitializeExtraComponent();
+            InitializeSetting();
+        }
+
+        private void InitializeSetting()
+        {
+            UMSetting();
+            StartDataBaseSetting();
+            StartLogSetting();
+            LeagueSettingFactory.SettingFileWatcher();
         }
 
         private static void InitializeExtraComponent()
@@ -59,7 +73,7 @@ namespace Fanex.AutoRefund.Service
                 //if (!maintainanceService.IsMaintainance)
                 {
                     MainProcess();
-                    Thread.Sleep(AppSettingKeys.ServiceInterval);
+                    Thread.Sleep(SettingsKey.ServiceInterval);
                 }
             }
         }
@@ -79,13 +93,13 @@ namespace Fanex.AutoRefund.Service
 
         private void HandleGarbageCollector()
         {
-            if (counter >= AppSettingKeys.GarbageCollectorInterval)
+            if (counter >= SettingsKey.GarbageCollectorInterval)
             {
                 counter = 0;
                 GC.WaitForPendingFinalizers();
             }
 
-            counter += AppSettingKeys.ServiceInterval;
+            counter += SettingsKey.ServiceInterval;
         }
     }
 }
