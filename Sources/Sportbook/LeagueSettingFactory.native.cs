@@ -22,7 +22,7 @@ namespace AutoRefund
 
         public static void SettingFileWatcher()
         {
-            watcher.Path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LeagueSettings\\");
+            watcher.Path = AppDomain.CurrentDomain.BaseDirectory;
             watcher.NotifyFilter = NotifyFilters.LastAccess |
                                    NotifyFilters.LastWrite |
                                    NotifyFilters.FileName |
@@ -64,7 +64,7 @@ namespace AutoRefund
         {
             try
             {
-                FileStream fileStream = new FileStream(@"LeagueSettings\auto-league-settings.ini", FileMode.Open);
+                FileStream fileStream = new FileStream(@"auto-league-settings.ini", FileMode.Open);
                 using (var streamReader = new StreamReader(fileStream))
                 {
                     return new LeagueSetting
