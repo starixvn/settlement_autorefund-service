@@ -56,6 +56,7 @@ namespace Fanex.AutoRefund.Service
         {
             running = true;
             var autoRefundThread = new Thread(RefundThreadProcess);
+            Console.WriteLine($"AutoRefund Starting at { DateTime.Now }");
             autoRefundThread.Start();
             return Task.CompletedTask;
         }
@@ -63,6 +64,7 @@ namespace Fanex.AutoRefund.Service
         public Task StopAsync(CancellationToken cancellationToken)
         {
             running = false;
+            Console.WriteLine($"AutoRefund Stopping at { DateTime.Now }");
             return Task.CompletedTask;
         }
 
