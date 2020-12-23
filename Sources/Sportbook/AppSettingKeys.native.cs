@@ -11,7 +11,7 @@ namespace Fanex.AutoRefund.Service
         static AppSettingKeys()
         {
             var configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", false, true)
+            .AddJsonFile("appsettings.json", true, true)
             .Build();
 
             SiteCategory = configuration["SiteCategory"];

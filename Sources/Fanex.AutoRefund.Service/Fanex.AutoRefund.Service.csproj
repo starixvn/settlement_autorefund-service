@@ -6,6 +6,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Startup.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Content Include="appsettings.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>

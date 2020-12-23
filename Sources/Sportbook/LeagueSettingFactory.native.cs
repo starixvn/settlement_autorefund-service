@@ -23,7 +23,7 @@ namespace AutoRefund
 
         public static void SettingFileWatcher()
         {
-            watcher.Path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppSettingKeys.LeagueSettingPath);
+            watcher.Path = AppSettingKeys.LeagueSettingPath.Replace("/app/", "");
             watcher.NotifyFilter = NotifyFilters.LastAccess |
                                    NotifyFilters.LastWrite |
                                    NotifyFilters.FileName |
@@ -65,7 +65,7 @@ namespace AutoRefund
         {
             try
             {
-                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppSettingKeys.LeagueSettingPath);
+                var path = AppSettingKeys.LeagueSettingPath.Replace("/app/", "");
                 var fileName = AppSettingKeys.LeagueSettingFile;
                 using (var streamReader = new StreamReader($"{path}{fileName}"))
                 {
