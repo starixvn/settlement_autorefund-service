@@ -2,7 +2,7 @@
 {
     public static class SettingsKey
     {
-        public const int RetryCount = 15;
+        public const int RetryCount = 3;
 
         public const int RetryInterval = 1000;
 

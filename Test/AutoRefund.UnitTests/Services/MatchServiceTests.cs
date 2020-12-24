@@ -24,18 +24,31 @@ namespace AutoRefund.UnitTests.Services
         public void GetMatches_ExistedIncludeLeagueIdsAndExcludeLeagueIds_ReturnsRightMatches()
         {
             // Arrange
-            var matchOne = new Match { MatchId = 1, LeagueId = 123 };
-            var matchTwo = new Match { MatchId = 2, LeagueId = 456 };
-            var list = new List<Match>();
-            list.Add(matchOne);
-            list.Add(matchTwo);
-            repository.Fetch<Match>(new MatchListingCriteria()).Returns(list);
+            IEnumerable<Match> matches = new List<Match>
+            {
+                new Match { MatchId = 1, LeagueId = 123 },
+                new Match { MatchId = 2, LeagueId = 1111 }
+            };
+            repository.Fetch<Match>(Arg.Any<MatchListingCriteria>()).Returns(matches);
 
             // Act
-            var matches = service.GetMatches();
+            var list = service.GetMatches();
 
             // Assert
-            Assert.Single(matches);
+            Assert.Single(list);
+        }
+
+        [Fact]
+        public void UpdateStatus_Aways_ExecuteCriteria()
+        {
+            // Arrange
+            var match = new Match { MatchId = 1};
+
+            // Act
+            service.UpdateStatus(match);
+
+            // Assert
+            repository.Received().Execute(Arg.Any<UpdateStatusCriteria>());
         }
     }
 }

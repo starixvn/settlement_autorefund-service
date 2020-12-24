@@ -51,8 +51,8 @@ namespace AutoRefund.Services
             if (!string.IsNullOrWhiteSpace(result.ErrMsg))
             {
                 logService.ActionLog(match, result.ErrMsg, match.TypeId);
-                matchPoolService.Remove(match);
             }
+            matchPoolService.Remove(match);
         }
 
         private void ProcessAfterMatchCheckingFail(Match match, Result resultChecking)

@@ -51,5 +51,22 @@ namespace AutoRefund.UnitTests.Services
             // Assert
             Assert.Single(serviceMock.PoolOfMatches);
         }
+
+        [Fact]
+        public void RemoveAndUpdateStatus_ExistedMatchId_ExistingMatchIsRemoveAndUpdateStatus()
+        {
+            // Arrange
+            var matches = CreateMatches(1, 2);
+            var serviceMock = new MatchPoolServiceImp(matchService);
+            matchService.GetMatches().Returns(matches);
+
+            // Act1
+            serviceMock.PeekNewMatch();
+            serviceMock.RemoveAndUpdateStatus(matches[0]);
+
+            // Assert
+            Assert.Single(serviceMock.PoolOfMatches);
+            matchService.Received().UpdateStatus(matches[0]);
+        }
     }
 }

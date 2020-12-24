@@ -7,7 +7,7 @@ namespace AutoRefund.Criteria
     {
         public int MatchId { get; set; }
 
-        public int RefundSetatus { get; } = MatchStatus.Failed;
+        public int RefundStatus { get; } = MatchStatus.Failed;
 
         public int SourceId { get; } = 250;
 

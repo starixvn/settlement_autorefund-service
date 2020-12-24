@@ -40,4 +40,10 @@
     <ProjectReference Include="..\..\Sources\Sportbook\AutoRefund.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="auto-league-settings.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

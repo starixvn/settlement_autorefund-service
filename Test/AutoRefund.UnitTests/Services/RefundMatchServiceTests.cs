@@ -21,17 +21,17 @@ namespace AutoRefund.UnitTests.Services
         }
 
         [Fact]
-        public void Push_MatchTypeIsAutoRefundNormal_ShouldExecuteRightCriteria()
+        public void Push_MatchTypeIsAutoRefundNormal_AlwaysReturnNotNull()
         {
             // Arrange
             var match = new Match { TypeId = MatchType.AutoRefund, MatchId = 1 };
-            var criteria = new RefundPushCriteria { MatchId = match.MatchId };
 
             // Act
-            service.Push(match);
+            var result = service.Push(match);
 
             // Assert
-            repository.Received().Execute(criteria);
+            repository.Received().Execute(Arg.Any<RefundPushCriteria>());
+            Assert.NotNull(result);
         }
     }
 }

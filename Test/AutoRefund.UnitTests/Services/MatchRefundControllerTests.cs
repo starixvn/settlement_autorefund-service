@@ -37,11 +37,23 @@ namespace AutoRefund.UnitTests.Services
             service.Process(match);
 
             // Assert
-            Received.InOrder(() =>
-            {
-                logService.DidNotReceive().ActionLog(match, Arg.Any<string>());
-                matchPoolService.DidNotReceive().Remove(match);
-            });
+            logService.DidNotReceive().ActionLog(match, Arg.Any<string>(), Arg.Any<int>());
+            matchPoolService.DidNotReceive().RemoveAndUpdateStatus(match);
+        }
+
+        [Fact]
+        public void Process_ThrowExceptionOnVerifyMatchAndRetryEnough_InvokeRelatedMethods()
+        {
+            // Arrange
+            var match = new Models.Match { NumberOfRetries = 14 };
+            validationService.VerifyMatchBeforeExecution(match).Returns(new Result { ErrCode = 1 });
+
+            // Act
+            service.Process(match);
+
+            // Assert
+            logService.Received().ActionLog(match, Arg.Any<string>(), Arg.Any<int>());
+            matchPoolService.Received().RemoveAndUpdateStatus(match);
         }
     }
 }

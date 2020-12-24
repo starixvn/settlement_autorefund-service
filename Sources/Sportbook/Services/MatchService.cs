@@ -10,8 +10,6 @@ namespace AutoRefund.Services
     {
         List<Match> GetMatches();
 
-        MatchChecking GetMatchInfo(Match match);
-
         void UpdateStatus(Match match);
     }
 
@@ -26,7 +24,7 @@ namespace AutoRefund.Services
 
         public List<Match> GetMatches()
         {
-           var matches = repository.Fetch<Match>(new MatchListingCriteria()).ToList();
+            var matches = repository.Fetch<Match>(new MatchListingCriteria()).ToList();
             var leagueSetting = LeagueSettingFactory.Create();
 
             if (leagueSetting.ExcludeLeagueIds.Any())
@@ -46,16 +44,7 @@ namespace AutoRefund.Services
             return matches;
         }
 
-        public MatchChecking GetMatchInfo(Match match)
-        {
-            var criteria = new MatchCheckingCriteria
-            {
-                MatchId = match.MatchId,
-            };
-            return repository.Get<MatchChecking>(criteria) ?? new MatchChecking();
-        }
-
-        public void UpdateStatus (Match match)
+        public void UpdateStatus(Match match)
         {
             var criteria = new UpdateStatusCriteria { MatchId = match.MatchId };
             repository.Execute(criteria);
