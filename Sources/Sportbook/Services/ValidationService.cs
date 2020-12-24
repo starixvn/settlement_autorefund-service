@@ -1,9 +1,6 @@
-﻿using AutoRefund.Constants;
-using AutoRefund.Criteria;
+﻿using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
-using System.Threading.Tasks;
-
 namespace AutoRefund.Services
 {
     public interface IValidationService
@@ -23,9 +20,9 @@ namespace AutoRefund.Services
 
         public Result VerifyMatchBeforeExecution(Match match)
         {
-            if(match.TypeId == MatchType.AutoRefund)
-            {
                 var criteria = new MatchCheckingCriteria();
+                criteria.MatchId = match.MatchId;
+                criteria.TypeId = match.TypeId;
                 repository.Execute(criteria);
                 return new Result
                 {
@@ -33,8 +30,5 @@ namespace AutoRefund.Services
                     ErrMsg = criteria.ErrMsg
                 };
             }
-                
-           return new Result();
         }
     }
-}

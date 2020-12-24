@@ -42,11 +42,7 @@ namespace AutoRefund.Services
             } else
             {
                 match.NumberOfRetries++;
-                if (match.NumberOfRetries == SettingsKey.RetryCount)
-                {
-                    logService.ActionLog(match, resultChecking.ErrMsg);
-                    matchPoolService.Remove(match);
-                }
+                ProcessAfterMatchCheckingFail(match, resultChecking);
             }
         }
 
@@ -54,11 +50,17 @@ namespace AutoRefund.Services
         {
             if (!string.IsNullOrWhiteSpace(result.ErrMsg))
             {
-                logService.ActionLog(match, result.ErrMsg);
-            }
-            else
-            {
+                logService.ActionLog(match, result.ErrMsg, match.TypeId);
                 matchPoolService.Remove(match);
+            }
+        }
+
+        private void ProcessAfterMatchCheckingFail(Match match, Result resultChecking)
+        {
+            if (match.NumberOfRetries == SettingsKey.RetryCount || match.TypeId == MatchType.RefundParlay)
+            {
+                logService.ActionLog(match, resultChecking.ErrMsg, match.TypeId);
+                matchPoolService.RemoveAndUpdateStatus(match);
             }
         }
     }

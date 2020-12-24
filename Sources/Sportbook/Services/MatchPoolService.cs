@@ -8,6 +8,8 @@ namespace AutoRefund.Services
     {
         List<Match> PeekNewMatch();
 
+        void RemoveAndUpdateStatus(Match match);
+
         void Remove(Match match);
     }
 
@@ -47,12 +49,20 @@ namespace AutoRefund.Services
             }
         }
 
-        public void Remove(Match match)
+        public void RemoveAndUpdateStatus(Match match)
         {
             lock (lockObject)
             {
                 poolOfMatches.RemoveAll(m => m.MatchId == match.MatchId);
                 matchService.UpdateStatus(match);
+            }
+        }
+
+        public void Remove(Match match)
+        {
+            lock (lockObject)
+            {
+                poolOfMatches.RemoveAll(m => m.MatchId == match.MatchId);
             }
         }
     }

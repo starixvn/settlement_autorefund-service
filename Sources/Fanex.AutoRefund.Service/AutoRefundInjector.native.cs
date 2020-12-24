@@ -9,8 +9,8 @@ namespace Fanex.AutoRefund
     {
         public static void InitializeServices(this IServiceCollection service)
         {
-            service.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
-            service.AddTransient<IDynamicRepository, DynamicRepository>();
+            service.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            service.AddSingleton<IDynamicRepository, DynamicRepository>();
             service.AddTransient<IMatchPoolService, MatchPoolServiceImp>();
             service.AddTransient<ILogService, LogServiceImp>();
             service.AddTransient<IValidationService, ValidationServiceImp>();

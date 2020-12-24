@@ -1,5 +1,4 @@
-﻿using AutoRefund.Constants;
-using Fanex.Data.Repository;
+﻿using Fanex.Data.Repository;
 
 namespace AutoRefund.Criteria
 {
@@ -7,7 +6,7 @@ namespace AutoRefund.Criteria
     {
         public int MatchId { get; set; }
 
-        public int TypeId { get; } = MatchType.AutoRefund;
+        public int TypeId { get; set; }
 
         public int ErrCode { get; set; }
 
