@@ -6,11 +6,11 @@ namespace AutoRefund.Criteria
 {
     public class LogCriteria : NonQueryCommand
     {
-        public LogCriteria(Match match, string errorMessage, int TypeID)
+        public LogCriteria(Match match, string errorMessage)
         {
             MatchId = match.MatchId;
             Remark = errorMessage;
-            ActionId = TypeID == MatchType.AutoRefund ? MatchType.AutoRefundSingle : MatchType.AutoRefundParlay;
+            ActionId = match.TypeId == MatchType.RefundSingle ? MatchType.AutoRefundSingle : MatchType.AutoRefundParlay;
         }
 
         public int UserId { get; }

@@ -8,9 +8,9 @@ namespace AutoRefund.Services
     {
         List<Match> PeekNewMatch();
 
-        void RemoveAndUpdateStatus(Match match);
+        void RemoveAndUpdateStatus(Match match, int statusId);
 
-        void Remove(Match match);
+        void RemoveMatch(Match match);
     }
 
     public class MatchPoolServiceImp : IMatchPoolService
@@ -36,33 +36,32 @@ namespace AutoRefund.Services
             }
         }
 
+        public void RemoveAndUpdateStatus(Match match, int statusId)
+        {
+            lock (lockObject)
+            {
+                RemoveMatch(match);
+                matchService.UpdateStatus(match, statusId);
+            }
+        }
+
+        public void RemoveMatch(Match match)
+        {
+            lock (lockObject)
+            {
+                poolOfMatches.RemoveAll(m => m.MatchId == match.MatchId && m.TypeId == match.TypeId);
+            }
+        }
+
         public List<Match> PeekNewMatch()
         {
             var matches = matchService.GetMatches();
 
             lock (lockObject)
             {
-                var newMatches = matches.Where(x => !poolOfMatches.Any(y => y.MatchId == x.MatchId)).ToList();
+                var newMatches = matches.Where(x => !poolOfMatches.Any(y => y.MatchId == x.MatchId && y.TypeId == x.TypeId)).ToList();
                 poolOfMatches.AddRange(newMatches);
-
                 return poolOfMatches;
-            }
-        }
-
-        public void RemoveAndUpdateStatus(Match match)
-        {
-            lock (lockObject)
-            {
-                poolOfMatches.RemoveAll(m => m.MatchId == match.MatchId);
-                matchService.UpdateStatus(match);
-            }
-        }
-
-        public void Remove(Match match)
-        {
-            lock (lockObject)
-            {
-                poolOfMatches.RemoveAll(m => m.MatchId == match.MatchId);
             }
         }
     }

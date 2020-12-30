@@ -1,34 +1,48 @@
-﻿using AutoRefund.Criteria;
+﻿using AutoRefund.Constants;
 using AutoRefund.Models;
-using Fanex.Data.Repository;
+
 namespace AutoRefund.Services
 {
     public interface IValidationService
     {
-        Result VerifyMatchBeforeExecution(Match match);
+        void VerifyMatchBeforeExecution(Match match);
     }
 
     public class ValidationServiceImp : IValidationService
     {
-        private readonly IDynamicRepository repository;
+        private readonly IValidationSettingMatchService validationSettingMatchService;
 
+        private readonly IValidationTicketMatchService validationTicketMatchService;
 
-        public ValidationServiceImp(IDynamicRepository repository)
+        private readonly IValidationRelateMatchService validationRelateMatchService;
+
+        private readonly IMatchService matchService;
+
+        public ValidationServiceImp(
+            IValidationSettingMatchService validationSettingMatchService,
+            IValidationTicketMatchService validationTicketMatchService,
+            IValidationRelateMatchService validationRelateMatchService,
+            IMatchService matchService)
         {
-            this.repository = repository;
+            this.validationSettingMatchService = validationSettingMatchService;
+            this.validationTicketMatchService = validationTicketMatchService;
+            this.validationRelateMatchService = validationRelateMatchService;
+            this.matchService = matchService;
         }
 
-        public Result VerifyMatchBeforeExecution(Match match)
+        public void VerifyMatchBeforeExecution(Match match)
         {
-                var criteria = new MatchCheckingCriteria();
-                criteria.MatchId = match.MatchId;
-                criteria.TypeId = match.TypeId;
-                repository.Execute(criteria);
-                return new Result
-                {
-                    ErrCode = criteria.ErrCode,
-                    ErrMsg = criteria.ErrMsg
-                };
+            var matchChecking = matchService.GetMatchInfo(match);
+            if (match.TypeId == MatchType.RefundSingle)
+            {
+                validationRelateMatchService.VerifyRelateMatch(matchChecking);
+                validationSettingMatchService.VerifySettingMatch(matchChecking);
+                validationTicketMatchService.VerifyTicketMatch(matchChecking);
+            }
+            else
+            {
+                validationRelateMatchService.VerifyChildMatchIsRefudedSingle(matchChecking);
             }
         }
     }
+}

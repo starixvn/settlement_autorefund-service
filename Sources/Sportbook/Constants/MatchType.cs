@@ -2,9 +2,9 @@
 {
     public static class MatchType
     {
-        public const int AutoRefund = 251;
+        public const int RefundSingle = 1;
 
-        public const int RefundParlay = 252;
+        public const int RefundParlay = 10;
 
         public const int AutoRefundSingle = 81022;
 

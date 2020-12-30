@@ -11,7 +11,7 @@ namespace AutoRefund.Criteria
 
         public override string GetSettingKey()
         {
-            return "NAP_Set_AutoRefund_MatchSel";
+            return "NAP_Set_AutoRefund_ScheduleSel";
         }
     }
 }

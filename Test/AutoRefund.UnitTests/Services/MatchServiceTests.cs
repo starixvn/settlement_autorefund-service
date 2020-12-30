@@ -42,13 +42,14 @@ namespace AutoRefund.UnitTests.Services
         public void UpdateStatus_Aways_ExecuteCriteria()
         {
             // Arrange
-            var match = new Match { MatchId = 1};
+            var match = new Match { MatchId = 1 };
 
             // Act
-            service.UpdateStatus(match);
+            service.UpdateStatus(match, 1);
 
             // Assert
             repository.Received().Execute(Arg.Any<UpdateStatusCriteria>());
+
         }
     }
 }

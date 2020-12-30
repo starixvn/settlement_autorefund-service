@@ -1,6 +1,7 @@
 ﻿using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,7 +11,11 @@ namespace AutoRefund.Services
     {
         List<Match> GetMatches();
 
-        void UpdateStatus(Match match);
+        MatchChecking GetMatchInfo(Match match);
+
+        void UpdateStatus(Match match, int statusId);
+
+        void UpdateRemark(Match match, string remark, int statusId);
     }
 
     public class MatchServiceImp : IMatchService
@@ -37,17 +42,31 @@ namespace AutoRefund.Services
             if (leagueSetting.IncludeLeagueIds.Any())
             {
                 matches = (from m in matches
-                           where leagueSetting.IncludeLeagueIds.Any(id => m.LeagueId.Equals(id))
+                          where leagueSetting.IncludeLeagueIds.Any(id => m.LeagueId.Equals(id))
                            select m).ToList();
             }
 
             return matches;
         }
 
-        public void UpdateStatus(Match match)
+        public void UpdateStatus(Match match, int statusId)
         {
-            var criteria = new UpdateStatusCriteria { MatchId = match.MatchId };
+            var criteria = new UpdateStatusCriteria (match, statusId);
             repository.Execute(criteria);
+        }
+
+        public void UpdateRemark(Match match, string remark, int statusId)
+        {
+            var criteria = new UpdateStatusCriteria(match, remark, statusId);
+            repository.Execute(criteria);
+        }
+
+        public MatchChecking GetMatchInfo(Match match)
+        {
+            var criteria = new MatchCheckingCriteria(match);
+
+            return repository.Get<MatchChecking>(criteria);
+
         }
     }
 }

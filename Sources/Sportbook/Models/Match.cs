@@ -8,6 +8,6 @@
 
         public int TypeId { get; set; }
 
-        public int NumberOfRetries { get; set; }
+        public bool IsChecking { get; set; } = false;
     }
 }

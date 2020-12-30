@@ -21,7 +21,7 @@ namespace AutoRefund.UnitTests.Services
 
         private List<Match> CreateMatches(params int[] matchIds)
         {
-            return matchIds.Select(i => new Match { MatchId = i}).ToList();
+            return matchIds.Select(i => new Match { MatchId = i }).ToList();
         }
 
         [Fact]
@@ -37,22 +37,6 @@ namespace AutoRefund.UnitTests.Services
         }
 
         [Fact]
-        public void Remove_ExistedMatchId_ExistingMatchIsRemove()
-        {
-            // Arrange
-            var matches = CreateMatches(1, 2);
-            var serviceMock = new MatchPoolServiceImp(matchService);
-            matchService.GetMatches().Returns(matches);
-
-            // Act1
-            serviceMock.PeekNewMatch();
-            serviceMock.Remove(matches[0]);
-
-            // Assert
-            Assert.Single(serviceMock.PoolOfMatches);
-        }
-
-        [Fact]
         public void RemoveAndUpdateStatus_ExistedMatchId_ExistingMatchIsRemoveAndUpdateStatus()
         {
             // Arrange
@@ -62,11 +46,11 @@ namespace AutoRefund.UnitTests.Services
 
             // Act1
             serviceMock.PeekNewMatch();
-            serviceMock.RemoveAndUpdateStatus(matches[0]);
+            serviceMock.RemoveAndUpdateStatus(matches[0], 1);
 
             // Assert
             Assert.Single(serviceMock.PoolOfMatches);
-            matchService.Received().UpdateStatus(matches[0]);
+            matchService.Received().UpdateStatus(matches[0], 1);
         }
     }
 }

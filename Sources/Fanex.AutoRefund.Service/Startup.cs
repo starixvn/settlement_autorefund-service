@@ -75,7 +75,7 @@ namespace Fanex.AutoRefund.Service
                 //if (!maintainanceService.IsMaintainance)
                 {
                     MainProcess();
-                    Thread.Sleep(SettingsKey.ServiceInterval);
+                    Thread.Sleep(int.Parse(configuration.GetSection("ServiceInterval").Value));
                 }
             }
         }
@@ -95,13 +95,13 @@ namespace Fanex.AutoRefund.Service
 
         private void HandleGarbageCollector()
         {
-            if (counter >= SettingsKey.GarbageCollectorInterval)
+            if (counter >= int.Parse(configuration.GetSection("GarbageCollectorInterval").Value))
             {
                 counter = 0;
                 GC.WaitForPendingFinalizers();
             }
 
-            counter += SettingsKey.ServiceInterval;
+            counter += int.Parse(configuration.GetSection("ServiceInterval").Value);
         }
     }
 }

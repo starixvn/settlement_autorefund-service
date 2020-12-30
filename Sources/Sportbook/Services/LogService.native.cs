@@ -6,7 +6,7 @@ namespace AutoRefund.Services
 {
     public interface ILogService
     {
-        void ActionLog(Match match, string message, int typeID);
+        void ActionLog(Match match, string message);
     }
 
     public class LogServiceImp : ILogService
@@ -18,9 +18,9 @@ namespace AutoRefund.Services
             this.repository = repository;
         }
 
-        public void ActionLog(Match match, string message, int typeID)
+        public void ActionLog(Match match, string message)
         {
-            var criteria = new LogCriteria(match, message, typeID);
+            var criteria = new LogCriteria(match, message);
             repository.Execute(criteria);
         }
     }

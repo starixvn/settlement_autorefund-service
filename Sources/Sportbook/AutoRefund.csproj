@@ -2,10 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <Configurations>Debug;Release;LOCAL</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="AppSettingKeys.native.cs" />
+    <Compile Remove="Constants\SettingsKey.cs" />
+    <Compile Remove="Exceptions\SettingOffException.cs" />
   </ItemGroup>
 
   <ItemGroup>

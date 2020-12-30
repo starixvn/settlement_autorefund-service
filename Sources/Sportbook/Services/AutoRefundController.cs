@@ -23,8 +23,7 @@ namespace AutoRefund.Services
 
         public void ProcessAsync()
         {
-            var newMatches = matchPoolService.PeekNewMatch().ToList();
-
+            var newMatches = matchPoolService.PeekNewMatch().Where(n => !n.IsChecking).ToList();
             newMatches.ForEach(m =>
             {
                 Task.Run(() => matchRefundController.Process(m))

@@ -24,7 +24,7 @@ namespace AutoRefund.UnitTests.Services
         public void Push_MatchTypeIsAutoRefundNormal_AlwaysReturnNotNull()
         {
             // Arrange
-            var match = new Match { TypeId = MatchType.AutoRefund, MatchId = 1 };
+            var match = new Match { TypeId = MatchType.RefundSingle, MatchId = 1 };
 
             // Act
             var result = service.Push(match);

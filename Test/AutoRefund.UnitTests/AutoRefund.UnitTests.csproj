@@ -12,8 +12,6 @@
 
   <ItemGroup>
     <Compile Remove="Services\VakudationMainMatchTests.cs" />
-    <Compile Remove="Services\ValidationSettingMatchServiceTests.cs" />
-    <Compile Remove="Services\ValidationTicketMatchServiceTests.cs" />
     <Compile Remove="UnitTest1.cs" />
   </ItemGroup>
 

@@ -22,6 +22,24 @@ namespace AutoRefund.UnitTests.Services
         }
 
         [Fact]
+        public void ProcessAsync_HasMatches_InvokeProcessMethod()
+        {
+            // Arrange
+            var matches = new List<Match>
+            {
+                new Match { MatchId = 123 , IsChecking = false }
+            };
+
+            matchPoolService.PeekNewMatch().Returns(matches);
+
+            // Act
+            controller.ProcessAsync();
+
+            // Assert
+            matchRefundController.Received().Process(matches[0]);
+        }
+
+        [Fact]
         public void ProcessAsync_EmptyMatches_NotInvokeProcessMethod()
         {
             // Arrange
@@ -34,22 +52,5 @@ namespace AutoRefund.UnitTests.Services
             matchRefundController.DidNotReceive().Process(new Match());
         }
 
-        [Fact]
-        public void ProcessAsync_HasMatches_InvokeProcessMethod()
-        {
-            // Arrange
-            var matches = new List<Match>
-            {
-                new Match { MatchId = 123 }
-            };
-
-            matchPoolService.PeekNewMatch().Returns(matches);
-
-            // Act
-            controller.ProcessAsync();
-
-            // Assert
-            matchRefundController.Received().Process(matches[0]);
-        }
     }
 }

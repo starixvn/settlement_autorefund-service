@@ -1,6 +1,10 @@
-﻿using AutoRefund.Models;
+﻿using AutoRefund.Constants;
+using AutoRefund.Exceptions;
+using AutoRefund.Models;
 using AutoRefund.Services;
+using Microsoft.Extensions.Options;
 using NSubstitute;
+using System.Threading;
 using Xunit;
 
 namespace AutoRefund.UnitTests.Services
@@ -13,6 +17,8 @@ namespace AutoRefund.UnitTests.Services
 
         private readonly IRefundMatchService refundMatchService;
 
+        private readonly IMatchService matchService;
+
         private readonly ILogService logService;
 
         private readonly IMatchRefundController service;
@@ -22,38 +28,68 @@ namespace AutoRefund.UnitTests.Services
             matchPoolService = Substitute.For<IMatchPoolService>();
             validationService = Substitute.For<IValidationService>();
             refundMatchService = Substitute.For<IRefundMatchService>();
+            matchService = Substitute.For<IMatchService>();
             logService = Substitute.For<ILogService>();
-            service = new MatchRefundControllerImp(matchPoolService, validationService, refundMatchService, logService);
+
+            var settings = new AppSettingsKey()
+            {
+                RetryInterval = 1000,
+                MaxTimeRetry = 3000
+            };
+
+            IOptions<AppSettingsKey> appSettingsOptions = Options.Create(settings);
+            service = new MatchRefundControllerImp(matchPoolService, validationService, refundMatchService, matchService, logService, appSettingsOptions);
         }
 
         [Fact]
-        public void Process_ThrowExceptionOnVerifyMatchButRetryNotEnough_NotInvokeRelatedMethods()
+        public void Process_NoExceptionHaveBeenThrown_PushMatchSucceedAndRemoveMatch()
         {
             // Arrange
-            var match = new Models.Match { NumberOfRetries = 0 };
-            validationService.VerifyMatchBeforeExecution(match).Returns(new Result { ErrCode = 1 });
+            var match = new Match ();
+            validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call => {});
+            refundMatchService.Push(match).Returns(new Result());
 
             // Act
             service.Process(match);
 
             // Assert
-            logService.DidNotReceive().ActionLog(match, Arg.Any<string>(), Arg.Any<int>());
-            matchPoolService.DidNotReceive().RemoveAndUpdateStatus(match);
+            refundMatchService.Received().Push(match);
+            matchPoolService.Received().RemoveMatch(match);
         }
 
         [Fact]
-        public void Process_ThrowExceptionOnVerifyMatchAndRetryEnough_InvokeRelatedMethods()
+        public void Process_NoExceptionHaveBeenThrown_PushMatchFaiedAndUpdateStatus()
         {
             // Arrange
-            var match = new Models.Match { NumberOfRetries = 14 };
-            validationService.VerifyMatchBeforeExecution(match).Returns(new Result { ErrCode = 1 });
+            var match = new Match();
+            validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call => { });
+            refundMatchService.Push(match).Returns(new Result { ErrMsg = "failed"});
 
             // Act
             service.Process(match);
 
             // Assert
-            logService.Received().ActionLog(match, Arg.Any<string>(), Arg.Any<int>());
-            matchPoolService.Received().RemoveAndUpdateStatus(match);
+            refundMatchService.Received().Push(match);
+            logService.Received().ActionLog(match, "failed");
+            matchService.Received().UpdateStatus(match, MatchStatus.Failed);
+        }
+
+
+        [Fact]
+        public void Process_ThrowExceptionOnVerifyMatchAndTimeMax_InvokeRelatedMethods()
+        {
+            // Arrange
+            var match = new Match();
+            validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call => {
+                Thread.Sleep(3000);
+                throw new AutoRefundException(); });
+
+            // Act
+            service.Process(match);
+
+            // Assert
+            logService.Received().ActionLog(match, Arg.Any<string>());
+            matchPoolService.Received().RemoveAndUpdateStatus(match, Arg.Any<int>());
         }
     }
 }
