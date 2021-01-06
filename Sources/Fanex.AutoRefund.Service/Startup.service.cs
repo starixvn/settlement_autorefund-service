@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace Fanex.AutoRefund.Service
 {
-   public partial class Startup
+    public partial class Startup
     {
         private void UMSetting()
         {
@@ -36,7 +36,7 @@ namespace Fanex.AutoRefund.Service
               .StartNewSession()
               .Use(connections)
               .WithSqlServer()
-              .UseDefaultDbSettingProvider(resourcePath: "~/App_Data")
+              .UseDefaultDbSettingProvider(resourcePath: configuration.GetSection("StoredProcedurePath").Value)
               .Run();
         }
 
@@ -53,7 +53,5 @@ namespace Fanex.AutoRefund.Service
 
             LogManager.SetDefaultLogCategory(configuration.GetSection("SiteCategory").Value).Use(logEngine);
         }
-
-
     }
 }

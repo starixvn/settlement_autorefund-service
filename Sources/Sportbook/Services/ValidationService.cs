@@ -41,7 +41,7 @@ namespace AutoRefund.Services
             }
             else
             {
-                validationRelateMatchService.VerifyChildMatchIsRefudedSingle(matchChecking);
+               // validationRelateMatchService.VerifyChildMatchIsRefudedSingle(matchChecking);
             }
         }
     }

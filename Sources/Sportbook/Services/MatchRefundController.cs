@@ -47,31 +47,28 @@ namespace AutoRefund.Services
 
         public void Process(Match match)
         {
-            var watch = Stopwatch.StartNew();
             match.IsChecking = true;
-            var continueLoop = true;
+            var retryCount = 0;
             matchService.UpdateStatus(match, MatchStatus.Running);
-            while (continueLoop)
+            while (retryCount < appSettingskey.RetryCount + 1)
             {
                 try
                 {
                     validationService.VerifyMatchBeforeExecution(match);
                     var result = refundMatchService.Push(match);
                     ProcessAfterRefund(match, result);
-                    continueLoop = false;
+                    break;
                 }
                 catch (AutoRefundException exception)
                 {
                     if (!exception.StopLoop)
                     {
-                        continueLoop = ProcessWhenCatchedException(watch, match, exception);
+                        retryCount = ProcessWhenCatchedException(retryCount, match, exception);
                     }
                     else
                     {
-                        logService.ActionLog(match, exception.Description);
-                        matchService.UpdateRemark(match, exception.Description, MatchStatus.Failed);
-                        matchPoolService.RemoveMatch(match);
-                        continueLoop = !exception.StopLoop;
+                        ProcessStopLoop(match, exception.Description);
+                        break;
                     }
                 }
             }
@@ -87,20 +84,26 @@ namespace AutoRefund.Services
             matchPoolService.RemoveMatch(match);
         }
 
-        private bool ProcessWhenCatchedException(Stopwatch watch, Match match, AutoRefundException exception)
+        private void ProcessStopLoop(Match match, string error)
+        {
+            logService.ActionLog(match, error);
+            matchService.UpdateRemark(match, error, MatchStatus.Failed);
+            matchPoolService.RemoveMatch(match);
+        }
+
+        private int ProcessWhenCatchedException(int retryCount, Match match, AutoRefundException exception)
         {
             matchService.UpdateRemark(match, exception.Description, MatchStatus.Running);
-            if (watch.ElapsedMilliseconds > appSettingskey.MaxTimeRetry)
+            if (retryCount >= appSettingskey.RetryCount)
             {
                 logService.ActionLog(match, exception.Description);
                 matchPoolService.RemoveAndUpdateStatus(match, MatchStatus.Failed);
-                return false;
             }
             else
             {
                 Thread.Sleep(appSettingskey.RetryInterval);
             }
-            return true;
+            return retryCount + 1 ;
         }
     }
 }

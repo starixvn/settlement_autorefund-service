@@ -34,7 +34,7 @@ namespace AutoRefund.UnitTests.Services
             var settings = new AppSettingsKey()
             {
                 RetryInterval = 1000,
-                MaxTimeRetry = 3000
+                RetryCount = 15
             };
 
             IOptions<AppSettingsKey> appSettingsOptions = Options.Create(settings);
@@ -45,8 +45,8 @@ namespace AutoRefund.UnitTests.Services
         public void Process_NoExceptionHaveBeenThrown_PushMatchSucceedAndRemoveMatch()
         {
             // Arrange
-            var match = new Match ();
-            validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call => {});
+            var match = new Match();
+            validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call => { });
             refundMatchService.Push(match).Returns(new Result());
 
             // Act
@@ -63,7 +63,7 @@ namespace AutoRefund.UnitTests.Services
             // Arrange
             var match = new Match();
             validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call => { });
-            refundMatchService.Push(match).Returns(new Result { ErrMsg = "failed"});
+            refundMatchService.Push(match).Returns(new Result { ErrMsg = "failed" });
 
             // Act
             service.Process(match);
@@ -74,15 +74,16 @@ namespace AutoRefund.UnitTests.Services
             matchService.Received().UpdateStatus(match, MatchStatus.Failed);
         }
 
-
         [Fact]
         public void Process_ThrowExceptionOnVerifyMatchAndTimeMax_InvokeRelatedMethods()
         {
             // Arrange
             var match = new Match();
-            validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call => {
+            validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call =>
+            {
                 Thread.Sleep(3000);
-                throw new AutoRefundException(); });
+                throw new AutoRefundException();
+            });
 
             // Act
             service.Process(match);

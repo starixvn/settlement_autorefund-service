@@ -11,7 +11,7 @@ namespace Fanex.AutoRefund.Service
 {
     public partial class Startup : IHostedService
     {
-        private readonly MaintainanceService maintainanceService;
+        // private readonly MaintainanceService maintainanceService;
 
         private readonly IAutoRefundController autoRefundController;
         public IConfiguration configuration { get; }
