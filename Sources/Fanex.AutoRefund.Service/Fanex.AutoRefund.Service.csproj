@@ -4,14 +4,7 @@
 		<TargetFramework>net5.0</TargetFramework>
 		<UserSecretsId>dotnet-Fanex.AutoRefund.WorkerSerivce-EE17F9E4-0959-4841-BE8D-5810BECA204F</UserSecretsId>
 	</PropertyGroup>
-
 	<ItemGroup>
-		<None Remove="App_Data\SpName.xml" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Include="App_Data\SpName.xml">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
 		<Content Include="Properties\launchSettings.json" />
 	</ItemGroup>
 
@@ -49,6 +42,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="App_Data\SpName.xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="auto-league-settings.ini">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
