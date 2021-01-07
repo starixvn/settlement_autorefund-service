@@ -16,7 +16,7 @@ namespace AutoRefund.Services
             var remark = matchChecking.Remark;
             bool[] conditionsToCheck = { remark.IsMtdHold, remark.IsUndecided, remark.IsPending, remark.IsUnderSettle, remark.IsHoldKey };
 
-            if(!remark.IsRefundAll)
+            if (!remark.IsRefundAll)
             {
                 throw new RefundAllException();
             }

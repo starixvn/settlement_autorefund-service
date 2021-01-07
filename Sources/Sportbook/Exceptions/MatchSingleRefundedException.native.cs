@@ -8,7 +8,7 @@ namespace AutoRefund.Exceptions
     {
         public MatchSingleRefundedException()
         {
-            Description = "Auto refund parlay child match failed: match is not settled.";
+            Description = "Auto refund parlay failed: match is not settled.";
         }
 
         public MatchSingleRefundedException(string message)

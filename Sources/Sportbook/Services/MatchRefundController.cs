@@ -2,8 +2,6 @@
 using AutoRefund.Exceptions;
 using AutoRefund.Models;
 using Microsoft.Extensions.Options;
-using System;
-using System.Diagnostics;
 using System.Threading;
 
 namespace AutoRefund.Services
@@ -15,7 +13,6 @@ namespace AutoRefund.Services
 
     public class MatchRefundControllerImp : IMatchRefundController
     {
-
         private readonly IMatchPoolService matchPoolService;
 
         private readonly IValidationService validationService;
@@ -42,7 +39,6 @@ namespace AutoRefund.Services
             this.refundMatchService = refundMatchService;
             this.matchService = matchService;
             this.logService = logService;
-
         }
 
         public void Process(Match match)

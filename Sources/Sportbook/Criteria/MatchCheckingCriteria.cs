@@ -5,7 +5,6 @@ namespace AutoRefund.Criteria
 {
     public class MatchCheckingCriteria : NonQueryCommand
     {
-
         public MatchCheckingCriteria(Match match)
         {
             MatchId = match.MatchId;

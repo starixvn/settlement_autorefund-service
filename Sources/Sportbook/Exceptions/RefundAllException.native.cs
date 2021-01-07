@@ -8,7 +8,7 @@ namespace AutoRefund.Exceptions
     {
         public RefundAllException()
         {
-            Description = "Auto refund child match failed: match not marked to refund all.";
+            Description = "Auto refund failed: match not marked to refund all.";
         }
 
         public RefundAllException(string message)

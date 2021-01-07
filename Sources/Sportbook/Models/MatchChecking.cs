@@ -18,7 +18,7 @@ namespace AutoRefund.Models
             {
                 char[] status = Convert.ToString(SettlementStatus, ToBase).ToCharArray();
                 Array.Reverse(status);
-                return  new RemarkSettingModel
+                return new RemarkSettingModel
                 {
                     SettlementStatus = new string(status),
                 };
@@ -46,6 +46,5 @@ namespace AutoRefund.Models
         public int ParentHomeValue { get; set; }
 
         public int ParentAwayValue { get; set; }
-
     }
 }

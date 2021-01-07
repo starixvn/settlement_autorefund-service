@@ -8,7 +8,7 @@ namespace AutoRefund.Exceptions
     {
         public MainMatchNotDecisiveException()
         {
-            Description = "Auto refund child match failed: main match is draw.";
+            Description = "Auto refund failed: main match is draw.";
         }
 
         public MainMatchNotDecisiveException(string message)

@@ -8,7 +8,7 @@ namespace AutoRefund.Exceptions
     {
         public CurrentMatchIsSettledException()
         {
-            Description = "Auto refund child match failed: match settled.";
+            Description = "Auto refund failed: match settled.";
         }
 
         public CurrentMatchIsSettledException(string message)
@@ -27,4 +27,3 @@ namespace AutoRefund.Exceptions
         }
     }
 }
-

@@ -8,7 +8,7 @@ namespace AutoRefund.Exceptions
     {
         public SettledTicketException()
         {
-            Description = "Auto refund child match failed: settled tickets exist.";
+            Description = "Auto refund failed: settled tickets exist.";
         }
 
         public SettledTicketException(string message)

@@ -8,7 +8,7 @@ namespace AutoRefund.Exceptions
     {
         public MainMatchNotCompletedException()
         {
-            Description = "Auto refund child match failed: main match not calculated FT.";
+            Description = "Auto refund failed: main match not calculated FT.";
         }
 
         public MainMatchNotCompletedException(string message)

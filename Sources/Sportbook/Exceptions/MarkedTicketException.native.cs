@@ -8,7 +8,7 @@ namespace AutoRefund.Exceptions
     {
         public MarkedTicketException()
         {
-            Description = "Auto refund child match failed: marked tickets exist.";
+            Description = "Auto refund failed: marked tickets exist.";
         }
 
         public MarkedTicketException(string message)

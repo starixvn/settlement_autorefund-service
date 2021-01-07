@@ -5,6 +5,9 @@
 		<UserSecretsId>dotnet-Fanex.AutoRefund.WorkerSerivce-EE17F9E4-0959-4841-BE8D-5810BECA204F</UserSecretsId>
 	</PropertyGroup>
 	<ItemGroup>
+		<Content Include="App_Data\SpName.xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="Properties\launchSettings.json" />
 	</ItemGroup>
 

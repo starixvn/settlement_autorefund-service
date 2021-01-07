@@ -1,25 +1,12 @@
-﻿using Fanex.Data.Repository;
-
-namespace AutoRefund.Criteria
+﻿namespace AutoRefund.Criteria
 {
-    public class RefundMPPushCriteria : NonQueryCommand
+    public class RefundMPPushCriteria : PushCriteria
     {
-        public int MatchId { get; set; }
-
-        public int AdminId { get; } = 0;
-
-        public int ErrCode { get; set; }
-
-        public string ErrMsg { get; set; }
+        public string Action { get; } = "REFUND";
 
         public override string GetSettingKey()
         {
             return "NAP_Admin_Settlement_Refund_MP_Push";
-        }
-
-        public override bool IsValid()
-        {
-            return MatchId > 0;
         }
     }
 }

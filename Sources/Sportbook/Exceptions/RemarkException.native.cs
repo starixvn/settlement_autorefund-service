@@ -8,7 +8,7 @@ namespace AutoRefund.Exceptions
     {
         public RemarkException()
         {
-            Description = "Auto refund child match failed: match in on hold.";
+            Description = "Auto refund failed: match in on hold.";
         }
 
         public RemarkException(string message)

@@ -1,6 +1,6 @@
 ﻿namespace AutoRefund.Criteria
 {
-    public class RefundPushCriteria : RefundMPPushCriteria
+    public class RefundPushCriteria : PushCriteria
     {
         public int IsAutoRefund { get; } = 1;
 
@@ -8,6 +8,5 @@
         {
             return "NAP_Admin_Settlement_Refund_All_Push";
         }
-
     }
 }
