@@ -51,5 +51,14 @@ namespace AutoRefund.UnitTests.Services
             repository.Received().Execute(Arg.Any<UpdateStatusCriteria>());
 
         }
+
+        [Fact]
+        public void CheckMissedMatch_Aways_ExecuteCriteria()
+        {
+            service.CheckMissedMatch();
+
+            // Assert
+            repository.Received().Execute(Arg.Any<UpdateStatusCriteria>());
+        }
     }
 }

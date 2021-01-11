@@ -13,15 +13,20 @@ namespace Fanex.AutoRefund.Service
         // private readonly MaintainanceService maintainanceService;
 
         private readonly IAutoRefundController autoRefundController;
+
+        private readonly IMatchService matchService;
         public IConfiguration configuration { get; }
 
         private bool running;
 
         private int counter;
 
-        public Startup(IAutoRefundController autoRefundController, IConfiguration configuration)
+        private int timeCounter;
+
+        public Startup(IAutoRefundController autoRefundController, IConfiguration configuration, IMatchService matchService)
         {
             this.autoRefundController = autoRefundController;
+            this.matchService = matchService;
             //this.maintainanceService = maintainanceService;
             this.configuration = configuration;
             InitializeExtraComponent();
@@ -84,7 +89,9 @@ namespace Fanex.AutoRefund.Service
             try
             {
                 autoRefundController.ProcessAsync();
+                handleMissedMatch();
                 HandleGarbageCollector();
+
             }
             catch (Exception exception)
             {
@@ -101,6 +108,18 @@ namespace Fanex.AutoRefund.Service
             }
 
             counter += int.Parse(configuration.GetSection("ServiceInterval").Value);
+        }
+
+        private void handleMissedMatch()
+        {
+            if (timeCounter >= int.Parse(configuration.GetSection("CheckMissedMatchInterval").Value))
+            {
+                timeCounter = 0;
+                matchService.CheckMissedMatch();
+            }
+
+            timeCounter += int.Parse(configuration.GetSection("ServiceInterval").Value);
+
         }
     }
 }

@@ -71,7 +71,7 @@ namespace AutoRefund.UnitTests.Services
             // Assert
             refundMatchService.Received().Push(match);
             logService.Received().ActionLog(match, "failed");
-            matchService.Received().UpdateStatus(match, MatchStatus.Failed);
+            matchService.Received().UpdateRemark(match, "failed", MatchStatus.Failed);
         }
 
         [Fact]

@@ -1,10 +1,18 @@
-﻿using AutoRefund.Models;
+﻿using AutoRefund.Constants;
+using AutoRefund.Models;
 using Fanex.Data.Repository;
 
 namespace AutoRefund.Criteria
 {
     public class UpdateStatusCriteria : NonQueryCommand
     {
+        public UpdateStatusCriteria()
+        {
+            MatchId = 0;
+            TypeId = 0;
+            StatusId = MatchStatus.Failed;
+        }
+
         public UpdateStatusCriteria(Match match, int statusId)
         {
             MatchId = match.MatchId;
@@ -35,7 +43,7 @@ namespace AutoRefund.Criteria
 
         public override bool IsValid()
         {
-            return MatchId > 0;
+            return MatchId > -1;
         }
     }
 }
