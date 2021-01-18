@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Configurations>Debug;Release;LOCAL</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="AppSettingKeys.native.cs" />
+    <Compile Remove="Constants\SettingsKey.cs" />
+    <Compile Remove="Exceptions\SettingOffException.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="AppSettingKeys.native.cs.orig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fanex.Data" Version="4.2.2" />
+    <PackageReference Include="Fanex.Data.Repository" Version="4.2.2" />
+    <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+    <PackageReference Include="ONEbook.UM" Version="3.0.0-beta7" />
+  </ItemGroup>
+
+</Project>
