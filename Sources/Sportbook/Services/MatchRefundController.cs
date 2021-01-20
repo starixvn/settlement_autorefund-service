@@ -107,7 +107,7 @@ namespace AutoRefund.Services
         { 
             if(match.TypeId == MatchType.RefundParlay)
             {
-                Thread.Sleep(appSettingskey.WaitingParlay); // wait for update table match after refund single
+                Thread.Sleep(appSettingskey.WaitingParlay);
             }
         }
     }
