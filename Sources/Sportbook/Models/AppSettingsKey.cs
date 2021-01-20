@@ -5,5 +5,7 @@
         public int RetryInterval { get; set; }
 
         public int RetryCount { get; set; }
+
+        public int WaitingParlay { get; set; }
     }
 }

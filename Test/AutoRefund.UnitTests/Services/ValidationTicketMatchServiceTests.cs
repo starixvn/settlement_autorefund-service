@@ -1,6 +1,9 @@
-﻿using AutoRefund.Exceptions;
+﻿using AutoRefund.Criteria;
+using AutoRefund.Exceptions;
 using AutoRefund.Models;
 using AutoRefund.Services;
+using Fanex.Data.Repository;
+using NSubstitute;
 using Xunit;
 
 namespace AutoRefund.UnitTests.Services
@@ -9,9 +12,12 @@ namespace AutoRefund.UnitTests.Services
     {
         private readonly IValidationTicketMatchService service;
 
+        private readonly IDynamicRepository repository;
+
         public ValidationTicketMatchServiceTests()
         {
-            service = new ValidationTicketServiceImp();
+            repository = Substitute.For<IDynamicRepository>();
+            service = new ValidationTicketServiceImp(repository);
         }
 
         [Fact]

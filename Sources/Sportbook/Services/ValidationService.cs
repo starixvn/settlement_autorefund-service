@@ -42,6 +42,7 @@ namespace AutoRefund.Services
             else
             {
                 validationRelateMatchService.VerifyChildMatchIsRefudedSingle(matchChecking);
+                validationTicketMatchService.CheckMarkedTicket(match);
             }
         }
     }

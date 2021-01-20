@@ -45,6 +45,7 @@ namespace AutoRefund.Services
         {
             match.IsChecking = true;
             var retryCount = 0;
+            WaitingForParlay(match);
             matchService.UpdateStatus(match, MatchStatus.Running);
             while (retryCount < appSettingskey.RetryCount + 1)
             {
@@ -100,6 +101,14 @@ namespace AutoRefund.Services
                 Thread.Sleep(appSettingskey.RetryInterval);
             }
             return retryCount + 1 ;
+        }
+
+        private void WaitingForParlay(Match match)
+        { 
+            if(match.TypeId == MatchType.RefundParlay)
+            {
+                Thread.Sleep(appSettingskey.WaitingParlay); // wait for update table match after refund single
+            }
         }
     }
 }
