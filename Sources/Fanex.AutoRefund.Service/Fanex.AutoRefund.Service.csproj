@@ -19,7 +19,8 @@
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="5.0.1" />
-		<PackageReference Include="ONEbook.UM" Version="3.0.0-beta7" />
+		<PackageReference Include="ONEbook.UM.AspNetCore" Version="3.1.0-beta03" />
+		<PackageReference Include="ONEbook.UM.Transport" Version="3.1.0-beta04" />
 	</ItemGroup>
 
 	<ItemGroup>

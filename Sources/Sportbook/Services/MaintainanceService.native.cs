@@ -1,4 +1,5 @@
-﻿using ONEbook.UM.Services;
+﻿using ONEbook.UM;
+using ONEbook.UM.Services;
 
 namespace AutoRefund.Services
 {
@@ -9,17 +10,15 @@ namespace AutoRefund.Services
 
     public class MaintainanceServiceImp : MaintainanceService
     {
-        private readonly IMaintenanceService maintenanceService;
-
-        public MaintainanceServiceImp(IMaintenanceService maintenanceService)
-        {
-            this.maintenanceService = maintenanceService;
-        }
-
         public bool IsMaintainance
         {
             get
             {
+                var maintenanceService = new MaintenanceService(
+                    UMClientManager.RestClient,
+                    UMClientManager.CacheService,
+                    UMClientManager.UMClientConfigs);
+
                 var downTime = maintenanceService.GetUnderMaintenanceTime();
 
                 return downTime.IsUnderMaintenanceTime;

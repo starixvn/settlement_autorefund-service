@@ -10,12 +10,13 @@ namespace Fanex.AutoRefund.Service
 {
     public partial class Startup : IHostedService
     {
-        // private readonly MaintainanceService maintainanceService;
+        private readonly MaintainanceService maintainanceService;
 
         private readonly IAutoRefundController autoRefundController;
 
         private readonly IMatchService matchService;
-        public IConfiguration configuration { get; }
+
+        public readonly IConfiguration configuration;
 
         private bool running;
 
@@ -23,11 +24,15 @@ namespace Fanex.AutoRefund.Service
 
         private int timeCounter;
 
-        public Startup(IAutoRefundController autoRefundController, IConfiguration configuration, IMatchService matchService)
+        public Startup(
+            IAutoRefundController autoRefundController,
+            IConfiguration configuration,
+            IMatchService matchService,
+            MaintainanceService maintainanceService)
         {
             this.autoRefundController = autoRefundController;
             this.matchService = matchService;
-            //this.maintainanceService = maintainanceService;
+            this.maintainanceService = maintainanceService;
             this.configuration = configuration;
             InitializeExtraComponent();
             InitializeSetting();
@@ -35,7 +40,7 @@ namespace Fanex.AutoRefund.Service
 
         private void InitializeSetting()
         {
-            UMSetting();
+            StartUMSetting();
             StartDataBaseSetting();
             StartLogSetting();
             LeagueSettingFactory.SettingFileWatcher();
@@ -76,7 +81,7 @@ namespace Fanex.AutoRefund.Service
         {
             while (running)
             {
-                //if (!maintainanceService.IsMaintainance)
+                if (!maintainanceService.IsMaintainance)
                 {
                     MainProcess();
                     Thread.Sleep(int.Parse(configuration.GetSection("ServiceInterval").Value));
@@ -91,7 +96,6 @@ namespace Fanex.AutoRefund.Service
                 autoRefundController.ProcessAsync();
                 handleMissedMatch();
                 HandleGarbageCollector();
-
             }
             catch (Exception exception)
             {
@@ -119,7 +123,6 @@ namespace Fanex.AutoRefund.Service
             }
 
             timeCounter += int.Parse(configuration.GetSection("ServiceInterval").Value);
-
         }
     }
 }

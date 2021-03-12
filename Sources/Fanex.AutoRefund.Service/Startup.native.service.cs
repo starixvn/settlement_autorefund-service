@@ -1,10 +1,14 @@
-﻿using Fanex.Data;
+﻿using Fanex.Caching;
+using Fanex.Data;
 using Fanex.Data.SqlServer;
 using Fanex.Logging;
 using Fanex.Logging.Sentry;
 using Microsoft.Extensions.Configuration;
 using ONEbook.UM;
+using ONEbook.UM.AspNetCore;
 using ONEbook.UM.Configurations;
+using ONEbook.UM.Helpers;
+using ONEbook.UM.Transport;
 using Sentry;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,14 +17,14 @@ namespace Fanex.AutoRefund.Service
 {
     public partial class Startup
     {
-        private void UMSetting()
+        private void StartUMSetting()
         {
-            var umConfig = new UMClientConfiguration();
+            var umConfig = new UMClientConfiguration().Initialize(configuration);
+
             UMClientManager
-                .UseConfig(umConfig);
-            //.UseRestClient(new RestClient())
-            //.UseHttpContext(new HttpContextHelper(app.ApplicationServices.GetService<IHttpContextAccessor>()))
-            //.AddErrorHandler(errorHandler);
+               .UseConfig(umConfig)
+               .UseCacheService(new UMCacheService(new CacheService()))
+               .UseRestClient(new UMRestClient(umConfig));
         }
 
         private void StartDataBaseSetting()

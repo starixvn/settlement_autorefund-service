@@ -20,9 +20,8 @@ namespace Fanex.AutoRefund.Service
                .Configure<AppSettingsKey>(hostContext.Configuration)
                .AddSingleton(sp => sp.GetRequiredService<IOptions<AppSettingsKey>>().Value);
                services.AddHostedService<Startup>();
-               services.InitializeServices();
+               services.InitializeServices(hostContext.Configuration);
            })
             .UseSystemd();
-
     }
 }
