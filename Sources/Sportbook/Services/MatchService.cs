@@ -1,6 +1,8 @@
 ﻿using AutoRefund.Criteria;
 using AutoRefund.Models;
+using Fanex.Caching;
 using Fanex.Data.Repository;
+using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,31 +25,36 @@ namespace AutoRefund.Services
     {
         private readonly IDynamicRepository repository;
 
-        public MatchServiceImp(IDynamicRepository repository)
+        private const string KEY_LEAGUEID = "Settlement-AutoPayout-AutoInstant-LeagueId";
+
+        private readonly ICache cache;
+
+        private readonly AppSettingsKey appSettingsKey;
+
+        public MatchServiceImp(IDynamicRepository repository,
+            ICache cache,
+            IOptions<AppSettingsKey> appSettingsKey)
         {
             this.repository = repository;
+            this.cache = cache;
+            this.appSettingsKey = appSettingsKey.Value;
         }
 
         public List<Match> GetMatches()
         {
             var matches = repository.Fetch<Match>(new MatchListingCriteria()).ToList();
-            var leagueSetting = LeagueSettingFactory.Create();
+            cache.TryGet(KEY_LEAGUEID, out int leagueId) ;
 
-            if (leagueSetting.ExcludeLeagueIds.Any())
+            if (appSettingsKey.EnvironmentName.Equals("PRO"))
             {
-                matches = (from m in matches
-                           where !leagueSetting.ExcludeLeagueIds.Any(id => m.LeagueId.Equals(id))
-                           select m).ToList();
+                return leagueId > 0
+                    ? (from m in matches where leagueId != m.LeagueId select m).ToList()
+                    : matches;
             }
-
-            if (leagueSetting.IncludeLeagueIds.Any())
+            else
             {
-                matches = (from m in matches
-                           where leagueSetting.IncludeLeagueIds.Any(id => m.LeagueId.Equals(id))
-                           select m).ToList();
+                return (from m in matches where leagueId == m.LeagueId select m).ToList();
             }
-
-            return matches;
         }
 
         public void UpdateStatus(Match match, int statusId)

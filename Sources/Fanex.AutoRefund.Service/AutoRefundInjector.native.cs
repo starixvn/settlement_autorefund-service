@@ -1,4 +1,6 @@
 ﻿using AutoRefund.Services;
+using Fanex.Caching;
+using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +34,20 @@ namespace Fanex.AutoRefund
             service.AddSingleton<IUMCacheService, UMCacheService>();
             service.AddSingleton<IUMRestClient, UMRestClient>();
             service.AddSingleton<IMaintenanceService, MaintenanceService>();
+            ConfigurRedis(service, configuration);
+        }
+
+        private static void ConfigurRedis(IServiceCollection service, IConfiguration configuration)
+        {
+            var redisHost = configuration.GetSection("Redis.Server").Value;
+            var redisPort = configuration.GetSection("Redis.Port").Value;
+            var redisPassword = configuration.GetSection("Redis.Password").Value;
+            service.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
+            {
+                ConnectionString = $"{redisHost}:{redisPort},password={redisPassword},defaultDatabase=11",
+                ApplicationName = configuration.GetSection("Redis.ApplicationName").Value,
+            }));
+            service.AddSingleton<ICacheService>(new CacheService());
         }
     }
 }

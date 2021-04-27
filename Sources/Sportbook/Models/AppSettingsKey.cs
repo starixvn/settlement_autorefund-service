@@ -7,5 +7,7 @@
         public int RetryCount { get; set; }
 
         public int WaitingParlay { get; set; }
+
+        public string EnvironmentName { get; set; }
     }
 }

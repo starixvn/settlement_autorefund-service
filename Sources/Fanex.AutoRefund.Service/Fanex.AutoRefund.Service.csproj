@@ -4,6 +4,11 @@
 		<TargetFramework>net5.0</TargetFramework>
 		<UserSecretsId>dotnet-Fanex.AutoRefund.WorkerSerivce-EE17F9E4-0959-4841-BE8D-5810BECA204F</UserSecretsId>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="auto-league-settings.ini" />
+	  <None Remove="AutoRefundInjector.native.cs.orig" />
+	</ItemGroup>
 	<ItemGroup>
 		<Content Include="App_Data\SpName.xml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -12,6 +17,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Fanex.Caching" Version="2.2.2" />
+		<PackageReference Include="Fanex.Caching.Redis.AspNetCore" Version="2.2.2" />
 		<PackageReference Include="Fanex.Data.SqlServer" Version="4.2.2" />
 		<PackageReference Include="Fanex.Logging" Version="2.0.1" />
 		<PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />
@@ -48,9 +55,6 @@
 	<ItemGroup>
 		<None Update="App_Data\SpName.xml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="auto-league-settings.ini">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 </Project>

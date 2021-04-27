@@ -1,8 +1,12 @@
 ﻿using AutoRefund.Criteria;
 using AutoRefund.Models;
 using AutoRefund.Services;
+using Fanex.Caching;
+using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
+using Microsoft.Extensions.Options;
 using NSubstitute;
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -14,22 +18,41 @@ namespace AutoRefund.UnitTests.Services
 
         private readonly IMatchService service;
 
+        private ICache cache;
         public MatchServiceTests()
         {
             repository = Substitute.For<IDynamicRepository>();
-            service = new MatchServiceImp(repository);
+            cache = new RedisCache(new RedisCacheOptions
+            {
+                ConnectionString = $"ha.nexdev.net:16379,password=foo1@bared,defaultDatabase=11",
+                ApplicationName = "Settlement-LOCAL"
+            });
+
+            var settings = new AppSettingsKey()
+            {
+                RetryInterval = 1000,
+                RetryCount = 15,
+                EnvironmentName = "LOCAL"
+            };
+
+            IOptions<AppSettingsKey> appSettingsOptions = Options.Create(settings);
+            service = new MatchServiceImp(repository, cache, appSettingsOptions);
         }
 
         [Fact]
-        public void GetMatches_ExistedIncludeLeagueIdsAndExcludeLeagueIds_ReturnsRightMatches()
+        public void GetMatches_ExistedIncludeLeagueIdAndExcludeLeagueId_ReturnsRightMatches()
         {
             // Arrange
             IEnumerable<Match> matches = new List<Match>
             {
                 new Match { MatchId = 1, LeagueId = 123 },
-                new Match { MatchId = 2, LeagueId = 1111 }
+                new Match { MatchId = 2, LeagueId = 58087 }
             };
             repository.Fetch<Match>(Arg.Any<MatchListingCriteria>()).Returns(matches);
+            const string KEY_INCLUDE_LEAGUEIDS = "Settlement-AutoPayout-AutoInstant-IncludeLeagueId";
+            const int CACHE_EXPIRED_IN_DAYS = 1095;
+            var cachePolicy = new CacheItemOptions().SetAbsoluteExpiration(TimeSpan.FromDays(CACHE_EXPIRED_IN_DAYS));
+            cache.Set(KEY_INCLUDE_LEAGUEIDS, 58087, cachePolicy);
 
             // Act
             var list = service.GetMatches();
