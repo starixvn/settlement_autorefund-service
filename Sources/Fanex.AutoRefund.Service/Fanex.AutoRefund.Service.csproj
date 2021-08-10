@@ -34,7 +34,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Sportbook\AutoRefund.csproj" />
+	  <ProjectReference Include="..\AutoRefund\AutoRefund.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
