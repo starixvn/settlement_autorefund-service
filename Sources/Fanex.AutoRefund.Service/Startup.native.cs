@@ -1,128 +1,28 @@
-﻿using AutoRefund;
-using AutoRefund.Services;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace Fanex.AutoRefund.Service
 {
-    public partial class Startup : IHostedService
+    public class Startup
     {
-        private readonly MaintainanceService maintainanceService;
-
-        private readonly IAutoRefundController autoRefundController;
-
-        private readonly IMatchService matchService;
-
-        public readonly IConfiguration configuration;
-
-        private bool running;
-
-        private int counter;
-
-        private int timeCounter;
-
-        public Startup(
-            IAutoRefundController autoRefundController,
-            IConfiguration configuration,
-            IMatchService matchService,
-            MaintainanceService maintainanceService)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            this.autoRefundController = autoRefundController;
-            this.matchService = matchService;
-            this.maintainanceService = maintainanceService;
-            this.configuration = configuration;
-            InitializeExtraComponent();
-            InitializeSetting();
-        }
-
-        private void InitializeSetting()
-        {
-            StartUMSetting();
-            StartDataBaseSetting();
-            StartLogSetting();
-            LeagueSettingFactory.SettingFileWatcher();
-        }
-
-        private static void InitializeExtraComponent()
-        {
-            TaskScheduler.UnobservedTaskException += TaskSchedulerUnobservedTaskException;
-        }
-
-        private static void TaskSchedulerUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
-        {
-            e.SetObserved();
-            e.Exception.Handle(x =>
+            if (env.IsDevelopment())
             {
-                Logging.LogService.Error(x.Message, x);
-                return true;
-            });
-        }
+                app.UseDeveloperExceptionPage();
+            }
 
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            running = true;
-            var autoRefundThread = new Thread(RefundThreadProcess);
-            Console.WriteLine($"AutoRefund Starting at { DateTime.Now }");
-            autoRefundThread.Start();
-            return Task.CompletedTask;
-        }
+            app.UseRouting();
 
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            running = false;
-            Console.WriteLine($"AutoRefund Stopping at { DateTime.Now }");
-            return Task.CompletedTask;
-        }
-
-        private void RefundThreadProcess()
-        {
-            while (running)
+            app.UseEndpoints(endpoints =>
             {
-                if (!maintainanceService.IsMaintainance)
+                endpoints.MapGet("/", async context =>
                 {
-                    MainProcess();
-                    Thread.Sleep(int.Parse(configuration.GetSection("ServiceInterval").Value));
-                }
-            }
-        }
-
-        private void MainProcess()
-        {
-            try
-            {
-                autoRefundController.ProcessAsync();
-                handleMissedMatch();
-                HandleGarbageCollector();
-            }
-            catch (Exception exception)
-            {
-                Logging.LogService.Error("Exception in main thread - Process:", exception);
-            }
-        }
-
-        private void HandleGarbageCollector()
-        {
-            if (counter >= int.Parse(configuration.GetSection("GarbageCollectorInterval").Value))
-            {
-                counter = 0;
-                GC.WaitForPendingFinalizers();
-            }
-
-            counter += int.Parse(configuration.GetSection("ServiceInterval").Value);
-        }
-
-        private void handleMissedMatch()
-        {
-            if (timeCounter >= int.Parse(configuration.GetSection("CheckMissedMatchInterval").Value))
-            {
-                timeCounter = 0;
-                matchService.CheckMissedMatch();
-            }
-
-            timeCounter += int.Parse(configuration.GetSection("ServiceInterval").Value);
+                    await context.Response.WriteAsync("Fanex.AutoRefund.Service");
+                });
+            });
         }
     }
 }

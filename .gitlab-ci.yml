@@ -1,0 +1,4 @@
+include:
+  - project: "ci/repos-ci/olympus_nap_auto_refund_service"
+    ref: master
+    file: "gitlab-ci.yml"

@@ -1,10 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
-		<UserSecretsId>dotnet-Fanex.AutoRefund.WorkerSerivce-EE17F9E4-0959-4841-BE8D-5810BECA204F</UserSecretsId>
-	</PropertyGroup>
-
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 	<ItemGroup>
 	  <None Remove="auto-league-settings.ini" />
 	  <None Remove="AutoRefundInjector.native.cs.orig" />
@@ -53,6 +56,21 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="appsettings.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.LOCAL.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.PRO.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.SIT.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.UAT.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="App_Data\SpName.xml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

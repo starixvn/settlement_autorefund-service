@@ -43,18 +43,20 @@ namespace AutoRefund.Services
         public List<Match> GetMatches()
         {
             var matches = repository.Fetch<Match>(new MatchListingCriteria()).ToList();
-            cache.TryGet(KEY_LEAGUEID, out int leagueId) ;
+            cache.TryGet(KEY_LEAGUEID, out int leagueId);
 
             if (appSettingsKey.EnvironmentName.Equals("PRO"))
             {
                 return leagueId > 0
-                    ? (from m in matches where leagueId != m.LeagueId select m).ToList()
+                    ? (from m in matches where m.LeagueId != leagueId select m).ToList()
                     : matches;
             }
-            else
+            else if (appSettingsKey.EnvironmentName.Equals("UAT"))
             {
-                return (from m in matches where leagueId == m.LeagueId select m).ToList();
+                return (from m in matches where m.LeagueId == leagueId select m).ToList();
             }
+
+            return matches;
         }
 
         public void UpdateStatus(Match match, int statusId)

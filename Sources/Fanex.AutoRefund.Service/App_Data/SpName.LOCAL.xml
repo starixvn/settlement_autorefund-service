@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Functions>
+  <Function Name="AutoPayout">
+    <Setting Key="WriteLog_UserLog_Settle" SpName="WriteLog_UserLog_Settle" DbName="DBLOG.bodb_CustomerLog.bodbAdminNet" />
+    <Setting Key="NAP_Set_AutoRefund_ScheduleSel" SpName="NAP_Set_AutoRefund_ScheduleSel" DbName="DBPRO.bodb02.bodbAdminNet" />
+    <Setting Key="NAP_Set_AutoRefund_MatchInfo" SpName="NAP_Set_AutoRefund_MatchInfo" DbName="DBTXN.bodb02.bodbAdminNet" />
+    <Setting Key="NAP_Admin_Settlement_Refund_All_Push" SpName="NAP_Admin_Settlement_Refund_All_Push" DbName="DBTXN.bodb02.bodbAdminNet" />
+    <Setting Key="NAP_Admin_Settlement_Refund_MP_Push" SpName="NAP_Admin_Settlement_Refund_MP_Push" DbName="DBTXN.bodb02.bodbAdminNet" />
+    <Setting Key="NAP_Set_AutoRefund_ResultUpd" SpName="NAP_Set_AutoRefund_ResultUpd" DbName="DBPRO.bodb02.bodbAdminNet" />
+    <Setting Key="NAP_Set_CheckingMarkedTransaction" SpName="NAP_Set_CheckingMarkedTransaction" DbName="DBTXN.bodb02.bodbAdminNet" />
+  </Function>
+</Functions>
