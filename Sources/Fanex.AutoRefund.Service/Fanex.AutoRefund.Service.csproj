@@ -62,7 +62,7 @@
 		<None Update="appsettings.LOCAL.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Update="appsettings.PRO.json">
+		<None Update="appsettings.PROD.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="appsettings.SIT.json">
