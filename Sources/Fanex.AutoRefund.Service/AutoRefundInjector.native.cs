@@ -42,9 +42,10 @@ namespace Fanex.AutoRefund
             var redisHost = configuration.GetSection("Redis.Server").Value;
             var redisPort = configuration.GetSection("Redis.Port").Value;
             var redisPassword = configuration.GetSection("Redis.Password").Value;
+            var redisDatabase = configuration.GetSection("Redis.DefaultDatabase").Value;
             service.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
             {
-                ConnectionString = $"{redisHost}:{redisPort},password={redisPassword},defaultDatabase=11",
+                ConnectionString = $"{redisHost}:{redisPort},password={redisPassword},defaultDatabase={redisDatabase}",
                 ApplicationName = configuration.GetSection("Redis.ApplicationName").Value,
             }));
             service.AddSingleton<ICacheService>(new CacheService());
