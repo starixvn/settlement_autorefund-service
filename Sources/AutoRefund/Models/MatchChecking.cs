@@ -35,7 +35,7 @@ namespace AutoRefund.Models
 
         public bool IsMainMatchSettled => ParentSettlementStatusID == Calculated;
 
-        public bool IsSettled => EventStatus.Equals(Settled, StringComparison.OrdinalIgnoreCase);
+        public bool IsSettled => !string.IsNullOrWhiteSpace(EventStatus) && EventStatus.Equals(Settled, StringComparison.OrdinalIgnoreCase);
 
         public bool IsRefundedSingle { get; set; }
 
