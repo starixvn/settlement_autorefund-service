@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="Fanex.Caching" Version="2.2.2" />
-    <PackageReference Include="Fanex.Caching.Redis.AspNetCore" Version="2.2.2" />
+    <PackageReference Include="Fanex.Caching.Redis.AspNetCore" Version="2.2.2.1" />
     <PackageReference Include="Fanex.Data" Version="4.2.2" />
     <PackageReference Include="Fanex.Data.Repository" Version="4.2.2" />
     <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />
