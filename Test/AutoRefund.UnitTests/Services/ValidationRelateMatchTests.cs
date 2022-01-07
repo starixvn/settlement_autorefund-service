@@ -20,7 +20,7 @@ namespace AutoRefund.UnitTests.Services
             var matchChecking = new MatchChecking { IsRefundedSingle = false };
 
             // Assert
-            Assert.Throws<MatchSingleRefundedException>(() => service.VerifyChildMatchIsRefudedSingle(matchChecking));
+            Assert.Throws<MatchSingleRefundedException>(() => service.VerifyChildMatchIsRefundSingle(matchChecking));
         }
 
         [Fact]

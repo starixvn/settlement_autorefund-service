@@ -8,22 +8,13 @@ namespace AutoRefund.UnitTests.Services
 {
     public class AutoRerundControllerTests
     {
-        private readonly IMatchPoolService matchPoolService;
-
-        private readonly IMatchRefundController matchRefundController;
-
-        private readonly IAutoRefundController controller;
-
-        public AutoRerundControllerTests()
-        {
-            matchPoolService = Substitute.For<IMatchPoolService>();
-            matchRefundController = Substitute.For<IMatchRefundController>();
-            controller = new AutoRefundControllerImp(matchPoolService, matchRefundController);
-        }
-
         [Fact]
         public void ProcessAsync_HasMatches_InvokeProcessMethod()
         {
+            var matchPoolService = Substitute.For<IMatchPoolService>();
+            var matchRefundController = Substitute.For<IMatchRefundController>();
+            var controller = new AutoRefundControllerImp(matchPoolService, matchRefundController);
+            
             // Arrange
             var matches = new List<Match>
             {
@@ -38,19 +29,5 @@ namespace AutoRefund.UnitTests.Services
             // Assert
             matchRefundController.Received().Process(matches[0]);
         }
-
-        [Fact]
-        public void ProcessAsync_EmptyMatches_NotInvokeProcessMethod()
-        {
-            // Arrange
-            matchPoolService.PeekNewMatch().Returns(new List<Match>());
-
-            // Act
-            controller.ProcessAsync();
-
-            // Assert
-            matchRefundController.DidNotReceive().Process(new Match());
-        }
-
     }
 }

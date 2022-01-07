@@ -8,14 +8,12 @@ using Microsoft.Extensions.Configuration;
 using ONEbook.UM;
 using ONEbook.UM.AspNetCore;
 using ONEbook.UM.Configurations;
-using ONEbook.UM.Helpers;
 using ONEbook.UM.Transport;
 using Sentry;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Hosting;
 using AutoRefund.Services;
-using System.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoRefund;
@@ -24,13 +22,13 @@ namespace Fanex.AutoRefund.Service
 {
     public class AutoRefund : IHostedService
     {
-        private readonly MaintainanceService maintainanceService;
+        private readonly IMaintenanceService maintenanceService;
 
         private readonly IAutoRefundController autoRefundController;
 
         private readonly IMatchService matchService;
 
-        public readonly IConfiguration configuration;
+        private readonly IConfiguration configuration;
 
         private bool running;
 
@@ -42,11 +40,11 @@ namespace Fanex.AutoRefund.Service
             IAutoRefundController autoRefundController,
             IConfiguration configuration,
             IMatchService matchService,
-            MaintainanceService maintainanceService)
+            IMaintenanceService maintenanceService)
         {
             this.autoRefundController = autoRefundController;
             this.matchService = matchService;
-            this.maintainanceService = maintainanceService;
+            this.maintenanceService = maintenanceService;
             this.configuration = configuration;
             InitializeExtraComponent();
             InitializeSetting();
@@ -95,7 +93,7 @@ namespace Fanex.AutoRefund.Service
         {
             while (running)
             {
-                if (!maintainanceService.IsMaintainance)
+                if (!maintenanceService.IsMaintenance)
                 {
                     MainProcess();
                     Thread.Sleep(int.Parse(configuration.GetSection("ServiceInterval").Value));

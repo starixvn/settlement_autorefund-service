@@ -8,7 +8,7 @@ namespace AutoRefund.Services
     {
         void VerifyRelateMatch(MatchChecking matchChecking);
 
-        void VerifyChildMatchIsRefudedSingle(MatchChecking matchChecking);
+        void VerifyChildMatchIsRefundSingle(MatchChecking matchChecking);
     }
 
     public class ValidationRelateMatchServiceImp : IValidationRelateMatchService
@@ -31,7 +31,7 @@ namespace AutoRefund.Services
             }
         }
 
-        public void VerifyChildMatchIsRefudedSingle(MatchChecking matchChecking)
+        public void VerifyChildMatchIsRefundSingle(MatchChecking matchChecking)
         {
             if(!matchChecking.IsRefundedSingle)
             {

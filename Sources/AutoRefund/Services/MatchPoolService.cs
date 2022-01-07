@@ -28,13 +28,7 @@ namespace AutoRefund.Services
             lockObject = new object();
         }
 
-        public List<Match> PoolOfMatches
-        {
-            get
-            {
-                return poolOfMatches;
-            }
-        }
+        public List<Match> PoolOfMatches => poolOfMatches;
 
         public void RemoveAndUpdateStatus(Match match, int statusId)
         {
@@ -59,9 +53,10 @@ namespace AutoRefund.Services
 
             lock (lockObject)
             {
-                var newMatches = matches.Where(x => !poolOfMatches.Any(y => y.MatchId == x.MatchId && y.TypeId == x.TypeId)).ToList();
+                var newMatches = matches.Except(poolOfMatches).ToList();
                 poolOfMatches.AddRange(newMatches);
-                return poolOfMatches;
+
+                return newMatches;
             }
         }
     }

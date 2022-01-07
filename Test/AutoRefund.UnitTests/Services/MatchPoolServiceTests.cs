@@ -33,7 +33,7 @@ namespace AutoRefund.UnitTests.Services
             matchService.GetMatches().Returns(CreateMatches(2, 3));
             var listMatch = service.PeekNewMatch();
 
-            Assert.Equal(3, listMatch.Count);
+            Assert.Single(listMatch);
         }
 
         [Fact]

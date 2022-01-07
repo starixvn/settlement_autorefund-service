@@ -8,6 +8,18 @@
 
         public int TypeId { get; set; }
 
-        public bool IsChecking { get; set; } = false;
+        public bool IsChecking { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return (obj is Match match)
+                   && match.MatchId == MatchId
+                   && match.TypeId == TypeId;
+        }
+
+        public override int GetHashCode()
+        {
+            return MatchId * TypeId;
+        }
     }
 }

@@ -3,14 +3,14 @@ using ONEbook.UM.Services;
 
 namespace AutoRefund.Services
 {
-    public interface MaintainanceService
+    public interface IMaintenanceService
     {
-        bool IsMaintainance { get; }
+        bool IsMaintenance { get; }
     }
 
-    public class MaintainanceServiceImp : MaintainanceService
+    public class MaintenanceServiceImp : IMaintenanceService
     {
-        public bool IsMaintainance
+        public bool IsMaintenance
         {
             get
             {

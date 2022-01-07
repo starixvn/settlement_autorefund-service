@@ -18,7 +18,7 @@ namespace AutoRefund.UnitTests.Services
 
         private readonly IMatchService service;
 
-        private ICache cache;
+        private readonly ICache cache;
         public MatchServiceTests()
         {
             repository = Substitute.For<IDynamicRepository>();
@@ -32,10 +32,10 @@ namespace AutoRefund.UnitTests.Services
             {
                 RetryInterval = 1000,
                 RetryCount = 15,
-                EnvironmentName = "LOCAL"
+                EnvironmentName = "PRO"
             };
 
-            IOptions<AppSettingsKey> appSettingsOptions = Options.Create(settings);
+            var appSettingsOptions = Options.Create(settings);
             service = new MatchServiceImp(repository, cache, appSettingsOptions);
         }
 
@@ -46,7 +46,7 @@ namespace AutoRefund.UnitTests.Services
             IEnumerable<Match> matches = new List<Match>
             {
                 new Match { MatchId = 1, LeagueId = 123 },
-                new Match { MatchId = 2, LeagueId = 58087 }
+                new Match { MatchId = 2, LeagueId = 1 }
             };
             repository.Fetch<Match>(Arg.Any<MatchListingCriteria>()).Returns(matches);
             const string KEY_INCLUDE_LEAGUEIDS = "Settlement-AutoPayout-AutoInstant-IncludeLeagueId";
@@ -62,7 +62,7 @@ namespace AutoRefund.UnitTests.Services
         }
 
         [Fact]
-        public void UpdateStatus_Aways_ExecuteCriteria()
+        public void UpdateStatus_Always_ExecuteCriteria()
         {
             // Arrange
             var match = new Match { MatchId = 1 };
@@ -76,7 +76,7 @@ namespace AutoRefund.UnitTests.Services
         }
 
         [Fact]
-        public void CheckMissedMatch_Aways_ExecuteCriteria()
+        public void CheckMissedMatch_Always_ExecuteCriteria()
         {
             service.CheckMissedMatch();
 

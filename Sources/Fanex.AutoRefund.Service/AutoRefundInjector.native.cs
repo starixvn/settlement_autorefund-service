@@ -2,13 +2,11 @@
 using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ONEbook.UM.AspNetCore;
 using ONEbook.UM.Configurations;
 using ONEbook.UM.Helpers;
-using ONEbook.UM.Services;
 using ONEbook.UM.Transport;
 
 namespace Fanex.AutoRefund
@@ -22,7 +20,7 @@ namespace Fanex.AutoRefund
             service.AddTransient<ILogService, LogServiceImp>();
             service.AddTransient<IValidationService, ValidationServiceImp>();
             service.AddTransient<IAutoRefundController, AutoRefundControllerImp>();
-            service.AddTransient<MaintainanceService, MaintainanceServiceImp>();
+            service.AddTransient<IMaintenanceService, MaintenanceServiceImp>();
             service.AddTransient<IValidationSettingMatchService, ValidationSettingMatchServiceImp>();
             service.AddTransient<IValidationTicketMatchService, ValidationTicketServiceImp>();
             service.AddTransient<IRefundMatchService, RefundMatchServiceImp>();
@@ -33,7 +31,7 @@ namespace Fanex.AutoRefund
             service.AddSingleton(new UMClientConfiguration().Initialize(configuration));
             service.AddSingleton<IUMCacheService, UMCacheService>();
             service.AddSingleton<IUMRestClient, UMRestClient>();
-            service.AddSingleton<IMaintenanceService, MaintenanceService>();
+            service.AddSingleton<ONEbook.UM.Services.IMaintenanceService, ONEbook.UM.Services.MaintenanceService>();
             ConfigurRedis(service, configuration);
         }
 

@@ -11,6 +11,11 @@ namespace AutoRefund.Exceptions
             Description = "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.";
         }
 
+        public ExistMarkedTicketException(bool stopLoop) : this()
+        {
+            StopLoop = stopLoop;
+        }
+
         public ExistMarkedTicketException(string message)
             : base(message)
         {
@@ -25,5 +30,7 @@ namespace AutoRefund.Exceptions
             : base(info, context)
         {
         }
+
+       
     }
 }

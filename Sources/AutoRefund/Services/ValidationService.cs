@@ -33,19 +33,16 @@ namespace AutoRefund.Services
         public void VerifyMatchBeforeExecution(Match match)
         {
             var matchChecking = matchService.GetMatchInfo(match);
-            if (matchChecking != null)
+            if (match.TypeId == MatchType.RefundSingle)
             {
-                if (match.TypeId == MatchType.RefundSingle)
-                {
-                    validationRelateMatchService.VerifyRelateMatch(matchChecking);
-                    validationSettingMatchService.VerifySettingMatch(matchChecking);
-                    validationTicketMatchService.VerifyTicketMatch(matchChecking);
-                }
-                else
-                {
-                    validationRelateMatchService.VerifyChildMatchIsRefudedSingle(matchChecking);
-                    validationTicketMatchService.CheckMarkedTicket(match);
-                }
+                validationRelateMatchService.VerifyRelateMatch(matchChecking);
+                validationSettingMatchService.VerifySettingMatch(matchChecking);
+                validationTicketMatchService.VerifyTicketMatch(matchChecking);
+            }
+            else
+            {
+                validationRelateMatchService.VerifyChildMatchIsRefundSingle(matchChecking);
+                validationTicketMatchService.CheckMarkedTicket(match);
             }
         }
     }

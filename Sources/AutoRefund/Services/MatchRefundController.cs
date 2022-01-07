@@ -43,18 +43,19 @@ namespace AutoRefund.Services
 
         public void Process(Match match)
         {
+            var started = true;
             match.IsChecking = true;
             var retryCount = 0;
             WaitingForParlay(match);
             matchService.UpdateStatus(match, MatchStatus.Running);
-            while (retryCount < appSettingskey.RetryCount + 1)
+            while (started && retryCount < appSettingskey.RetryCount + 1)
             {
                 try
                 {
                     validationService.VerifyMatchBeforeExecution(match);
                     var result = refundMatchService.Push(match);
                     ProcessAfterRefund(match, result);
-                    break;
+                    started = false;
                 }
                 catch (AutoRefundException exception)
                 {
@@ -65,7 +66,7 @@ namespace AutoRefund.Services
                     else
                     {
                         ProcessStopLoop(match, exception.Description);
-                        break;
+                        started = false;
                     }
                 }
             }
@@ -100,6 +101,7 @@ namespace AutoRefund.Services
             {
                 Thread.Sleep(appSettingskey.RetryInterval);
             }
+
             return retryCount + 1 ;
         }
 

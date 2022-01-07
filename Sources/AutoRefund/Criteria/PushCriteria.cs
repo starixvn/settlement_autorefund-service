@@ -6,7 +6,7 @@ namespace AutoRefund.Criteria
     {
         public int MatchId { get; set; }
 
-        public int AdminId { get; } = 0;
+        public int AdminId { get; }
 
         public int ErrCode { get; set; }
 

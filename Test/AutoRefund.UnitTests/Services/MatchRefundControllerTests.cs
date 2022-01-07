@@ -55,10 +55,11 @@ namespace AutoRefund.UnitTests.Services
             // Assert
             refundMatchService.Received().Push(match);
             matchPoolService.Received().RemoveMatch(match);
+            matchService.DidNotReceive().UpdateRemark(match, "failed", MatchStatus.Failed);
         }
 
         [Fact]
-        public void Process_NoExceptionHaveBeenThrown_PushMatchFaiedAndUpdateStatus()
+        public void Process_NoExceptionHaveBeenThrown_PushMatchFailedAndUpdateStatus()
         {
             // Arrange
             var match = new Match();
@@ -81,7 +82,6 @@ namespace AutoRefund.UnitTests.Services
             var match = new Match();
             validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call =>
             {
-                Thread.Sleep(3000);
                 throw new AutoRefundException();
             });
 
@@ -89,6 +89,7 @@ namespace AutoRefund.UnitTests.Services
             service.Process(match);
 
             // Assert
+            matchService.Received(16).UpdateRemark(Arg.Any<Match>(), Arg.Any<string>(), Arg.Any<int>());
             logService.Received().ActionLog(match, Arg.Any<string>());
             matchPoolService.Received().RemoveAndUpdateStatus(match, Arg.Any<int>());
         }

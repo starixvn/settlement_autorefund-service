@@ -36,14 +36,16 @@ namespace AutoRefund.Services
 
         public void CheckMarkedTicket(Match match)
         {
-            var criteria = new CheckingMarkedTicketsCriteria();
-            criteria.MatchId = match.MatchId;
+            var criteria = new CheckingMarkedTicketsCriteria
+            {
+                MatchId = match.MatchId
+            };
 
             repository.Execute(criteria);
 
             if(criteria.IsExistMarkedTicket)
             {
-                throw new ExistMarkedTicketException() { StopLoop = true };
+                throw new ExistMarkedTicketException(stopLoop: true);
             }
         }
     }
