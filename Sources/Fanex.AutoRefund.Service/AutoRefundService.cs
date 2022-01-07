@@ -52,7 +52,7 @@ namespace Fanex.AutoRefund.Service
 
         private void InitializeSetting()
         {
-            StartUMSetting();
+            StartUmSetting();
             StartDataBaseSetting();
             StartLogSetting();
             LeagueSettingFactory.SettingFileWatcher();
@@ -68,7 +68,7 @@ namespace Fanex.AutoRefund.Service
             e.SetObserved();
             e.Exception.Handle(x =>
             {
-                Logging.LogService.Error(x.Message, x);
+                LogService.Error(x.Message, x);
                 return true;
             });
         }
@@ -106,12 +106,12 @@ namespace Fanex.AutoRefund.Service
             try
             {
                 autoRefundController.ProcessAsync();
-                handleMissedMatch();
+                HandleMissedMatch();
                 HandleGarbageCollector();
             }
             catch (Exception exception)
             {
-                Logging.LogService.Error("Exception in main thread - Process:", exception);
+                LogService.Error("Exception in main thread - Process:", exception);
             }
         }
 
@@ -126,7 +126,7 @@ namespace Fanex.AutoRefund.Service
             counter += int.Parse(configuration.GetSection("ServiceInterval").Value);
         }
 
-        private void handleMissedMatch()
+        private void HandleMissedMatch()
         {
             if (timeCounter >= int.Parse(configuration.GetSection("CheckMissedMatchInterval").Value))
             {
@@ -137,7 +137,7 @@ namespace Fanex.AutoRefund.Service
             timeCounter += int.Parse(configuration.GetSection("ServiceInterval").Value);
         }
 
-        private void StartUMSetting()
+        private void StartUmSetting()
         {
             var umConfig = new UMClientConfiguration().Initialize(configuration);
 
