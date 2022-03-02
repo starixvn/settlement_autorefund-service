@@ -43,7 +43,7 @@ namespace AutoRefund.Services
         {
             lock (lockObject)
             {
-                poolOfMatches.RemoveAll(m => m.MatchId == match.MatchId && m.TypeId == match.TypeId);
+                poolOfMatches.RemoveAll(m => m.MatchId == match.MatchId);
             }
         }
 

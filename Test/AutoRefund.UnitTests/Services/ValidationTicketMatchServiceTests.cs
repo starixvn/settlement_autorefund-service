@@ -1,9 +1,6 @@
-﻿using AutoRefund.Criteria;
-using AutoRefund.Exceptions;
+﻿using AutoRefund.Exceptions;
 using AutoRefund.Models;
 using AutoRefund.Services;
-using Fanex.Data.Repository;
-using NSubstitute;
 using Xunit;
 
 namespace AutoRefund.UnitTests.Services
@@ -12,12 +9,9 @@ namespace AutoRefund.UnitTests.Services
     {
         private readonly IValidationTicketMatchService service;
 
-        private readonly IDynamicRepository repository;
-
         public ValidationTicketMatchServiceTests()
         {
-            repository = Substitute.For<IDynamicRepository>();
-            service = new ValidationTicketServiceImp(repository);
+            service = new ValidationTicketServiceImp();
         }
 
         [Fact]
@@ -41,7 +35,6 @@ namespace AutoRefund.UnitTests.Services
             {
                 IsExistSettledTicket = true
             };
-
 
             // Assert
             Assert.Throws<SettledTicketException>(() => service.VerifyTicketMatch(matchChecking));

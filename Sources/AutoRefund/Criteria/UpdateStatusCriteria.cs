@@ -1,33 +1,9 @@
-﻿using AutoRefund.Constants;
-using AutoRefund.Models;
-using Fanex.Data.Repository;
+﻿using Fanex.Data.Repository;
 
 namespace AutoRefund.Criteria
 {
     public class UpdateStatusCriteria : NonQueryCommand
     {
-        public UpdateStatusCriteria()
-        {
-            MatchId = 0;
-            TypeId = 0;
-            StatusId = MatchStatus.Failed;
-        }
-
-        public UpdateStatusCriteria(Match match, int statusId)
-        {
-            MatchId = match.MatchId;
-            TypeId = match.TypeId;
-            StatusId = statusId;
-        }
-
-        public UpdateStatusCriteria(Match match, string remark, int statusId)
-        {
-            MatchId = match.MatchId;
-            TypeId = match.TypeId;
-            Remark = remark;
-            StatusId = statusId;
-        }
-
         public int MatchId { get; set; }
 
         public int StatusId { get; set; }
@@ -43,7 +19,7 @@ namespace AutoRefund.Criteria
 
         public override bool IsValid()
         {
-            return MatchId > -1;
+            return MatchId > 0 || StatusId > 0;
         }
     }
 }

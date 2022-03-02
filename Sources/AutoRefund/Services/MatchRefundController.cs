@@ -46,7 +46,6 @@ namespace AutoRefund.Services
             var started = true;
             match.IsChecking = true;
             var retryCount = 0;
-            WaitingForParlay(match);
             matchService.UpdateStatus(match, MatchStatus.Running);
             while (started && retryCount < appSettingskey.RetryCount + 1)
             {
@@ -102,15 +101,7 @@ namespace AutoRefund.Services
                 Thread.Sleep(appSettingskey.RetryInterval);
             }
 
-            return retryCount + 1 ;
-        }
-
-        private void WaitingForParlay(Match match)
-        { 
-            if(match.TypeId == MatchType.RefundParlay)
-            {
-                Thread.Sleep(appSettingskey.WaitingParlay);
-            }
+            return retryCount + 1;
         }
     }
 }

@@ -8,19 +8,10 @@ namespace AutoRefund.UnitTests.Services
     public class ValidationRelateMatchTests
     {
         private readonly IValidationRelateMatchService service;
+
         public ValidationRelateMatchTests()
         {
             service = new ValidationRelateMatchServiceImp();
-        }
-
-        [Fact]
-        public void VerifyChildMatchIsRefudedSingle_MatchNotRefundSingle_ThrowException()
-        {
-            // Arrange
-            var matchChecking = new MatchChecking { IsRefundedSingle = false };
-
-            // Assert
-            Assert.Throws<MatchSingleRefundedException>(() => service.VerifyChildMatchIsRefundSingle(matchChecking));
         }
 
         [Fact]

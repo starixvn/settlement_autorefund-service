@@ -5,6 +5,7 @@ using Fanex.Data.Repository;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
+using AutoRefund.Constants;
 
 namespace AutoRefund.Services
 {
@@ -51,8 +52,10 @@ namespace AutoRefund.Services
                     return leagueId > 0
                         ? (from m in matches where m.LeagueId != leagueId select m).ToList()
                         : matches;
+
                 case "UAT":
                     return (from m in matches where m.LeagueId == leagueId select m).ToList();
+
                 default:
                     return matches;
             }
@@ -60,13 +63,24 @@ namespace AutoRefund.Services
 
         public void UpdateStatus(Match match, int statusId)
         {
-            var criteria = new UpdateStatusCriteria(match, statusId);
+            var criteria = new UpdateStatusCriteria
+            {
+                MatchId = match.MatchId,
+                TypeId = match.TypeId,
+                StatusId = statusId
+            };
             repository.Execute(criteria);
         }
 
         public void UpdateRemark(Match match, string remark, int statusId)
         {
-            var criteria = new UpdateStatusCriteria(match, remark, statusId);
+            var criteria = new UpdateStatusCriteria
+            {
+                MatchId = match.MatchId,
+                TypeId = match.TypeId,
+                Remark = remark,
+                StatusId = statusId
+            };
             repository.Execute(criteria);
         }
 
@@ -79,7 +93,10 @@ namespace AutoRefund.Services
 
         public void CheckMissedMatch()
         {
-            var criteria = new UpdateStatusCriteria();
+            var criteria = new UpdateStatusCriteria
+            {
+                StatusId = MatchStatus.Failed
+            };
             repository.Execute(criteria);
         }
     }

@@ -8,7 +8,12 @@
 
   <ItemGroup>
     <Compile Remove="AppSettingKeys.native.cs" />
+    <Compile Remove="Constants\MatchType.cs" />
     <Compile Remove="Constants\SettingsKey.cs" />
+    <Compile Remove="Criteria\CheckingMarkedTicketsCriteria.cs" />
+    <Compile Remove="Criteria\PushCriteria.cs" />
+    <Compile Remove="Criteria\RefundMPPushCriteriacs.cs" />
+    <Compile Remove="Exceptions\MatchSingleRefundedException.native.cs" />
     <Compile Remove="Exceptions\SettingOffException.cs" />
   </ItemGroup>
 

@@ -15,7 +15,6 @@ namespace AutoRefund.Services
     {
         private readonly IDynamicRepository repository;
 
-
         public RefundMatchServiceImp(
             IDynamicRepository repository)
         {
@@ -24,8 +23,10 @@ namespace AutoRefund.Services
 
         public Result Push(Match match)
         {
-            var criteria = match.TypeId == MatchType.RefundSingle ? (PushCriteria)new RefundPushCriteria() : (PushCriteria)new RefundMPPushCriteria();
-            criteria.MatchId = match.MatchId;
+            var criteria = new RefundPushCriteria
+            {
+                MatchId = match.MatchId
+            };
             repository.Execute(criteria);
 
             return new Result
