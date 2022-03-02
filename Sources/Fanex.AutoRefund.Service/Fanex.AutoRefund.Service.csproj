@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <OutputType>Exe</OutputType>
+    <CodeAnalysisRuleSet>..\..\.sonarlint\auto-refund-servicecsharp.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   
   <ItemGroup>
@@ -13,6 +14,7 @@
 	  <None Remove="AutoRefundInjector.native.cs.orig" />
 	</ItemGroup>
 	<ItemGroup>
+		<AdditionalFiles Include="..\..\.sonarlint\auto-refund-service\CSharp\SonarLint.xml" Link="SonarLint.xml" />
 		<Content Include="App_Data\SpName.xml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
