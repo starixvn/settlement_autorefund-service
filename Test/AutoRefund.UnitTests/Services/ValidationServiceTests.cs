@@ -1,4 +1,5 @@
-﻿using AutoRefund.Models;
+﻿using System.Threading.Tasks;
+using AutoRefund.Models;
 using AutoRefund.Services;
 using NSubstitute;
 using Xunit;
@@ -27,13 +28,13 @@ namespace AutoRefund.UnitTests.Services
         }
 
         [Fact]
-        public void VerifyMatchBeforeExecution_MatchIsRefundSingle_InvokeThreeMethods()
+        public async Task VerifyMatchBeforeExecution_MatchIsRefundSingle_InvokeThreeMethods()
         {
             // Arrange
             var match = new Match();
 
             // Act
-            service.VerifyMatchBeforeExecution(match);
+            await service.VerifyMatchBeforeExecution(match);
 
             // Assert
             validationRelateMatchService.Received().VerifyRelateMatch(Arg.Any<MatchChecking>());

@@ -1,12 +1,13 @@
 ﻿using AutoRefund.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AutoRefund.Services
 {
     public interface IMatchPoolService
     {
-        List<Match> PeekNewMatch();
+        Task<List<Match>> PeekNewMatch();
 
         void RemoveAndUpdateStatus(Match match, int statusId);
 
@@ -47,9 +48,9 @@ namespace AutoRefund.Services
             }
         }
 
-        public List<Match> PeekNewMatch()
+        public async Task<List<Match>> PeekNewMatch()
         {
-            var matches = matchService.GetMatches();
+            var matches = await matchService.GetMatches();
 
             lock (lockObject)
             {

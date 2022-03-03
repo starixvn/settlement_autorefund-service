@@ -5,7 +5,7 @@ namespace AutoRefund.Services
 {
     public interface IAutoRefundController
     {
-        void ProcessAsync();
+        Task ProcessAsync();
     }
 
     public class AutoRefundControllerImp : IAutoRefundController
@@ -21,9 +21,9 @@ namespace AutoRefund.Services
             this.matchRefundController = matchRefundController;
         }
 
-        public void ProcessAsync()
+        public async Task ProcessAsync()
         {
-            var newMatches = matchPoolService.PeekNewMatch().Where(n => !n.IsChecking).ToList();
+            var newMatches = (await matchPoolService.PeekNewMatch()).Where(n => !n.IsChecking).ToList();
             newMatches.ForEach(m =>
             {
                 Task.Run(() => matchRefundController.Process(m))

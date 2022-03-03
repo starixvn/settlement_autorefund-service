@@ -94,7 +94,7 @@ namespace AutoRefund.UnitTests.Services
         }
 
         [Fact]
-        public void VerifySettingMatch_RefundFlagisOff_ThrowsRefundException()
+        public void VerifySettingMatch_RefundFlagIsOff_ThrowsRefundException()
         {
             // Arrange
             var matchChecking = new MatchChecking
@@ -104,6 +104,21 @@ namespace AutoRefund.UnitTests.Services
 
             // Assert
             Assert.Throws<RefundAllException>(() => service.VerifySettingMatch(matchChecking));
+        }
+
+        [Fact]
+        public void VerifySettingMatch_PassAllMatchChecking_DoesNotThrowsRefundException()
+        {
+            // Arrange
+            var matchChecking = new MatchChecking
+            {
+                SettlementStatus = 32,
+                IsHoldResourceId = false
+            };
+
+            // Assert
+            var exception = Record.Exception(() => service.VerifySettingMatch(matchChecking));
+            Assert.Null(exception);
         }
     }
 }

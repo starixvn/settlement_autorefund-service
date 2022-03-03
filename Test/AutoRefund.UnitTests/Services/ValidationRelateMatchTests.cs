@@ -43,5 +43,16 @@ namespace AutoRefund.UnitTests.Services
             // Assert
             Assert.Throws<MainMatchNotDecisiveException>(() => service.VerifyRelateMatch(matchChecking));
         }
+
+        [Fact]
+        public void VerifyRelateMatch_PassAllMatchChecking_DoesNotThrowException()
+        {
+            // Arrange
+            var matchChecking = new MatchChecking { ParentSettlementStatusID = 4, EventStatus = "running", ParentAwayValue = 1, ParentHomeValue = 2 };
+
+            // Assert
+            var exception = Record.Exception(() => service.VerifyRelateMatch(matchChecking));
+            Assert.Null(exception);
+        }
     }
 }

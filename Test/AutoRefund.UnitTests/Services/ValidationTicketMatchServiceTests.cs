@@ -39,5 +39,20 @@ namespace AutoRefund.UnitTests.Services
             // Assert
             Assert.Throws<SettledTicketException>(() => service.VerifyTicketMatch(matchChecking));
         }
+
+        [Fact]
+        public void VerifyTicketMatch_PassAllMatchChecking_DoesNotThrowsSettledTicketException()
+        {
+            // Arrange
+            var matchChecking = new MatchChecking
+            {
+                IsExistSettledTicket = false,
+                IsExistMarkedTicket = false
+            };
+
+            // Assert
+            var exception = Record.Exception(() => service.VerifyTicketMatch(matchChecking));
+            Assert.Null(exception);
+        }
     }
 }

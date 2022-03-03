@@ -1,4 +1,5 @@
-﻿using AutoRefund.Constants;
+﻿using System.Threading.Tasks;
+using AutoRefund.Constants;
 using AutoRefund.Criteria;
 using AutoRefund.Models;
 using AutoRefund.Services;
@@ -21,16 +22,16 @@ namespace AutoRefund.UnitTests.Services
         }
 
         [Fact]
-        public void Push_MatchTypeIsAutoRefundNormal_AlwaysReturnNotNull()
+        public async Task Push_MatchTypeIsAutoRefundNormal_AlwaysReturnNotNull()
         {
             // Arrange
             var match = new Match { MatchId = 1 };
 
             // Act
-            var result = service.Push(match);
+            var result = await service.Push(match);
 
             // Assert
-            repository.Received().Execute(Arg.Any<RefundPushCriteria>());
+            await repository.Received().ExecuteAsync(Arg.Any<RefundPushCriteria>());
             Assert.NotNull(result);
         }
     }

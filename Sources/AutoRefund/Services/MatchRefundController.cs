@@ -3,12 +3,13 @@ using AutoRefund.Exceptions;
 using AutoRefund.Models;
 using Microsoft.Extensions.Options;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AutoRefund.Services
 {
     public interface IMatchRefundController
     {
-        void Process(Match match);
+        Task Process(Match match);
     }
 
     public class MatchRefundControllerImp : IMatchRefundController
@@ -21,7 +22,7 @@ namespace AutoRefund.Services
 
         private readonly IMatchService matchService;
 
-        private readonly AppSettingsKey appSettingskey;
+        private readonly AppSettingsKey appSettingsKey;
 
         private readonly ILogService logService;
 
@@ -31,9 +32,9 @@ namespace AutoRefund.Services
             IRefundMatchService refundMatchService,
             IMatchService matchService,
             ILogService logService,
-            IOptions<AppSettingsKey> appSettingskey)
+            IOptions<AppSettingsKey> appSettingsKey)
         {
-            this.appSettingskey = appSettingskey.Value;
+            this.appSettingsKey = appSettingsKey.Value;
             this.matchPoolService = matchPoolService;
             this.validationService = validationService;
             this.refundMatchService = refundMatchService;
@@ -41,64 +42,64 @@ namespace AutoRefund.Services
             this.logService = logService;
         }
 
-        public void Process(Match match)
+        public async Task Process(Match match)
         {
             var started = true;
             match.IsChecking = true;
             var retryCount = 0;
-            matchService.UpdateStatus(match, MatchStatus.Running);
-            while (started && retryCount < appSettingskey.RetryCount + 1)
+            await matchService.UpdateStatus(match, MatchStatus.Running);
+            while (started && retryCount < appSettingsKey.RetryCount + 1)
             {
                 try
                 {
-                    validationService.VerifyMatchBeforeExecution(match);
-                    var result = refundMatchService.Push(match);
-                    ProcessAfterRefund(match, result);
+                    await validationService.VerifyMatchBeforeExecution(match);
+                    var result = await refundMatchService.Push(match);
+                    await ProcessAfterRefund(match, result);
                     started = false;
                 }
                 catch (AutoRefundException exception)
                 {
                     if (!exception.StopLoop)
                     {
-                        retryCount = ProcessWhenCatchedException(retryCount, match, exception);
+                        retryCount  = await ProcessWhenCachedException(retryCount, match, exception);
                     }
                     else
                     {
-                        ProcessStopLoop(match, exception.Description);
+                        await ProcessStopLoop(match, exception.Description);
                         started = false;
                     }
                 }
             }
         }
 
-        private void ProcessAfterRefund(Match match, Result result)
+        private async Task ProcessAfterRefund(Match match, Result result)
         {
             if (!string.IsNullOrWhiteSpace(result.ErrMsg))
             {
-                logService.ActionLog(match, result.ErrMsg);
-                matchService.UpdateRemark(match, result.ErrMsg, MatchStatus.Failed);
+                await logService.ActionLog(match, result.ErrMsg);
+                await matchService.UpdateRemark(match, result.ErrMsg, MatchStatus.Failed);
             }
             matchPoolService.RemoveMatch(match);
         }
 
-        private void ProcessStopLoop(Match match, string error)
+        private async Task ProcessStopLoop(Match match, string error)
         {
-            logService.ActionLog(match, error);
-            matchService.UpdateRemark(match, error, MatchStatus.Failed);
+            await logService.ActionLog(match, error);
+            await matchService.UpdateRemark(match, error, MatchStatus.Failed);
             matchPoolService.RemoveMatch(match);
         }
 
-        private int ProcessWhenCatchedException(int retryCount, Match match, AutoRefundException exception)
+        private async Task<int> ProcessWhenCachedException(int retryCount, Match match, AutoRefundException exception)
         {
-            matchService.UpdateRemark(match, exception.Description, MatchStatus.Running);
-            if (retryCount >= appSettingskey.RetryCount)
+            await matchService.UpdateRemark(match, exception.Description, MatchStatus.Running);
+            if (retryCount >= appSettingsKey.RetryCount)
             {
-                logService.ActionLog(match, exception.Description);
+                await logService.ActionLog(match, exception.Description);
                 matchPoolService.RemoveAndUpdateStatus(match, MatchStatus.Failed);
             }
             else
             {
-                Thread.Sleep(appSettingskey.RetryInterval);
+                await Task.Delay(appSettingsKey.RetryInterval);
             }
 
             return retryCount + 1;

@@ -1,11 +1,11 @@
-﻿using AutoRefund.Constants;
+﻿using System.Threading.Tasks;
 using AutoRefund.Models;
 
 namespace AutoRefund.Services
 {
     public interface IValidationService
     {
-        void VerifyMatchBeforeExecution(Match match);
+        Task VerifyMatchBeforeExecution(Match match);
     }
 
     public class ValidationServiceImp : IValidationService
@@ -30,9 +30,9 @@ namespace AutoRefund.Services
             this.matchService = matchService;
         }
 
-        public void VerifyMatchBeforeExecution(Match match)
+        public async Task VerifyMatchBeforeExecution(Match match)
         {
-            var matchChecking = matchService.GetMatchInfo(match);
+            var matchChecking = await matchService.GetMatchInfo(match);
             validationRelateMatchService.VerifyRelateMatch(matchChecking);
             validationSettingMatchService.VerifySettingMatch(matchChecking);
             validationTicketMatchService.VerifyTicketMatch(matchChecking);

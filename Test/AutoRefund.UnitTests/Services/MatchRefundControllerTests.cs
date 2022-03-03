@@ -1,10 +1,10 @@
-﻿using AutoRefund.Constants;
+﻿using System.Threading.Tasks;
+using AutoRefund.Constants;
 using AutoRefund.Exceptions;
 using AutoRefund.Models;
 using AutoRefund.Services;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using System.Threading;
 using Xunit;
 
 namespace AutoRefund.UnitTests.Services
@@ -37,12 +37,12 @@ namespace AutoRefund.UnitTests.Services
                 RetryCount = 15
             };
 
-            IOptions<AppSettingsKey> appSettingsOptions = Options.Create(settings);
+            var appSettingsOptions = Options.Create(settings);
             service = new MatchRefundControllerImp(matchPoolService, validationService, refundMatchService, matchService, logService, appSettingsOptions);
         }
 
         [Fact]
-        public void Process_NoExceptionHaveBeenThrown_PushMatchSucceedAndRemoveMatch()
+        public async Task Process_NoExceptionHaveBeenThrown_PushMatchSucceedAndRemoveMatch()
         {
             // Arrange
             var match = new Match();
@@ -50,16 +50,16 @@ namespace AutoRefund.UnitTests.Services
             refundMatchService.Push(match).Returns(new Result());
 
             // Act
-            service.Process(match);
+            await service.Process(match);
 
             // Assert
-            refundMatchService.Received().Push(match);
+            await refundMatchService.Received().Push(match);
             matchPoolService.Received().RemoveMatch(match);
-            matchService.DidNotReceive().UpdateRemark(match, "failed", MatchStatus.Failed);
+            await matchService.DidNotReceive().UpdateRemark(match, "failed", MatchStatus.Failed);
         }
 
         [Fact]
-        public void Process_NoExceptionHaveBeenThrown_PushMatchFailedAndUpdateStatus()
+        public async Task Process_NoExceptionHaveBeenThrown_PushMatchFailedAndUpdateStatus()
         {
             // Arrange
             var match = new Match();
@@ -67,16 +67,16 @@ namespace AutoRefund.UnitTests.Services
             refundMatchService.Push(match).Returns(new Result { ErrMsg = "failed" });
 
             // Act
-            service.Process(match);
+            await service.Process(match);
 
             // Assert
-            refundMatchService.Received().Push(match);
-            logService.Received().ActionLog(match, "failed");
-            matchService.Received().UpdateRemark(match, "failed", MatchStatus.Failed);
+            await refundMatchService.Received().Push(match);
+            await logService.Received().ActionLog(match, "failed");
+            await matchService.Received().UpdateRemark(match, "failed", MatchStatus.Failed);
         }
 
         [Fact]
-        public void Process_ThrowExceptionOnVerifyMatchAndTimeMax_InvokeRelatedMethods()
+        public async Task Process_ThrowExceptionOnVerifyMatchAndTimeMax_InvokeRelatedMethods()
         {
             // Arrange
             var match = new Match();
@@ -86,11 +86,11 @@ namespace AutoRefund.UnitTests.Services
             });
 
             // Act
-            service.Process(match);
+            await service.Process(match);
 
             // Assert
-            matchService.Received(16).UpdateRemark(Arg.Any<Match>(), Arg.Any<string>(), Arg.Any<int>());
-            logService.Received().ActionLog(match, Arg.Any<string>());
+            await matchService.Received(16).UpdateRemark(Arg.Any<Match>(), Arg.Any<string>(), Arg.Any<int>());
+            await logService.Received().ActionLog(match, Arg.Any<string>());
             matchPoolService.Received().RemoveAndUpdateStatus(match, Arg.Any<int>());
         }
     }
