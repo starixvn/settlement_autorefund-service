@@ -8,19 +8,10 @@ namespace AutoRefund.UnitTests.Services
     public class ValidationRelateMatchTests
     {
         private readonly IValidationRelateMatchService service;
+
         public ValidationRelateMatchTests()
         {
             service = new ValidationRelateMatchServiceImp();
-        }
-
-        [Fact]
-        public void VerifyChildMatchIsRefudedSingle_MatchNotRefundSingle_ThrowException()
-        {
-            // Arrange
-            var matchChecking = new MatchChecking { IsRefundedSingle = false };
-
-            // Assert
-            Assert.Throws<MatchSingleRefundedException>(() => service.VerifyChildMatchIsRefundSingle(matchChecking));
         }
 
         [Fact]
@@ -51,6 +42,17 @@ namespace AutoRefund.UnitTests.Services
 
             // Assert
             Assert.Throws<MainMatchNotDecisiveException>(() => service.VerifyRelateMatch(matchChecking));
+        }
+
+        [Fact]
+        public void VerifyRelateMatch_PassAllMatchChecking_DoesNotThrowException()
+        {
+            // Arrange
+            var matchChecking = new MatchChecking { ParentSettlementStatusID = 4, EventStatus = "running", ParentAwayValue = 1, ParentHomeValue = 2 };
+
+            // Assert
+            var exception = Record.Exception(() => service.VerifyRelateMatch(matchChecking));
+            Assert.Null(exception);
         }
     }
 }

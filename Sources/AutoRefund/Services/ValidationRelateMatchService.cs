@@ -1,14 +1,11 @@
 ﻿using AutoRefund.Exceptions;
 using AutoRefund.Models;
 
-
 namespace AutoRefund.Services
 {
     public interface IValidationRelateMatchService
     {
         void VerifyRelateMatch(MatchChecking matchChecking);
-
-        void VerifyChildMatchIsRefundSingle(MatchChecking matchChecking);
     }
 
     public class ValidationRelateMatchServiceImp : IValidationRelateMatchService
@@ -17,7 +14,7 @@ namespace AutoRefund.Services
         {
             if (matchChecking.IsSettled)
             {
-                throw new CurrentMatchIsSettledException { StopLoop = true } ;
+                throw new CurrentMatchIsSettledException { StopLoop = true };
             }
 
             if (!matchChecking.IsMainMatchSettled)
@@ -28,14 +25,6 @@ namespace AutoRefund.Services
             if (matchChecking.ParentAwayValue == matchChecking.ParentHomeValue)
             {
                 throw new MainMatchNotDecisiveException();
-            }
-        }
-
-        public void VerifyChildMatchIsRefundSingle(MatchChecking matchChecking)
-        {
-            if(!matchChecking.IsRefundedSingle)
-            {
-                throw new MatchSingleRefundedException { StopLoop = true };
             }
         }
     }

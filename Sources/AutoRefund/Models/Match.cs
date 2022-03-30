@@ -6,20 +6,20 @@
 
         public int LeagueId { get; set; }
 
-        public int TypeId { get; set; }
-
         public bool IsChecking { get; set; }
+
+        public int TypeId { get; set; }
 
         public override bool Equals(object obj)
         {
-            return (obj is Match match)
-                   && match.MatchId == MatchId
-                   && match.TypeId == TypeId;
+            return obj != null
+                   && (obj is Match match)
+                   && match.MatchId == MatchId;
         }
 
         public override int GetHashCode()
         {
-            return MatchId * TypeId;
+            return MatchId;
         }
     }
 }

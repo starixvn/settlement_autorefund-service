@@ -21,7 +21,7 @@ namespace AutoRefund.Services
                 throw new RefundAllException();
             }
 
-            if (!conditionsToCheck.All(item => !item) || matchChecking.IsHoldResourceId)
+            if (conditionsToCheck.Any(item => item) || matchChecking.IsHoldResourceId)
             {
                 throw new RemarkException();
             }

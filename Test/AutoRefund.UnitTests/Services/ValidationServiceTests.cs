@@ -1,6 +1,4 @@
-﻿
-
-using AutoRefund.Constants;
+﻿using System.Threading.Tasks;
 using AutoRefund.Models;
 using AutoRefund.Services;
 using NSubstitute;
@@ -10,7 +8,6 @@ namespace AutoRefund.UnitTests.Services
 {
     public class ValidationServiceTests
     {
-
         private readonly IValidationSettingMatchService validationSettingMatchService;
 
         private readonly IValidationTicketMatchService validationTicketMatchService;
@@ -31,34 +28,18 @@ namespace AutoRefund.UnitTests.Services
         }
 
         [Fact]
-        public void VerifyMatchBeforeExecution_MatchIsRefundSingle_InvokeThreeMethods()
+        public async Task VerifyMatchBeforeExecution_MatchIsRefundSingle_InvokeThreeMethods()
         {
             // Arrange
-            var match = new Match { TypeId = MatchType.RefundSingle };
+            var match = new Match();
 
             // Act
-            service.VerifyMatchBeforeExecution(match);
+            await service.VerifyMatchBeforeExecution(match);
 
             // Assert
             validationRelateMatchService.Received().VerifyRelateMatch(Arg.Any<MatchChecking>());
             validationSettingMatchService.Received().VerifySettingMatch(Arg.Any<MatchChecking>());
             validationTicketMatchService.Received().VerifyTicketMatch(Arg.Any<MatchChecking>());
-
-        }
-
-        [Fact]
-        public void VerifyMatchBeforeExecution_MatchIsRefundParlay_InvokeTwoMethods()
-        {
-            // Arrange
-            var match = new Match { TypeId = MatchType.RefundParlay};
-
-            // Act
-            service.VerifyMatchBeforeExecution(match);
-
-            // Assert
-            validationRelateMatchService.Received().VerifyChildMatchIsRefundSingle(Arg.Any<MatchChecking>());
-            validationTicketMatchService.Received().CheckMarkedTicket(Arg.Any<Match>());
-
         }
     }
 }

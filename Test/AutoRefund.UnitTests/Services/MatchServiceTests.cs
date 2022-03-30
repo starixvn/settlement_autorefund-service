@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace AutoRefund.UnitTests.Services
@@ -40,7 +41,7 @@ namespace AutoRefund.UnitTests.Services
         }
 
         [Fact]
-        public void GetMatches_ExistedIncludeLeagueIdAndExcludeLeagueId_ReturnsRightMatches()
+        public async Task GetMatches_ExistedIncludeLeagueIdAndExcludeLeagueId_ReturnsRightMatches()
         {
             // Arrange
             IEnumerable<Match> matches = new List<Match>
@@ -48,40 +49,68 @@ namespace AutoRefund.UnitTests.Services
                 new Match { MatchId = 1, LeagueId = 123 },
                 new Match { MatchId = 2, LeagueId = 1 }
             };
-            repository.Fetch<Match>(Arg.Any<MatchListingCriteria>()).Returns(matches);
+            repository.FetchAsync<Match>(Arg.Any<MatchListingCriteria>()).Returns(matches);
             const string KEY_INCLUDE_LEAGUEIDS = "Settlement-AutoPayout-AutoInstant-IncludeLeagueId";
             const int CACHE_EXPIRED_IN_DAYS = 1095;
             var cachePolicy = new CacheItemOptions().SetAbsoluteExpiration(TimeSpan.FromDays(CACHE_EXPIRED_IN_DAYS));
             cache.Set(KEY_INCLUDE_LEAGUEIDS, 58087, cachePolicy);
 
             // Act
-            var list = service.GetMatches();
+            var list = await service.GetMatches();
 
             // Assert
             Assert.Single(list);
         }
 
         [Fact]
-        public void UpdateStatus_Always_ExecuteCriteria()
+        public async Task UpdateStatus_Always_ExecuteCriteria()
         {
             // Arrange
             var match = new Match { MatchId = 1 };
 
             // Act
-            service.UpdateStatus(match, 1);
+            await service.UpdateStatus(match, 1);
 
             // Assert
-            repository.Received().Execute(Arg.Any<UpdateStatusCriteria>());
+           await repository.Received().ExecuteAsync(Arg.Any<UpdateStatusCriteria>());
 
         }
 
         [Fact]
-        public void CheckMissedMatch_Always_ExecuteCriteria()
+        public async Task UpdateRemark_Always_ExecuteCriteria()
         {
-            service.CheckMissedMatch();
+            // Arrange
+            var match = new Match { MatchId = 1 };
+
+            // Act
+            await service.UpdateRemark(match, "", 0);
 
             // Assert
-            repository.Received().Execute(Arg.Any<UpdateStatusCriteria>());
+            await repository.Received().ExecuteAsync(Arg.Any<UpdateStatusCriteria>());
+
+        }
+
+        [Fact]
+        public async Task GetMatchInfo_Always_InvokeGetAsyncMethod()
+        {
+            // Arrange
+            var match = new Match { MatchId = 1 };
+
+            // Act
+            await service.GetMatchInfo(match);
+
+            // Assert
+            await repository.Received().GetAsync<MatchChecking>(Arg.Any<MatchCheckingCriteria>());
+
+        }
+
+        [Fact]
+        public async Task CheckMissedMatch_Always_ExecuteCriteria()
+        {
+            await service.CheckMissedMatch();
+
+            // Assert
+            await repository.Received().ExecuteAsync(Arg.Any<UpdateStatusCriteria>());
         }
     }
 }

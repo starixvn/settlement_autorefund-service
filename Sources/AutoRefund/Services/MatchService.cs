@@ -1,24 +1,26 @@
-﻿using AutoRefund.Criteria;
+﻿using AutoRefund.Constants;
+using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Caching;
 using Fanex.Data.Repository;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AutoRefund.Services
 {
     public interface IMatchService
     {
-        List<Match> GetMatches();
+        Task<List<Match>> GetMatches();
 
-        MatchChecking GetMatchInfo(Match match);
+        Task<MatchChecking> GetMatchInfo(Match match);
 
-        void UpdateStatus(Match match, int statusId);
+        Task UpdateStatus(Match match, int statusId);
 
-        void UpdateRemark(Match match, string remark, int statusId);
+        Task UpdateRemark(Match match, string remark, int statusId);
 
-        void CheckMissedMatch();
+        Task CheckMissedMatch();
     }
 
     public class MatchServiceImp : IMatchService
@@ -40,9 +42,9 @@ namespace AutoRefund.Services
             this.appSettingsKey = appSettingsKey.Value;
         }
 
-        public List<Match> GetMatches()
+        public async Task<List<Match>> GetMatches()
         {
-            var matches = repository.Fetch<Match>(new MatchListingCriteria()).ToList();
+            var matches =(await repository.FetchAsync<Match>(new MatchListingCriteria())).ToList();
             cache.TryGet(KEY_LEAGUEID, out int leagueId);
 
             switch (appSettingsKey.EnvironmentName)
@@ -51,36 +53,52 @@ namespace AutoRefund.Services
                     return leagueId > 0
                         ? (from m in matches where m.LeagueId != leagueId select m).ToList()
                         : matches;
+
                 case "UAT":
                     return (from m in matches where m.LeagueId == leagueId select m).ToList();
+
                 default:
                     return matches;
             }
         }
 
-        public void UpdateStatus(Match match, int statusId)
+        public async Task UpdateStatus(Match match, int statusId)
         {
-            var criteria = new UpdateStatusCriteria(match, statusId);
-            repository.Execute(criteria);
+            var criteria = new UpdateStatusCriteria
+            {
+                MatchId = match.MatchId,
+                TypeId = match.TypeId,
+                StatusId = statusId
+            };
+            await repository.ExecuteAsync(criteria);
         }
 
-        public void UpdateRemark(Match match, string remark, int statusId)
+        public async Task UpdateRemark(Match match, string remark, int statusId)
         {
-            var criteria = new UpdateStatusCriteria(match, remark, statusId);
-            repository.Execute(criteria);
+            var criteria = new UpdateStatusCriteria
+            {
+                MatchId = match.MatchId,
+                TypeId = match.TypeId,
+                Remark = remark,
+                StatusId = statusId
+            };
+            await repository.ExecuteAsync(criteria);
         }
 
-        public MatchChecking GetMatchInfo(Match match)
+        public async Task<MatchChecking> GetMatchInfo(Match match)
         {
             var criteria = new MatchCheckingCriteria(match);
 
-            return repository.Get<MatchChecking>(criteria);
+            return await repository.GetAsync<MatchChecking>(criteria);
         }
 
-        public void CheckMissedMatch()
+        public async Task CheckMissedMatch()
         {
-            var criteria = new UpdateStatusCriteria();
-            repository.Execute(criteria);
+            var criteria = new UpdateStatusCriteria
+            {
+                StatusId = MatchStatus.Failed
+            };
+            await repository.ExecuteAsync(criteria);
         }
     }
 }

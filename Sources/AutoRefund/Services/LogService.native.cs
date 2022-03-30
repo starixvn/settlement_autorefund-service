@@ -1,4 +1,5 @@
-﻿using AutoRefund.Criteria;
+﻿using System.Threading.Tasks;
+using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
 
@@ -6,7 +7,7 @@ namespace AutoRefund.Services
 {
     public interface ILogService
     {
-        void ActionLog(Match match, string message);
+        Task ActionLog(Match match, string message);
     }
 
     public class LogServiceImp : ILogService
@@ -18,10 +19,10 @@ namespace AutoRefund.Services
             this.repository = repository;
         }
 
-        public void ActionLog(Match match, string message)
+        public async Task ActionLog(Match match, string message)
         {
             var criteria = new LogCriteria(match, message);
-            repository.Execute(criteria);
+            await repository.ExecuteAsync(criteria);
         }
     }
 }

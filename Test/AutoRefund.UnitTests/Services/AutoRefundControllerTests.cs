@@ -1,0 +1,45 @@
+﻿using AutoRefund.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using AutoRefund.Models;
+using NSubstitute;
+using Xunit;
+
+namespace AutoRefund.UnitTests.Services
+{
+    public class AutoRefundControllerTests
+    {
+        private readonly IMatchPoolService matchPoolService;
+
+        private readonly IMatchRefundController matchRefundController;
+
+        private readonly IAutoRefundController controller;
+
+
+        public AutoRefundControllerTests()
+        {
+            matchPoolService = Substitute.For<IMatchPoolService>();
+            matchRefundController = Substitute.For<IMatchRefundController>();
+            controller = new AutoRefundControllerImp(matchPoolService, matchRefundController);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_HasMatches_InvokeProcessMethod()
+        {
+            // Arrange
+            var match = new Match { MatchId = 123 };
+            var matches = new List<Match> { match };
+
+            matchPoolService.PeekNewMatch().Returns(matches);
+
+            // Act
+            await controller.ProcessAsync();
+
+            // Assert
+            await matchRefundController.Received().Process(match);
+        }
+    }
+}
