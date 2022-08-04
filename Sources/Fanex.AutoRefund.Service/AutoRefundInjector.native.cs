@@ -1,9 +1,14 @@
-﻿using AutoRefund.Services;
+﻿using AutoMapper;
+using AutoRefund.Services;
 using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
+using Fanex.Settlement.ScaleOut;
+using Fanex.Settlement.ScaleOut.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using ONEbook.UM.AspNetCore;
 using ONEbook.UM.Configurations;
 using ONEbook.UM.Helpers;
@@ -32,6 +37,16 @@ namespace Fanex.AutoRefund
             service.AddSingleton<IUMCacheService, UMCacheService>();
             service.AddSingleton<IUMRestClient, UMRestClient>();
             service.AddSingleton<ONEbook.UM.Services.IMaintenanceService, ONEbook.UM.Services.MaintenanceService>();
+            service.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            service.AddSingleton<ScaleOutSettleService, ScaleOutSettleServiceImp>();
+
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(typeof(ScaleOutMappingProfile));
+            });
+
+            var mapper = mapperConfig.CreateMapper();
+            service.AddSingleton(mapper);
             ConfigurRedis(service, configuration);
         }
 

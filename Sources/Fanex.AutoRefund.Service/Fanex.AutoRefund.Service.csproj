@@ -22,12 +22,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="10.1.1" />
 		<PackageReference Include="Fanex.Caching" Version="2.2.2" />
 		<PackageReference Include="Fanex.Caching.Redis.AspNetCore" Version="2.2.2.1" />
 		<PackageReference Include="Fanex.Data.SqlServer" Version="4.2.2" />
 		<PackageReference Include="Fanex.Logging" Version="2.0.1" />
 		<PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />
 		<PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="1.0.1" />
+		<PackageReference Include="Fanex.Settlement.ScaleOut" Version="2.0.0.7" />
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="5.0.1" />

@@ -1,4 +1,5 @@
-﻿using Fanex.Data.Repository;
+﻿using Fanex.Data;
+using Fanex.Data.Repository;
 
 namespace AutoRefund.Criteria
 {
@@ -16,9 +17,14 @@ namespace AutoRefund.Criteria
 
         public int IsAutoRefund { get; } = 1;
 
+        public string BroadcastSessionId { get; set; }
+
+        [SpParam(Ignored = true)]
+        public string DbServer { get; set; }
+
         public override string GetSettingKey()
         {
-            return "NAP_Admin_Settlement_Refund_1_Push";
+            return $"NAP_Admin_Settlement_Refund_1_Push_{DbServer}";
         }
 
         public override bool IsValid()

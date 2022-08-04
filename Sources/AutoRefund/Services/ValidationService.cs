@@ -35,7 +35,7 @@ namespace AutoRefund.Services
             var matchChecking = await matchService.GetMatchInfo(match);
             validationRelateMatchService.VerifyRelateMatch(matchChecking);
             validationSettingMatchService.VerifySettingMatch(matchChecking);
-            validationTicketMatchService.VerifyTicketMatch(matchChecking);
+            await validationTicketMatchService.VerifyTicketMatch(match);
         }
     }
 }
