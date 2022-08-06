@@ -1,4 +1,5 @@
-﻿using Fanex.Data;
+﻿using System;
+using Fanex.Data;
 using Fanex.Data.Repository;
 
 namespace AutoRefund.Criteria
@@ -17,7 +18,7 @@ namespace AutoRefund.Criteria
 
         public int IsAutoRefund { get; } = 1;
 
-        public string BroadcastSessionId { get; set; }
+        public string BroadcastSessionId = Guid.NewGuid().ToString();
 
         [SpParam(Ignored = true)]
         public string DbServer { get; set; }

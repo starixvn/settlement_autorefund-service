@@ -1,5 +1,4 @@
-﻿using System;
-using AutoRefund.Criteria;
+﻿using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
 using System.Threading.Tasks;
@@ -22,8 +21,6 @@ namespace AutoRefund.Services
 
         private readonly ScaleOutSettleService scaleOutSettleService;
 
-        private const string Mode = "ALL";
-
         public RefundMatchServiceImp(
             IDynamicRepository repository,
             ScaleOutSettleService scaleOutSettleService,
@@ -36,30 +33,26 @@ namespace AutoRefund.Services
 
         public async Task<Result> Push(Match match)
         {
-            var criteria = new RefundPushCriteria
-            {
-                MatchId = match.MatchId,
-                BroadcastSessionId = Guid.NewGuid().ToString()
-            };
+            const string actionName = "REFUND";
+            var result = await ValidateBeforeExecute(match, actionName);
 
-            var matchChecking = await ValidateBeforeExecute(criteria);
-            if (matchChecking.ErrCode > 0)
+            if (result.ErrCode == 0)
             {
-                return matchChecking;
+                await scaleOutSettleService.UpdateUnderSettlementFlag(match.MatchId, 0, actionName);
+                await UpdateMatchInfo(match, actionName);
+                Execute(match.MatchId);
             }
 
-            await UpdateMatchInfo(criteria);
-            Execute(criteria);
-
-            return new Result
-            {
-                ErrCode = criteria.ErrCode,
-                ErrMsg = criteria.ErrMsg
-            };
+            return result;
         }
 
-        private void Execute(RefundPushCriteria criteria)
+        private void Execute(int matchId)
         {
+            var criteria = new RefundPushCriteria
+            {
+                MatchId = matchId
+            };
+
             foreach (var server in appSettingsKey.SiteDbServer)
             {
                 criteria.DbServer = server;
@@ -67,16 +60,18 @@ namespace AutoRefund.Services
             }
         }
 
-        private async Task<Result> ValidateBeforeExecute(RefundPushCriteria criteria)
+        private async Task<Result> ValidateBeforeExecute(Match match, string actionName)
         {
+            const string mode = "ALL";
             var request = new EventTicketRequest
             {
-                MatchId = criteria.MatchId,
-                Action = criteria.Action,
-                SpName = criteria.GetSettingKey(),
+                MatchId = match.MatchId,
+                Action = actionName,
+                SpName = "NAP_Admin_Settlement_Refund_1_Push",
                 IsAuto = true,
-                Mode = Mode
+                Mode = mode
             };
+
             var resultMessage = await scaleOutSettleService.ValidateEventAndTicket(request);
             return new Result
             {
@@ -85,14 +80,14 @@ namespace AutoRefund.Services
             };
         }
 
-        private async Task UpdateMatchInfo(RefundPushCriteria criteria)
+        private async Task UpdateMatchInfo(Match match, string actionName)
         {
-            await scaleOutSettleService.UpdateUnderSettlementFlag(criteria.MatchId, criteria.AdminId, criteria.Action);
+            
             var requestUpdateInfo = new UpdateMatchInfoRequest
             {
-                MatchId = criteria.MatchId,
-                Action = criteria.Action,
-                AdminId = criteria.AdminId,
+                MatchId = match.MatchId,
+                Action = actionName,
+                AdminId = 0,
             };
 
             await scaleOutSettleService.UpdateMatchInfo(requestUpdateInfo);
