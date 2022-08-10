@@ -13,17 +13,17 @@
   <Function Name="Scale Out TransDb">
     <Function Name="NAP_Admin_Settlement_Validation_Ticket">
       <Setting Key="NAP_Admin_Settlement_Validation_Ticket_DBTXN" SpName="NAP_Admin_Settlement_Validation_Ticket" DbName="DBTXN.bodb02.bodbAdminNet" />
-      <Setting Key="NAP_Admin_Settlement_Validation_Ticket_SITEDB01" SpName="NAP_Admin_Settlement_Validation_Ticket" DbName="SITEDB01.bodb02.bodbAdminNet" />
+      <Setting Key="NAP_Admin_Settlement_Validation_Ticket_DBSID01" SpName="NAP_Admin_Settlement_Validation_Ticket" DbName="DBSID01.bodb02.bodbAdminNet" />
     </Function>
 
     <Function Name="NAP_Set_AutoRefund_TicketInfo">
       <Setting Key="NAP_Set_AutoRefund_TicketInfo_DBTXN" SpName="NAP_Set_AutoRefund_TicketInfo" DbName="DBTXN.bodb02.bodbAdminNet" />
-      <Setting Key="NAP_Set_AutoRefund_TicketInfo_SITEDB01" SpName="NAP_Set_AutoRefund_TicketInfo" DbName="SITEDB01.bodb02.bodbAdminNet" />
+      <Setting Key="NAP_Set_AutoRefund_TicketInfo_DBSID01" SpName="NAP_Set_AutoRefund_TicketInfo" DbName="DBSID01.bodb02.bodbAdminNet" />
     </Function>
 
     <Function Name="NAP_Admin_Settlement_Refund_1_Push">
       <Setting Key="NAP_Admin_Settlement_Refund_1_Push_DBTXN" SpName="NAP_Admin_Settlement_Refund_1_Push" DbName="DBTXN.bodb02.bodbAdminNet" />
-      <Setting Key="NAP_Admin_Settlement_Refund_1_Push_SITEDB01" SpName="NAP_Admin_Settlement_Refund_1_Push" DbName="SITEDB01.bodb02.bodbAdminNet" />
+      <Setting Key="NAP_Admin_Settlement_Refund_1_Push_DBSID01" SpName="NAP_Admin_Settlement_Refund_1_Push" DbName="DBSID01.bodb02.bodbAdminNet" />
     </Function>
   </Function>
 </Functions>

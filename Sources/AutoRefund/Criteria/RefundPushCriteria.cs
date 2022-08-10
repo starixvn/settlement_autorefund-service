@@ -16,7 +16,7 @@ namespace AutoRefund.Criteria
 
         public string ErrMsg { get; set; }
 
-        public int IsAutoRefund { get; } = 1;
+        public int IsAuto { get; } = 1;
 
         public string BroadcastSessionId = Guid.NewGuid().ToString();
 
