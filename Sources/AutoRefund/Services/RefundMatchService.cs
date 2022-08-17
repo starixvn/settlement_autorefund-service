@@ -69,7 +69,8 @@ namespace AutoRefund.Services
                 Action = actionName,
                 SpName = "NAP_Admin_Settlement_Refund_1_Push",
                 IsAuto = true,
-                Mode = mode
+                Mode = mode,
+                IsAutoRefund = true
             };
 
             var resultMessage = await scaleOutSettleService.ValidateEventAndTicket(request);
@@ -82,7 +83,6 @@ namespace AutoRefund.Services
 
         private async Task UpdateMatchInfo(Match match, string actionName)
         {
-            
             var requestUpdateInfo = new UpdateMatchInfoRequest
             {
                 MatchId = match.MatchId,
