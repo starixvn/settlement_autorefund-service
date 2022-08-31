@@ -15,14 +15,8 @@ namespace AutoRefund.Criteria
 
         public int TypeId { get; set; }
 
-        public override bool IsValid()
-        {
-            return MatchId > 0;
-        }
+        public override bool IsValid() => MatchId > 0;
 
-        public override string GetSettingKey()
-        {
-            return "NAP_Set_AutoRefund_MatchInfo";
-        }
+        public override string GetSettingKey() => "NAP_Set_AutoRefund_MatchInfo";
     }
 }

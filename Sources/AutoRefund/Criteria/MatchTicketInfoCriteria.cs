@@ -12,14 +12,8 @@ namespace AutoRefund.Criteria
         [SpParam(Ignored = true)]
         public string DbServer { get; set; }
 
-        public override bool IsValid()
-        {
-            return MatchId > 0;
-        }
+        public override bool IsValid() => MatchId > 0;
 
-        public override string GetSettingKey()
-        {
-            return $"NAP_Set_AutoRefund_TicketInfo_{DbServer}";
-        }
+        public override string GetSettingKey() => $"NAP_Set_AutoRefund_TicketInfo_{DbServer}";
     }
 }

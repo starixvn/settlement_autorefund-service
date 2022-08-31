@@ -1,5 +1,4 @@
-﻿using AutoRefund.Constants;
-using AutoRefund.Models;
+﻿using AutoRefund.Models;
 using Fanex.Data.Repository;
 
 namespace AutoRefund.Criteria
@@ -25,14 +24,8 @@ namespace AutoRefund.Criteria
 
         public int ActionId { get; }
 
-        public override bool IsValid()
-        {
-            return MatchId > 0;
-        }
+        public override bool IsValid() => MatchId > 0;
 
-        public override string GetSettingKey()
-        {
-            return "WriteLog_UserLog_Settle";
-        }
+        public override string GetSettingKey() => "WriteLog_UserLog_Settle";
     }
 }

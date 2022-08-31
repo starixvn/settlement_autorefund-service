@@ -12,14 +12,8 @@ namespace AutoRefund.Criteria
 
         public string Remark { get; set; }
 
-        public override string GetSettingKey()
-        {
-            return "NAP_Set_AutoRefund_ResultUpd";
-        }
+        public override string GetSettingKey() => "NAP_Set_AutoRefund_ResultUpd";
 
-        public override bool IsValid()
-        {
-            return MatchId > 0 || StatusId > 0;
-        }
+        public override bool IsValid() => MatchId > 0 || StatusId > 0;
     }
 }
