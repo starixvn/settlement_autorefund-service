@@ -10,11 +10,39 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 	<ItemGroup>
+	  <None Remove="appsettings.json" />
+	  <None Remove="appsettings.LOCAL.json" />
+	  <None Remove="appsettings.PROD.json" />
+	  <None Remove="appsettings.SIT.json" />
+	  <None Remove="appsettings.UAT.json" />
+	  <None Remove="App_Data\SpName.LOCAL.xml" />
+	  <None Remove="App_Data\SpName.PROD.xml" />
+	  <None Remove="App_Data\SpName.SIT.xml" />
+	  <None Remove="App_Data\SpName.UAT.xml" />
 	  <None Remove="auto-league-settings.ini" />
 	  <None Remove="AutoRefundInjector.native.cs.orig" />
 	</ItemGroup>
 	<ItemGroup>
 		<AdditionalFiles Include="..\..\.sonarlint\auto-refund-service\CSharp\SonarLint.xml" Link="SonarLint.xml" />
+		<Content Include="appsettings.json" />
+		<Content Include="appsettings.LOCAL.json" />
+		<Content Include="appsettings.PROD.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="appsettings.SIT.json" />
+		<Content Include="appsettings.UAT.json" />
+		<Content Include="App_Data\SpName.LOCAL.xml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="App_Data\SpName.PROD.xml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="App_Data\SpName.SIT.xml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="App_Data\SpName.UAT.xml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="App_Data\SpName.xml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -22,12 +50,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="10.1.1" />
 		<PackageReference Include="Fanex.Caching" Version="2.2.2" />
 		<PackageReference Include="Fanex.Caching.Redis.AspNetCore" Version="2.2.2.1" />
 		<PackageReference Include="Fanex.Data.SqlServer" Version="4.2.2" />
 		<PackageReference Include="Fanex.Logging" Version="2.0.1" />
 		<PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />
 		<PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="1.0.1" />
+		<PackageReference Include="Fanex.Settlement.ScaleOut" Version="1.0.7" />
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="5.0.1" />
@@ -58,21 +88,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="appsettings.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="appsettings.LOCAL.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="appsettings.PROD.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="appsettings.SIT.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="appsettings.UAT.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
 		<None Update="App_Data\SpName.xml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

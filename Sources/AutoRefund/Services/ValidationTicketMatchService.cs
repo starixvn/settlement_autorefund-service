@@ -1,27 +1,63 @@
-﻿using AutoRefund.Exceptions;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using AutoRefund.Criteria;
+using AutoRefund.Exceptions;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
+using Microsoft.Extensions.Options;
+using Microsoft.VisualBasic;
 
 namespace AutoRefund.Services
 {
     public interface IValidationTicketMatchService
     {
-        void VerifyTicketMatch(MatchChecking matchChecking);
+        Task VerifyTicketMatch(Match match);
     }
 
     public class ValidationTicketServiceImp : IValidationTicketMatchService
     {
-        public void VerifyTicketMatch(MatchChecking matchChecking)
+        private readonly AppSettingsKey appSettingsKey;
+
+        private readonly IDynamicRepository repository;
+
+        public ValidationTicketServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDynamicRepository repository)
         {
-            if (matchChecking.IsExistMarkedTicket)
+            this.appSettingsKey = appSettingsKey.Value;
+            this.repository = repository;
+        }
+
+        public async Task VerifyTicketMatch(Match match)
+        {
+            var listTicketInfo = await GetAllTicketInfo(match);
+
+            if (listTicketInfo.Exists(item => item.IsExistMarkedTicket))
             {
                 throw new MarkedTicketException();
             }
 
-            if (matchChecking.IsExistSettledTicket)
+            if (listTicketInfo.Exists(item => item.IsExistSettledTicket))
             {
                 throw new SettledTicketException();
             }
+        }
+
+        private async Task<List<MatchTicketInfo>> GetAllTicketInfo(Match match)
+        {
+            var listTicketInfo = new List<MatchTicketInfo>();
+            foreach (var server in appSettingsKey.SiteDbServer)
+            {
+                var criteria = new MatchTicketInfoCriteria
+                {
+                    MatchId = match.MatchId,
+                    TypeId = match.TypeId,
+                    DbServer = server
+                };
+
+                var ticketInfo = await repository.GetAsync<MatchTicketInfo>(criteria) ?? new MatchTicketInfo();
+                listTicketInfo.Add(ticketInfo);
+            };
+
+            return listTicketInfo;
         }
     }
 }

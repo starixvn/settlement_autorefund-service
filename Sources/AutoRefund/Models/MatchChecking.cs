@@ -31,15 +31,11 @@ namespace AutoRefund.Models
 
         public string EventStatus { get; set; }
 
-        public bool IsExistMarkedTicket { get; set; }
-
         public bool IsMainMatchSettled => ParentSettlementStatusID == Calculated;
 
         public bool IsSettled => !string.IsNullOrWhiteSpace(EventStatus) && EventStatus.Equals(Settled, StringComparison.OrdinalIgnoreCase);
 
         public bool IsRefundedSingle { get; set; }
-
-        public bool IsExistSettledTicket { get; set; }
 
         public bool IsHoldResourceId { get; set; }
 
