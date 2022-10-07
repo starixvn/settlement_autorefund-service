@@ -3,7 +3,7 @@ using Fanex.Data.Repository;
 
 namespace AutoRefund.Criteria
 {
-    internal class MatchTicketInfoCriteria : NonQueryCommand
+    public class MatchTicketInfoCriteria : NonQueryCommand
     {
         public int MatchId { get; set; }
 

@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using AutoRefund.Models;
+﻿using AutoRefund.Models;
 using AutoRefund.Services;
 using NSubstitute;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace AutoRefund.UnitTests.Services
@@ -39,7 +39,7 @@ namespace AutoRefund.UnitTests.Services
             // Assert
             validationRelateMatchService.Received().VerifyRelateMatch(Arg.Any<MatchChecking>());
             validationSettingMatchService.Received().VerifySettingMatch(Arg.Any<MatchChecking>());
-            validationTicketMatchService.Received().VerifyTicketMatch(Arg.Any<MatchChecking>());
+            _ = validationTicketMatchService.Received().VerifyTicketMatch(Arg.Any<Match>());
         }
     }
 }
