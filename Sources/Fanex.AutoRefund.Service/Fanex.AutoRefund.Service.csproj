@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+	  <TargetFramework>net6.0</TargetFramework>
+	  <Nullable>disable</Nullable>
+	  <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>Exe</OutputType>
     <CodeAnalysisRuleSet>..\..\.sonarlint\auto-refund-servicecsharp.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -50,7 +52,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AutoMapper" Version="10.1.1" />
+		<PackageReference Include="AutoMapper" Version="12.0.0" />
 		<PackageReference Include="Fanex.Caching" Version="2.2.2" />
 		<PackageReference Include="Fanex.Caching.Redis.AspNetCore" Version="2.2.2.1" />
 		<PackageReference Include="Fanex.Data.SqlServer" Version="4.2.2" />
@@ -59,8 +61,8 @@
 		<PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="1.0.1" />
 		<PackageReference Include="Fanex.Settlement.ScaleOut" Version="1.0.7" />
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="5.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="6.0.0" />
 		<PackageReference Include="ONEbook.UM.AspNetCore" Version="3.1.0-beta03" />
 		<PackageReference Include="ONEbook.UM.Transport" Version="3.1.0-beta04" />
 	</ItemGroup>

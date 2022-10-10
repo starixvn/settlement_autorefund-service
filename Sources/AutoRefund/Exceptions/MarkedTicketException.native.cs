@@ -1,29 +1,27 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
-namespace AutoRefund.Exceptions
+namespace AutoRefund.Exceptions;
+
+[Serializable]
+public class MarkedTicketException : AutoRefundException
 {
-    [Serializable]
-    public class MarkedTicketException : AutoRefundException
+    public MarkedTicketException()
     {
-        public MarkedTicketException()
-        {
-            Description = "Auto refund failed: marked tickets exist.";
-        }
+        Description = "Auto refund failed: marked tickets exist.";
+    }
 
-        public MarkedTicketException(string message)
-            : base(message)
-        {
-        }
+    public MarkedTicketException(string message)
+        : base(message)
+    {
+    }
 
-        public MarkedTicketException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+    public MarkedTicketException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
 
-        protected MarkedTicketException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+    protected MarkedTicketException(SerializationInfo info, StreamingContext context)
+        : base(info, context)
+    {
     }
 }

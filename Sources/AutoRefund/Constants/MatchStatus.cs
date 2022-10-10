@@ -1,9 +1,8 @@
-﻿namespace AutoRefund.Constants
-{
-    public static class MatchStatus
-    {
-        public const int Running = 1;
+﻿namespace AutoRefund.Constants;
 
-        public const int Failed = 3;
-    }
+public static class MatchStatus
+{
+    public const int Running = 1;
+
+    public const int Failed = 3;
 }

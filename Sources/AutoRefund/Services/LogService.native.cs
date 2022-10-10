@@ -1,28 +1,26 @@
-﻿using System.Threading.Tasks;
-using AutoRefund.Criteria;
+﻿using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
 
-namespace AutoRefund.Services
+namespace AutoRefund.Services;
+
+public interface ILogService
 {
-    public interface ILogService
+    Task ActionLog(Match match, string message);
+}
+
+public class LogServiceImp : ILogService
+{
+    private readonly IDynamicRepository repository;
+
+    public LogServiceImp(IDynamicRepository repository)
     {
-        Task ActionLog(Match match, string message);
+        this.repository = repository;
     }
 
-    public class LogServiceImp : ILogService
+    public async Task ActionLog(Match match, string message)
     {
-        private readonly IDynamicRepository repository;
-
-        public LogServiceImp(IDynamicRepository repository)
-        {
-            this.repository = repository;
-        }
-
-        public async Task ActionLog(Match match, string message)
-        {
-            var criteria = new LogCriteria(match, message);
-            await repository.ExecuteAsync(criteria);
-        }
+        var criteria = new LogCriteria(match, message);
+        await repository.ExecuteAsync(criteria);
     }
 }

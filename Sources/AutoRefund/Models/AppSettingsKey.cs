@@ -1,15 +1,12 @@
-﻿using System.Collections.Generic;
+﻿namespace AutoRefund.Models;
 
-namespace AutoRefund.Models
+public class AppSettingsKey
 {
-    public class AppSettingsKey
-    {
-        public int RetryInterval { get; set; }
+    public int RetryInterval { get; set; }
 
-        public int RetryCount { get; set; }
+    public int RetryCount { get; set; }
 
-        public string EnvironmentName { get; set; }
+    public string EnvironmentName { get; set; }
 
-        public List<string> SiteDbServer { get; set; }
-    }
+    public List<string> SiteDbServer { get; set; }
 }

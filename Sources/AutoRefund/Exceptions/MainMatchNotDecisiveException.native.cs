@@ -1,29 +1,27 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
-namespace AutoRefund.Exceptions
+namespace AutoRefund.Exceptions;
+
+[Serializable]
+public class MainMatchNotDecisiveException : AutoRefundException
 {
-    [Serializable]
-    public class MainMatchNotDecisiveException : AutoRefundException
+    public MainMatchNotDecisiveException()
     {
-        public MainMatchNotDecisiveException()
-        {
-            Description = "Auto refund failed: main match is draw.";
-        }
+        Description = "Auto refund failed: main match is draw.";
+    }
 
-        public MainMatchNotDecisiveException(string message)
-            : base(message)
-        {
-        }
+    public MainMatchNotDecisiveException(string message)
+        : base(message)
+    {
+    }
 
-        public MainMatchNotDecisiveException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+    public MainMatchNotDecisiveException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
 
-        protected MainMatchNotDecisiveException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+    protected MainMatchNotDecisiveException(SerializationInfo info, StreamingContext context)
+        : base(info, context)
+    {
     }
 }

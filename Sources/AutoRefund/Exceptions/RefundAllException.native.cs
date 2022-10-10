@@ -1,29 +1,27 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
-namespace AutoRefund.Exceptions
+namespace AutoRefund.Exceptions;
+
+[Serializable]
+public class RefundAllException : AutoRefundException
 {
-    [Serializable]
-    public class RefundAllException : AutoRefundException
+    public RefundAllException()
     {
-        public RefundAllException()
-        {
-            Description = "Auto refund failed: match not marked to refund all.";
-        }
+        Description = "Auto refund failed: match not marked to refund all.";
+    }
 
-        public RefundAllException(string message)
-            : base(message)
-        {
-        }
+    public RefundAllException(string message)
+        : base(message)
+    {
+    }
 
-        public RefundAllException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+    public RefundAllException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
 
-        protected RefundAllException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+    protected RefundAllException(SerializationInfo info, StreamingContext context)
+        : base(info, context)
+    {
     }
 }

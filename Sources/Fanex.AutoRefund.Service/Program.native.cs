@@ -1,32 +1,34 @@
+﻿
 using AutoRefund.Models;
-using Microsoft.AspNetCore.Hosting;
+using Fanex.AutoRefund;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
+using AutoRefundService = Fanex.AutoRefund.Service.AutoRefund;
 
-namespace Fanex.AutoRefund.Service
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<AppSettingsKey>(builder.Configuration);
+
+builder.Services.AddHostedService<AutoRefundService>();
+
+builder.Services.InitializeServices(builder.Configuration);
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
 {
-    public class Program
-    {
-        private static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseUrls($"http://0.0.0.0:5000");
-                    webBuilder.UseStartup<Startup>();
-                })
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services
-                        .Configure<AppSettingsKey>(hostContext.Configuration)
-                        .AddSingleton(sp => sp.GetRequiredService<IOptions<AppSettingsKey>>().Value);
-                    services.AddHostedService<AutoRefund>();
-                    services.InitializeServices(hostContext.Configuration);
-                });
-    }
+    app.UseDeveloperExceptionPage();
 }
+app.UseRouting();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapGet("/", async context =>
+    {
+        await context.Response.WriteAsync("Fanex.AutoRefund.Service");
+    });
+});
+
+await app.RunAsync("http://0.0.0.0:5000");

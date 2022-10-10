@@ -1,29 +1,27 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
-namespace AutoRefund.Exceptions
+namespace AutoRefund.Exceptions;
+
+[Serializable]
+public class RemarkException : AutoRefundException
 {
-    [Serializable]
-    public class RemarkException : AutoRefundException
+    public RemarkException()
     {
-        public RemarkException()
-        {
-            Description = "Auto refund failed: match in on hold.";
-        }
+        Description = "Auto refund failed: match in on hold.";
+    }
 
-        public RemarkException(string message)
-            : base(message)
-        {
-        }
+    public RemarkException(string message)
+        : base(message)
+    {
+    }
 
-        public RemarkException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+    public RemarkException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
 
-        protected RemarkException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+    protected RemarkException(SerializationInfo info, StreamingContext context)
+        : base(info, context)
+    {
     }
 }

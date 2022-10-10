@@ -1,96 +1,94 @@
 ﻿using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
-using System.Threading.Tasks;
 using Fanex.Settlement.ScaleOut.Request;
 using Fanex.Settlement.ScaleOut.Services;
 using Microsoft.Extensions.Options;
 
-namespace AutoRefund.Services
+namespace AutoRefund.Services;
+
+public interface IRefundMatchService
 {
-    public interface IRefundMatchService
+    Task<Result> Push(Match match);
+}
+
+public class RefundMatchServiceImp : IRefundMatchService
+{
+    private readonly IDynamicRepository repository;
+
+    private readonly AppSettingsKey appSettingsKey;
+
+    private readonly ScaleOutSettleService scaleOutSettleService;
+
+    public RefundMatchServiceImp(
+        IDynamicRepository repository,
+        ScaleOutSettleService scaleOutSettleService,
+        IOptions<AppSettingsKey> appSettingsKey)
     {
-        Task<Result> Push(Match match);
+        this.appSettingsKey = appSettingsKey.Value;
+        this.repository = repository;
+        this.scaleOutSettleService = scaleOutSettleService;
     }
 
-    public class RefundMatchServiceImp : IRefundMatchService
+    public async Task<Result> Push(Match match)
     {
-        private readonly IDynamicRepository repository;
+        const string actionName = "REFUND";
+        var result = await ValidateBeforeExecute(match, actionName);
 
-        private readonly AppSettingsKey appSettingsKey;
-
-        private readonly ScaleOutSettleService scaleOutSettleService;
-
-        public RefundMatchServiceImp(
-            IDynamicRepository repository,
-            ScaleOutSettleService scaleOutSettleService,
-            IOptions<AppSettingsKey> appSettingsKey)
+        if (result.ErrCode == 0)
         {
-            this.appSettingsKey = appSettingsKey.Value;
-            this.repository = repository;
-            this.scaleOutSettleService = scaleOutSettleService;
+            await scaleOutSettleService.UpdateUnderSettlementFlag(match.MatchId, 0, actionName);
+            await UpdateMatchInfo(match, actionName);
+            Execute(match.MatchId);
         }
 
-        public async Task<Result> Push(Match match)
+        return result;
+    }
+
+    private void Execute(int matchId)
+    {
+        var criteria = new RefundPushCriteria
         {
-            const string actionName = "REFUND";
-            var result = await ValidateBeforeExecute(match, actionName);
+            MatchId = matchId
+        };
 
-            if (result.ErrCode == 0)
-            {
-                await scaleOutSettleService.UpdateUnderSettlementFlag(match.MatchId, 0, actionName);
-                await UpdateMatchInfo(match, actionName);
-                Execute(match.MatchId);
-            }
-
-            return result;
-        }
-
-        private void Execute(int matchId)
+        foreach (var server in appSettingsKey.SiteDbServer)
         {
-            var criteria = new RefundPushCriteria
-            {
-                MatchId = matchId
-            };
-
-            foreach (var server in appSettingsKey.SiteDbServer)
-            {
-                criteria.DbServer = server;
-                repository.Execute(criteria);
-            }
+            criteria.DbServer = server;
+            repository.Execute(criteria);
         }
+    }
 
-        private async Task<Result> ValidateBeforeExecute(Match match, string actionName)
+    private async Task<Result> ValidateBeforeExecute(Match match, string actionName)
+    {
+        const string mode = "ALL";
+        var request = new EventTicketRequest
         {
-            const string mode = "ALL";
-            var request = new EventTicketRequest
-            {
-                MatchId = match.MatchId,
-                Action = actionName,
-                SpName = "NAP_Admin_Settlement_Refund_1_Push",
-                IsAuto = true,
-                Mode = mode,
-                IsAutoRefund = true
-            };
+            MatchId = match.MatchId,
+            Action = actionName,
+            SpName = "NAP_Admin_Settlement_Refund_1_Push",
+            IsAuto = true,
+            Mode = mode,
+            IsAutoRefund = true
+        };
 
-            var resultMessage = await scaleOutSettleService.ValidateEventAndTicket(request);
-            return new Result
-            {
-                ErrCode = resultMessage.ErrorCode,
-                ErrMsg = resultMessage.ErrorMessage
-            };
-        }
-
-        private async Task UpdateMatchInfo(Match match, string actionName)
+        var resultMessage = await scaleOutSettleService.ValidateEventAndTicket(request);
+        return new Result
         {
-            var requestUpdateInfo = new UpdateMatchInfoRequest
-            {
-                MatchId = match.MatchId,
-                Action = actionName,
-                AdminId = 0,
-            };
+            ErrCode = resultMessage.ErrorCode,
+            ErrMsg = resultMessage.ErrorMessage
+        };
+    }
 
-            await scaleOutSettleService.UpdateMatchInfo(requestUpdateInfo);
-        }
+    private async Task UpdateMatchInfo(Match match, string actionName)
+    {
+        var requestUpdateInfo = new UpdateMatchInfoRequest
+        {
+            MatchId = match.MatchId,
+            Action = actionName,
+            AdminId = 0,
+        };
+
+        await scaleOutSettleService.UpdateMatchInfo(requestUpdateInfo);
     }
 }

@@ -1,34 +1,30 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿namespace AutoRefund.Services;
 
-namespace AutoRefund.Services
+public interface IAutoRefundController
 {
-    public interface IAutoRefundController
+    Task ProcessAsync();
+}
+
+public class AutoRefundControllerImp : IAutoRefundController
+{
+    private readonly IMatchPoolService matchPoolService;
+    private readonly IMatchRefundController matchRefundController;
+
+    public AutoRefundControllerImp(
+        IMatchPoolService matchPoolService,
+        IMatchRefundController matchRefundController)
     {
-        Task ProcessAsync();
+        this.matchPoolService = matchPoolService;
+        this.matchRefundController = matchRefundController;
     }
 
-    public class AutoRefundControllerImp : IAutoRefundController
+    public async Task ProcessAsync()
     {
-        private readonly IMatchPoolService matchPoolService;
-        private readonly IMatchRefundController matchRefundController;
-
-        public AutoRefundControllerImp(
-            IMatchPoolService matchPoolService,
-            IMatchRefundController matchRefundController)
+        var newMatches = (await matchPoolService.PeekNewMatch()).Where(n => !n.IsChecking).ToList();
+        newMatches.ForEach(m =>
         {
-            this.matchPoolService = matchPoolService;
-            this.matchRefundController = matchRefundController;
-        }
-
-        public async Task ProcessAsync()
-        {
-            var newMatches = (await matchPoolService.PeekNewMatch()).Where(n => !n.IsChecking).ToList();
-            newMatches.ForEach(m =>
-            {
-                Task.Run(() => matchRefundController.Process(m))
-                    .ConfigureAwait(false);
-            });
-        }
+            Task.Run(() => matchRefundController.Process(m))
+                .ConfigureAwait(false);
+        });
     }
 }
