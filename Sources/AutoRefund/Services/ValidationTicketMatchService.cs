@@ -52,7 +52,7 @@ public class ValidationTicketServiceImp : IValidationTicketMatchService
 
             var ticketInfo = await repository.GetAsync<MatchTicketInfo>(criteria) ?? new MatchTicketInfo();
             listTicketInfo.Add(ticketInfo);
-        };
+        }
 
         return listTicketInfo;
     }
