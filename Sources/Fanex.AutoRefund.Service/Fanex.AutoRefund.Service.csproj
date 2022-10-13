@@ -17,10 +17,6 @@
 	  <None Remove="appsettings.PROD.json" />
 	  <None Remove="appsettings.SIT.json" />
 	  <None Remove="appsettings.UAT.json" />
-	  <None Remove="App_Data\SpName.LOCAL.xml" />
-	  <None Remove="App_Data\SpName.PROD.xml" />
-	  <None Remove="App_Data\SpName.SIT.xml" />
-	  <None Remove="App_Data\SpName.UAT.xml" />
 	  <None Remove="auto-league-settings.ini" />
 	  <None Remove="AutoRefundInjector.native.cs.orig" />
 	</ItemGroup>
@@ -33,18 +29,6 @@
 		</Content>
 		<Content Include="appsettings.SIT.json" />
 		<Content Include="appsettings.UAT.json" />
-		<Content Include="App_Data\SpName.LOCAL.xml">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="App_Data\SpName.PROD.xml">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="App_Data\SpName.SIT.xml">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="App_Data\SpName.UAT.xml">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
 		<Content Include="App_Data\SpName.xml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
