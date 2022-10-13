@@ -1,31 +1,30 @@
 ﻿using AutoRefund.Exceptions;
 using AutoRefund.Models;
 
-namespace AutoRefund.Services
+namespace AutoRefund.Services;
+
+public interface IValidationRelateMatchService
 {
-    public interface IValidationRelateMatchService
-    {
-        void VerifyRelateMatch(MatchChecking matchChecking);
-    }
+    void VerifyRelateMatch(MatchChecking matchChecking);
+}
 
-    public class ValidationRelateMatchServiceImp : IValidationRelateMatchService
+public class ValidationRelateMatchServiceImp : IValidationRelateMatchService
+{
+    public void VerifyRelateMatch(MatchChecking matchChecking)
     {
-        public void VerifyRelateMatch(MatchChecking matchChecking)
+        if (matchChecking.IsSettled)
         {
-            if (matchChecking.IsSettled)
-            {
-                throw new CurrentMatchIsSettledException { StopLoop = true };
-            }
+            throw new CurrentMatchIsSettledException { StopLoop = true };
+        }
 
-            if (!matchChecking.IsMainMatchSettled)
-            {
-                throw new MainMatchNotCompletedException();
-            }
+        if (!matchChecking.IsMainMatchSettled)
+        {
+            throw new MainMatchNotCompletedException();
+        }
 
-            if (matchChecking.ParentAwayValue == matchChecking.ParentHomeValue)
-            {
-                throw new MainMatchNotDecisiveException();
-            }
+        if (matchChecking.ParentAwayValue == matchChecking.ParentHomeValue)
+        {
+            throw new MainMatchNotDecisiveException();
         }
     }
 }

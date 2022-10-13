@@ -1,15 +1,14 @@
-﻿namespace AutoRefund.Models
+﻿namespace AutoRefund.Models;
+
+public class Result
 {
-    public class Result
+    public Result()
     {
-        public Result()
-        {
-            ErrCode = 0;
-            ErrMsg = "";
-        }
-
-        public int ErrCode { get; set; }
-
-        public string ErrMsg { get; set; }
+        ErrCode = 0;
+        ErrMsg = "";
     }
+
+    public int ErrCode { get; set; }
+
+    public string ErrMsg { get; set; }
 }

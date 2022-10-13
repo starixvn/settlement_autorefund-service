@@ -1,63 +1,59 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoRefund.Criteria;
+﻿using AutoRefund.Criteria;
 using AutoRefund.Exceptions;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
 using Microsoft.Extensions.Options;
-using Microsoft.VisualBasic;
 
-namespace AutoRefund.Services
+namespace AutoRefund.Services;
+
+public interface IValidationTicketMatchService
 {
-    public interface IValidationTicketMatchService
+    Task VerifyTicketMatch(Match match);
+}
+
+public class ValidationTicketServiceImp : IValidationTicketMatchService
+{
+    private readonly AppSettingsKey appSettingsKey;
+
+    private readonly IDynamicRepository repository;
+
+    public ValidationTicketServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDynamicRepository repository)
     {
-        Task VerifyTicketMatch(Match match);
+        this.appSettingsKey = appSettingsKey.Value;
+        this.repository = repository;
     }
 
-    public class ValidationTicketServiceImp : IValidationTicketMatchService
+    public async Task VerifyTicketMatch(Match match)
     {
-        private readonly AppSettingsKey appSettingsKey;
+        var listTicketInfo = await GetAllTicketInfo(match);
 
-        private readonly IDynamicRepository repository;
-
-        public ValidationTicketServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDynamicRepository repository)
+        if (listTicketInfo.Exists(item => item.IsExistMarkedTicket))
         {
-            this.appSettingsKey = appSettingsKey.Value;
-            this.repository = repository;
+            throw new MarkedTicketException();
         }
 
-        public async Task VerifyTicketMatch(Match match)
+        if (listTicketInfo.Exists(item => item.IsExistSettledTicket))
         {
-            var listTicketInfo = await GetAllTicketInfo(match);
-
-            if (listTicketInfo.Exists(item => item.IsExistMarkedTicket))
-            {
-                throw new MarkedTicketException();
-            }
-
-            if (listTicketInfo.Exists(item => item.IsExistSettledTicket))
-            {
-                throw new SettledTicketException();
-            }
+            throw new SettledTicketException();
         }
+    }
 
-        private async Task<List<MatchTicketInfo>> GetAllTicketInfo(Match match)
+    private async Task<List<MatchTicketInfo>> GetAllTicketInfo(Match match)
+    {
+        var listTicketInfo = new List<MatchTicketInfo>();
+        foreach (var server in appSettingsKey.SiteDbServer)
         {
-            var listTicketInfo = new List<MatchTicketInfo>();
-            foreach (var server in appSettingsKey.SiteDbServer)
+            var criteria = new MatchTicketInfoCriteria
             {
-                var criteria = new MatchTicketInfoCriteria
-                {
-                    MatchId = match.MatchId,
-                    TypeId = match.TypeId,
-                    DbServer = server
-                };
-
-                var ticketInfo = await repository.GetAsync<MatchTicketInfo>(criteria) ?? new MatchTicketInfo();
-                listTicketInfo.Add(ticketInfo);
+                MatchId = match.MatchId,
+                TypeId = match.TypeId,
+                DbServer = server
             };
 
-            return listTicketInfo;
+            var ticketInfo = await repository.GetAsync<MatchTicketInfo>(criteria) ?? new MatchTicketInfo();
+            listTicketInfo.Add(ticketInfo);
         }
+
+        return listTicketInfo;
     }
 }

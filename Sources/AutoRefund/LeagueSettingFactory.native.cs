@@ -1,91 +1,85 @@
 ﻿using AutoRefund.Models;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
 
-namespace AutoRefund
+namespace AutoRefund;
+
+public static class LeagueSettingFactory
 {
-    public static class LeagueSettingFactory
+    private static FileSystemWatcher watcher = new FileSystemWatcher();
+
+    private static LeagueSetting leagueSetting = InitLeagueSetting();
+
+    private const int SleepTime = 2000;
+
+    private static LeagueSetting InitLeagueSetting()
     {
-        private static FileSystemWatcher watcher = new FileSystemWatcher();
+        return ReadFileSetting();
+    }
 
-        private static LeagueSetting leagueSetting = InitLeagueSetting();
+    public static void SettingFileWatcher()
+    {
+        watcher.Path = AppDomain.CurrentDomain.BaseDirectory;
+        watcher.NotifyFilter = NotifyFilters.LastAccess |
+                               NotifyFilters.LastWrite |
+                               NotifyFilters.FileName |
+                               NotifyFilters.DirectoryName |
+                               NotifyFilters.Size;
+        watcher.Filter = "auto-league-settings.ini";
+        watcher.Changed += OnChanged;
+        watcher.Error += WatcherError;
+        watcher.EnableRaisingEvents = true;
+    }
 
-        private const int SleepTime = 2000;
+    private static void OnChanged(object source, FileSystemEventArgs e)
+    {
+        leagueSetting = ReadFileSetting();
+    }
 
-        private static LeagueSetting InitLeagueSetting()
-        {
-            return ReadFileSetting();
-        }
-
-        public static void SettingFileWatcher()
-        {
-            watcher.Path = AppDomain.CurrentDomain.BaseDirectory;
-            watcher.NotifyFilter = NotifyFilters.LastAccess |
-                                   NotifyFilters.LastWrite |
-                                   NotifyFilters.FileName |
-                                   NotifyFilters.DirectoryName |
-                                   NotifyFilters.Size;
-            watcher.Filter = "auto-league-settings.ini";
-            watcher.Changed += OnChanged;
-            watcher.Error += WatcherError;
-            watcher.EnableRaisingEvents = true;
-        }
-
-        private static void OnChanged(object source, FileSystemEventArgs e)
-        {
-            leagueSetting = ReadFileSetting();
-        }
-
-        private static void WatcherError(object source, ErrorEventArgs e)
-        {
-            watcher = new FileSystemWatcher();
-            while (!watcher.EnableRaisingEvents)
-            {
-                try
-                {
-                    SettingFileWatcher();
-                }
-                catch
-                {
-                    Thread.Sleep(SleepTime);
-                }
-            }
-        }
-
-        public static LeagueSetting Create()
-        {
-            return leagueSetting ?? new LeagueSetting();
-        }
-
-        private static LeagueSetting ReadFileSetting()
+    private static void WatcherError(object source, ErrorEventArgs e)
+    {
+        watcher = new FileSystemWatcher();
+        while (!watcher.EnableRaisingEvents)
         {
             try
             {
-                FileStream fileStream = new FileStream(@"auto-league-settings.ini", FileMode.Open);
-                using (var streamReader = new StreamReader(fileStream))
-                {
-                    return new LeagueSetting
-                    {
-                        ExcludeLeagueIds = GetLeagueIds("ExcludeLeagueIds:", streamReader.ReadLine()),
-                        IncludeLeagueIds = GetLeagueIds("IncludeLeagueIds:", streamReader.ReadLine())
-                    };
-                }
+                SettingFileWatcher();
             }
             catch
             {
-                return new LeagueSetting();
+                Thread.Sleep(SleepTime);
             }
         }
+    }
 
-        private static List<int> GetLeagueIds(string key, string text)
+    public static LeagueSetting Create()
+    {
+        return leagueSetting ?? new LeagueSetting();
+    }
+
+    private static LeagueSetting ReadFileSetting()
+    {
+        try
         {
-            var content = text.Replace(key, string.Empty).Trim();
-            return string.IsNullOrWhiteSpace(content)
-                ? new List<int>()
-                : content.Split(',').Select(int.Parse).ToList();
+            FileStream fileStream = new FileStream(@"auto-league-settings.ini", FileMode.Open);
+            using (var streamReader = new StreamReader(fileStream))
+            {
+                return new LeagueSetting
+                {
+                    ExcludeLeagueIds = GetLeagueIds("ExcludeLeagueIds:", streamReader.ReadLine()),
+                    IncludeLeagueIds = GetLeagueIds("IncludeLeagueIds:", streamReader.ReadLine())
+                };
+            }
         }
+        catch
+        {
+            return new LeagueSetting();
+        }
+    }
+
+    private static List<int> GetLeagueIds(string key, string text)
+    {
+        var content = text.Replace(key, string.Empty).Trim();
+        return string.IsNullOrWhiteSpace(content)
+            ? new List<int>()
+            : content.Split(',').Select(int.Parse).ToList();
     }
 }

@@ -1,28 +1,27 @@
 ﻿using ONEbook.UM;
 using ONEbook.UM.Services;
 
-namespace AutoRefund.Services
+namespace AutoRefund.Services;
+
+public interface IMaintenanceService
 {
-    public interface IMaintenanceService
-    {
-        bool IsMaintenance { get; }
-    }
+    bool IsMaintenance { get; }
+}
 
-    public class MaintenanceServiceImp : IMaintenanceService
+public class MaintenanceServiceImp : IMaintenanceService
+{
+    public bool IsMaintenance
     {
-        public bool IsMaintenance
+        get
         {
-            get
-            {
-                var maintenanceService = new MaintenanceService(
-                    UMClientManager.RestClient,
-                    UMClientManager.CacheService,
-                    UMClientManager.UMClientConfigs);
+            var maintenanceService = new MaintenanceService(
+                UMClientManager.RestClient,
+                UMClientManager.CacheService,
+                UMClientManager.UMClientConfigs);
 
-                var downTime = maintenanceService.GetUnderMaintenanceTime();
+            var downTime = maintenanceService.GetUnderMaintenanceTime();
 
-                return downTime.IsUnderMaintenanceTime;
-            }
+            return downTime.IsUnderMaintenanceTime;
         }
     }
 }

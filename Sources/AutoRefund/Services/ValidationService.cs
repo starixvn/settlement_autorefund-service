@@ -1,41 +1,39 @@
-﻿using System.Threading.Tasks;
-using AutoRefund.Models;
+﻿using AutoRefund.Models;
 
-namespace AutoRefund.Services
+namespace AutoRefund.Services;
+
+public interface IValidationService
 {
-    public interface IValidationService
+    Task VerifyMatchBeforeExecution(Match match);
+}
+
+public class ValidationServiceImp : IValidationService
+{
+    private readonly IValidationSettingMatchService validationSettingMatchService;
+
+    private readonly IValidationTicketMatchService validationTicketMatchService;
+
+    private readonly IValidationRelateMatchService validationRelateMatchService;
+
+    private readonly IMatchService matchService;
+
+    public ValidationServiceImp(
+        IValidationSettingMatchService validationSettingMatchService,
+        IValidationTicketMatchService validationTicketMatchService,
+        IValidationRelateMatchService validationRelateMatchService,
+        IMatchService matchService)
     {
-        Task VerifyMatchBeforeExecution(Match match);
+        this.validationSettingMatchService = validationSettingMatchService;
+        this.validationTicketMatchService = validationTicketMatchService;
+        this.validationRelateMatchService = validationRelateMatchService;
+        this.matchService = matchService;
     }
 
-    public class ValidationServiceImp : IValidationService
+    public async Task VerifyMatchBeforeExecution(Match match)
     {
-        private readonly IValidationSettingMatchService validationSettingMatchService;
-
-        private readonly IValidationTicketMatchService validationTicketMatchService;
-
-        private readonly IValidationRelateMatchService validationRelateMatchService;
-
-        private readonly IMatchService matchService;
-
-        public ValidationServiceImp(
-            IValidationSettingMatchService validationSettingMatchService,
-            IValidationTicketMatchService validationTicketMatchService,
-            IValidationRelateMatchService validationRelateMatchService,
-            IMatchService matchService)
-        {
-            this.validationSettingMatchService = validationSettingMatchService;
-            this.validationTicketMatchService = validationTicketMatchService;
-            this.validationRelateMatchService = validationRelateMatchService;
-            this.matchService = matchService;
-        }
-
-        public async Task VerifyMatchBeforeExecution(Match match)
-        {
-            var matchChecking = await matchService.GetMatchInfo(match);
-            validationRelateMatchService.VerifyRelateMatch(matchChecking);
-            validationSettingMatchService.VerifySettingMatch(matchChecking);
-            await validationTicketMatchService.VerifyTicketMatch(match);
-        }
+        var matchChecking = await matchService.GetMatchInfo(match);
+        validationRelateMatchService.VerifyRelateMatch(matchChecking);
+        validationSettingMatchService.VerifySettingMatch(matchChecking);
+        await validationTicketMatchService.VerifyTicketMatch(match);
     }
 }

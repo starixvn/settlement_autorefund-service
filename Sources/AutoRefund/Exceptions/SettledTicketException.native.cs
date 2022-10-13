@@ -1,29 +1,27 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
-namespace AutoRefund.Exceptions
+namespace AutoRefund.Exceptions;
+
+[Serializable]
+public class SettledTicketException : AutoRefundException
 {
-    [Serializable]
-    public class SettledTicketException : AutoRefundException
+    public SettledTicketException()
     {
-        public SettledTicketException()
-        {
-            Description = "Auto refund failed: settled tickets exist.";
-        }
+        Description = "Auto refund failed: settled tickets exist.";
+    }
 
-        public SettledTicketException(string message)
-            : base(message)
-        {
-        }
+    public SettledTicketException(string message)
+        : base(message)
+    {
+    }
 
-        public SettledTicketException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+    public SettledTicketException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
 
-        protected SettledTicketException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+    protected SettledTicketException(SerializationInfo info, StreamingContext context)
+        : base(info, context)
+    {
     }
 }

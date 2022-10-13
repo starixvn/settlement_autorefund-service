@@ -1,29 +1,27 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
-namespace AutoRefund.Exceptions
+namespace AutoRefund.Exceptions;
+
+[Serializable]
+public class MainMatchNotCompletedException : AutoRefundException
 {
-    [Serializable]
-    public class MainMatchNotCompletedException : AutoRefundException
+    public MainMatchNotCompletedException()
     {
-        public MainMatchNotCompletedException()
-        {
-            Description = "Auto refund failed: main match not calculated FT.";
-        }
+        Description = "Auto refund failed: main match not calculated FT.";
+    }
 
-        public MainMatchNotCompletedException(string message)
-            : base(message)
-        {
-        }
+    public MainMatchNotCompletedException(string message)
+        : base(message)
+    {
+    }
 
-        public MainMatchNotCompletedException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+    public MainMatchNotCompletedException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
 
-        protected MainMatchNotCompletedException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+    protected MainMatchNotCompletedException(SerializationInfo info, StreamingContext context)
+        : base(info, context)
+    {
     }
 }

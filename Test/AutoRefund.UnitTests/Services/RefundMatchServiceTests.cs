@@ -1,38 +1,50 @@
-﻿using System.Threading.Tasks;
-using AutoRefund.Constants;
-using AutoRefund.Criteria;
+﻿using AutoRefund.Criteria;
 using AutoRefund.Models;
 using AutoRefund.Services;
 using Fanex.Data.Repository;
+using Fanex.Settlement.ScaleOut.Models;
+using Fanex.Settlement.ScaleOut.Request;
+using Fanex.Settlement.ScaleOut.Services;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using Xunit;
 
-namespace AutoRefund.UnitTests.Services
+namespace AutoRefund.UnitTests.Services;
+
+public class RefundMatchServiceTests
 {
-    public class RefundMatchServiceTests
+    private readonly IDynamicRepository repository;
+    private readonly IRefundMatchService service;
+    private readonly ScaleOutSettleService settleService;
+
+    public RefundMatchServiceTests()
     {
-        private readonly IDynamicRepository repository;
-
-        private readonly IRefundMatchService service;
-
-        public RefundMatchServiceTests()
+        repository = Substitute.For<IDynamicRepository>();
+        settleService = Substitute.For<ScaleOutSettleService>();
+        var settings = new AppSettingsKey()
         {
-            repository = Substitute.For<IDynamicRepository>();
-            service = new RefundMatchServiceImp(repository);
-        }
+            RetryInterval = 1000,
+            RetryCount = 15,
+            EnvironmentName = "PRO",
+            SiteDbServer = new List<string> { "ABC" }
+        };
+        var appSettingsOptions = Options.Create(settings);
 
-        [Fact]
-        public async Task Push_MatchTypeIsAutoRefundNormal_AlwaysReturnNotNull()
-        {
-            // Arrange
-            var match = new Match { MatchId = 1 };
+        service = new RefundMatchServiceImp(repository, settleService, appSettingsOptions);
+        settleService.ValidateEventAndTicket(Arg.Any<EventTicketRequest>()).Returns(new ResultMessage { ErrorMessage = "" });
+    }
 
-            // Act
-            var result = await service.Push(match);
+    [Fact]
+    public async Task Push_MatchTypeIsAutoRefundNormal_AlwaysReturnNotNull()
+    {
+        // Arrange
+        var match = new Match { MatchId = 1 };
 
-            // Assert
-            await repository.Received().ExecuteAsync(Arg.Any<RefundPushCriteria>());
-            Assert.NotNull(result);
-        }
+        // Act
+        var result = await service.Push(match);
+
+        // Assert
+        repository.Received().Execute(Arg.Any<RefundPushCriteria>());
+        Assert.NotNull(result);
     }
 }
