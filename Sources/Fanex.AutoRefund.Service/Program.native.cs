@@ -1,5 +1,4 @@
-﻿
-using AutoRefund.Models;
+﻿using AutoRefund.Models;
 using Fanex.AutoRefund;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -31,4 +30,8 @@ app.UseEndpoints(endpoints =>
     });
 });
 
+#if DEBUG
+app.Run();
+#else
 await app.RunAsync("http://0.0.0.0:5000");
+#endif

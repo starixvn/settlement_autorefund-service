@@ -46,10 +46,10 @@ public static class AutoRefundInjector
 
         var mapper = mapperConfig.CreateMapper();
         service.AddSingleton(mapper);
-        ConfigurRedis(service, configuration);
+        ConfigureRedis(service, configuration);
     }
 
-    private static void ConfigurRedis(IServiceCollection service, IConfiguration configuration)
+    private static void ConfigureRedis(IServiceCollection service, IConfiguration configuration)
     {
         var redisHost = configuration.GetSection("Redis.Server").Value;
         var redisPort = configuration.GetSection("Redis.Port").Value;

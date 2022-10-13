@@ -4,14 +4,14 @@ using Fanex.Caching;
 using Fanex.Data;
 using Fanex.Data.SqlServer;
 using Fanex.Logging;
-using Fanex.Logging.Sentry;
+using Fanex.Logging.Sentry.RavenClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using ONEbook.UM;
 using ONEbook.UM.AspNetCore;
 using ONEbook.UM.Configurations;
 using ONEbook.UM.Transport;
-using Sentry;
+using SharpRaven;
 
 namespace Fanex.AutoRefund.Service;
 
@@ -106,7 +106,7 @@ public class AutoRefund : IHostedService
         }
         catch (Exception exception)
         {
-            LogService.Error("Exception in main thread - Process:", exception);
+            LogService.Error("Fanex.AutoRefund.Service:", exception);
         }
     }
 
@@ -165,7 +165,7 @@ public class AutoRefund : IHostedService
 
         var sentryEngineOptions = new SentryEngineOptions
         {
-            Dsn = new Dsn(configuration.GetSection("Sentrytoken").Value)
+            Dsn = new Dsn(configuration.GetSection("SentryToken").Value)
         };
 
         logEngine.Add(new SentryLogging(sentryEngineOptions));
