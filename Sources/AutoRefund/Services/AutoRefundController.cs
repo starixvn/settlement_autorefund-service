@@ -21,10 +21,9 @@ public class AutoRefundControllerImp : IAutoRefundController
     public async Task ProcessAsync()
     {
         var newMatches = (await matchPoolService.PeekNewMatch()).Where(n => !n.IsChecking).ToList();
-        newMatches.ForEach(m =>
+        foreach (var match in newMatches)
         {
-            Task.Run(() => matchRefundController.Process(m))
-                .ConfigureAwait(false);
-        });
+            await matchRefundController.Process(match).ConfigureAwait(false);
+        }
     }
 }
