@@ -39,40 +39,6 @@ public class MatchRefundControllerTests
         service = new MatchRefundControllerImp(matchPoolService, validationService, refundMatchService, matchService, logService, appSettingsOptions);
     }
 
-    //[Fact]
-    //public async Task Process_NoExceptionHaveBeenThrown_PushMatchSucceedAndRemoveMatch()
-    //{
-    //    // Arrange
-    //    var match = new Match();
-    //    validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call => { });
-    //    refundMatchService.Push(match).Returns(new Result());
-
-    //    // Act
-    //    await service.Process(match);
-
-    //    // Assert
-    //    await refundMatchService.Received().Push(match);
-    //    matchPoolService.Received().RemoveMatch(match);
-    //    await matchService.DidNotReceive().UpdateRemark(match, "failed", MatchStatus.Failed);
-    //}
-
-    //[Fact]
-    //public async Task Process_NoExceptionHaveBeenThrown_PushMatchFailedAndUpdateStatus()
-    //{
-    //    // Arrange
-    //    var match = new Match();
-    //    validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call => { });
-    //    refundMatchService.Push(match).Returns(new Result { ErrMsg = "failed" });
-
-    //    // Act
-    //    await service.Process(match);
-
-    //    // Assert
-    //    await refundMatchService.Received().Push(match);
-    //    await logService.Received().ActionLog(match, "failed");
-    //    await matchService.Received().UpdateRemark(match, "failed", MatchStatus.Failed);
-    //}
-
     [Fact]
     public async Task Process_ThrowExceptionOnVerifyMatchAndTimeMax_InvokeRelatedMethods()
     {
