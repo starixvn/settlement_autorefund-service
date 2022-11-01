@@ -32,6 +32,7 @@ public class AutoRefundControllerTests
 
         // Act
         await controller.ProcessAsync();
+        Thread.Sleep(1000);
 
         // Assert
         await matchRefundController.Received().Process(match);

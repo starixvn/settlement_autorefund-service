@@ -56,7 +56,7 @@ public class MatchServiceTests
         var list = await service.GetMatches();
 
         // Assert
-        Assert.Equal(2, list.Count);
+        Assert.Single(list);
     }
 
     [Fact]
