@@ -31,6 +31,7 @@ public static class AutoRefundInjector
         service.AddTransient<IValidationRelateMatchService, ValidationRelateMatchServiceImp>();
         service.AddTransient<IMatchRefundController, MatchRefundControllerImp>();
         service.AddTransient<IMatchService, MatchServiceImp>();
+        service.AddTransient<LogDirectlyService, LogDirectlyServiceImp>();
 
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));
         service.AddSingleton<IUMCacheService, UMCacheService>();
