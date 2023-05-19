@@ -22,7 +22,7 @@ public class MatchServiceTests
         repository = Substitute.For<IDynamicRepository>();
         cache = new RedisCache(new RedisCacheOptions
         {
-            ConnectionString = $"ha.nexdev.net:16379,password=foo1@bared,defaultDatabase=11",
+            ConnectionString = "10.18.200.131:16379,password=foo1@bared,defaultDatabase=11",
             ApplicationName = "Settlement-LOCAL"
         });
 

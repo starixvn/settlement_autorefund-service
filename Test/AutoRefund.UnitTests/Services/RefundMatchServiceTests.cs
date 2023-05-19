@@ -16,11 +16,13 @@ public class RefundMatchServiceTests
     private readonly IDynamicRepository repository;
     private readonly IRefundMatchService service;
     private readonly ScaleOutSettleService settleService;
+    private readonly LogDirectlyService logDirectlyService;
 
     public RefundMatchServiceTests()
     {
         repository = Substitute.For<IDynamicRepository>();
         settleService = Substitute.For<ScaleOutSettleService>();
+        logDirectlyService = Substitute.For<LogDirectlyService>();
         var settings = new AppSettingsKey()
         {
             RetryInterval = 1000,
@@ -30,7 +32,7 @@ public class RefundMatchServiceTests
         };
         var appSettingsOptions = Options.Create(settings);
 
-        service = new RefundMatchServiceImp(repository, settleService, appSettingsOptions);
+        service = new RefundMatchServiceImp(repository, settleService, appSettingsOptions, logDirectlyService);
         settleService.ValidateEventAndTicket(Arg.Any<EventTicketRequest>()).Returns(new ResultMessage { ErrorMessage = "" });
     }
 

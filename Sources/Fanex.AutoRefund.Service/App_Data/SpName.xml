@@ -8,6 +8,8 @@
     <Setting Key="NAP_Admin_MatchInfoUpd" SpName="NAP_Admin_MatchInfoUpd" DbName="DBPRO.bodb02.bodbAdminNet" />
     <Setting Key="NAP_Admin_Settlement_Validation_Event" SpName="NAP_Admin_Settlement_Validation_Event" DbName="DBPRO.bodb02.bodbAdminNet" />
     <Setting Key="NAP_Set_AutoRefund_MatchInfo" SpName="NAP_Set_AutoRefund_MatchInfo" DbName="DBPRO.bodb02.bodbAdminNet" />
+    <Setting Key="NAP_UserLog_WriteLogPreSettlement" SpName="NAP_UserLog_WriteLogPreSettlement" DbName="DBUserLog.LogTDB.bodbAdminNet" />
+
   </Function>
 
   <Function Name="Scale Out TransDb">

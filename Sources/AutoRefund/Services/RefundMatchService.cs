@@ -19,15 +19,18 @@ public class RefundMatchServiceImp : IRefundMatchService
     private readonly AppSettingsKey appSettingsKey;
 
     private readonly ScaleOutSettleService scaleOutSettleService;
+    private readonly LogDirectlyService logDirectlyService;
 
     public RefundMatchServiceImp(
         IDynamicRepository repository,
         ScaleOutSettleService scaleOutSettleService,
-        IOptions<AppSettingsKey> appSettingsKey)
+        IOptions<AppSettingsKey> appSettingsKey,
+        LogDirectlyService logDirectlyService)
     {
         this.appSettingsKey = appSettingsKey.Value;
         this.repository = repository;
         this.scaleOutSettleService = scaleOutSettleService;
+        this.logDirectlyService = logDirectlyService;
     }
 
     public async Task<Result> Push(Match match)
@@ -39,19 +42,24 @@ public class RefundMatchServiceImp : IRefundMatchService
         {
             await scaleOutSettleService.UpdateUnderSettlementFlag(match.MatchId, 0, actionName);
             await UpdateMatchInfo(match, actionName);
-            Execute(match.MatchId);
+            var criteria = new RefundPushCriteria
+            {
+                MatchId = match.MatchId
+            };
+
+            logDirectlyService.WriteLog(criteria.MatchId, GenerateLogMessage(criteria));
+
+            Execute(criteria);
         }
 
         return result;
     }
 
-    private void Execute(int matchId)
-    {
-        var criteria = new RefundPushCriteria
-        {
-            MatchId = matchId
-        };
+    private static string GenerateLogMessage(RefundPushCriteria criteria)
+        => $"NAP: Auto Calculate {criteria.Action} for matchId:{criteria.MatchId} score FT: 0-0 HT: 0-0";
 
+    private void Execute(RefundPushCriteria criteria)
+    {
         foreach (var server in appSettingsKey.SiteDbServer)
         {
             criteria.DbServer = server;
