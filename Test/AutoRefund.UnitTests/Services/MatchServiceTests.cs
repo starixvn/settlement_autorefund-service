@@ -1,4 +1,5 @@
-﻿using AutoRefund.Criteria;
+﻿using AutoRefund.Constants;
+using AutoRefund.Criteria;
 using AutoRefund.Models;
 using AutoRefund.Services;
 using Fanex.Caching;
@@ -14,9 +15,10 @@ public class MatchServiceTests
 {
     private readonly IDynamicRepository repository;
 
-    private readonly IMatchService service;
+    private IMatchService service;
 
     private readonly ICache cache;
+
     public MatchServiceTests()
     {
         repository = Substitute.For<IDynamicRepository>();
@@ -37,26 +39,94 @@ public class MatchServiceTests
         service = new MatchServiceImp(repository, cache, appSettingsOptions);
     }
 
+    private async Task SetLeague(int leagueId)
+    {
+        var cachePolicy = new CacheItemOptions().SetAbsoluteExpiration(TimeSpan.FromDays(1));
+        await cache.SetAsync(CacheKey.LeagueId, leagueId, cachePolicy);
+    }
+
+    private static List<Match> MatchesTest => new()
+    {
+        new Match { MatchId = 1, LeagueId = 123 },
+        new Match { MatchId = 2, LeagueId = 1 },
+        new Match { MatchId = 2, LeagueId = 2 }
+    };
+
     [Fact]
-    public async Task GetMatches_ExistedIncludeLeagueIdAndExcludeLeagueId_ReturnsRightMatches()
+    public async Task GetMatches_EnvironmentNameIsPROAndExistLeagueTest_ReturnsExcludeLeagueTest()
     {
         // Arrange
-        IEnumerable<Match> matches = new List<Match>
-        {
-            new Match { MatchId = 1, LeagueId = 123 },
-            new Match { MatchId = 2, LeagueId = 1 }
-        };
-        repository.FetchAsync<Match>(Arg.Any<MatchListingCriteria>()).Returns(matches);
-        const string KEY_INCLUDE_LEAGUEIDS = "Settlement-AutoPayout-AutoInstant-IncludeLeagueId";
-        const int CACHE_EXPIRED_IN_DAYS = 1095;
-        var cachePolicy = new CacheItemOptions().SetAbsoluteExpiration(TimeSpan.FromDays(CACHE_EXPIRED_IN_DAYS));
-        cache.Set(KEY_INCLUDE_LEAGUEIDS, 58087, cachePolicy);
+        await SetLeague(123);
+
+        repository.FetchAsync<Match>(Arg.Any<MatchListingCriteria>()).Returns(MatchesTest);
 
         // Act
         var list = await service.GetMatches();
 
         // Assert
         Assert.Equal(2, list.Count);
+    }
+
+    [Fact]
+    public async Task GetMatches_EnvironmentNameIsPROAndNotExistLeagueTest_ReturnAllLeagues()
+    {
+        // Arrange
+        await SetLeague(0);
+        repository.FetchAsync<Match>(Arg.Any<MatchListingCriteria>()).Returns(MatchesTest);
+
+        // Act
+        var list = await service.GetMatches();
+
+        // Assert
+        Assert.Equal(3, list.Count);
+    }
+
+    [Fact]
+    public async Task GetMatches_EnvironmentNameIsUAT_ReturnsIncludeLeagueTest()
+    {
+        // Arrange
+
+        var settings = new AppSettingsKey()
+        {
+            EnvironmentName = "UAT"
+        };
+
+        var appSettingsOptions = Options.Create(settings);
+        service = new MatchServiceImp(repository, cache, appSettingsOptions);
+
+        await SetLeague(123);
+
+        repository.FetchAsync<Match>(Arg.Any<MatchListingCriteria>()).Returns(MatchesTest);
+
+        // Act
+        var list = await service.GetMatches();
+
+        // Assert
+        Assert.Single(list);
+    }
+
+    [Fact]
+    public async Task GetMatches_EnvironmentNameIsLOCAL_ReturnsAllLeagueTest()
+    {
+        // Arrange
+
+        var settings = new AppSettingsKey()
+        {
+            EnvironmentName = "LOCAL"
+        };
+
+        var appSettingsOptions = Options.Create(settings);
+        service = new MatchServiceImp(repository, cache, appSettingsOptions);
+
+        await SetLeague(123);
+
+        repository.FetchAsync<Match>(Arg.Any<MatchListingCriteria>()).Returns(MatchesTest);
+
+        // Act
+        var list = await service.GetMatches();
+
+        // Assert
+        Assert.Equal(3, list.Count);
     }
 
     [Fact]
@@ -70,7 +140,6 @@ public class MatchServiceTests
 
         // Assert
         await repository.Received().ExecuteAsync(Arg.Any<UpdateStatusCriteria>());
-
     }
 
     [Fact]
@@ -84,7 +153,6 @@ public class MatchServiceTests
 
         // Assert
         await repository.Received().ExecuteAsync(Arg.Any<UpdateStatusCriteria>());
-
     }
 
     [Fact]
@@ -98,7 +166,6 @@ public class MatchServiceTests
 
         // Assert
         await repository.Received().GetAsync<MatchChecking>(Arg.Any<MatchCheckingCriteria>());
-
     }
 
     [Fact]

@@ -15,14 +15,12 @@ public class RefundMatchServiceTests
 {
     private readonly IDynamicRepository repository;
     private readonly IRefundMatchService service;
-    private readonly ScaleOutSettleService settleService;
-    private readonly LogDirectlyService logDirectlyService;
 
     public RefundMatchServiceTests()
     {
         repository = Substitute.For<IDynamicRepository>();
-        settleService = Substitute.For<ScaleOutSettleService>();
-        logDirectlyService = Substitute.For<LogDirectlyService>();
+        var settleService = Substitute.For<ScaleOutSettleService>();
+        var logDirectlyService = Substitute.For<LogService>();
         var settings = new AppSettingsKey()
         {
             RetryInterval = 1000,
@@ -37,13 +35,13 @@ public class RefundMatchServiceTests
     }
 
     [Fact]
-    public async Task Push_MatchTypeIsAutoRefundNormal_AlwaysReturnNotNull()
+    public void Push_MatchTypeIsAutoRefundNormal_AlwaysReturnNotNull()
     {
         // Arrange
         var match = new Match { MatchId = 1 };
 
         // Act
-        var result = await service.Push(match);
+        var result = service.Push(match);
 
         // Assert
         repository.Received().Execute(Arg.Any<RefundPushCriteria>());

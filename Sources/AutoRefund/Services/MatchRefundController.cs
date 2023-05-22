@@ -22,14 +22,14 @@ public class MatchRefundControllerImp : IMatchRefundController
 
     private readonly AppSettingsKey appSettingsKey;
 
-    private readonly ILogService logService;
+    private readonly LogService logService;
 
     public MatchRefundControllerImp(
         IMatchPoolService matchPoolService,
         IValidationService validationService,
         IRefundMatchService refundMatchService,
         IMatchService matchService,
-        ILogService logService,
+        LogService logService,
         IOptions<AppSettingsKey> appSettingsKey)
     {
         this.appSettingsKey = appSettingsKey.Value;

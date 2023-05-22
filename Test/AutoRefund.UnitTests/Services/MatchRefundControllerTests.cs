@@ -17,7 +17,7 @@ public class MatchRefundControllerTests
 
     private readonly IMatchService matchService;
 
-    private readonly ILogService logService;
+    private readonly LogService logService;
 
     private readonly IMatchRefundController service;
 
@@ -27,7 +27,7 @@ public class MatchRefundControllerTests
         validationService = Substitute.For<IValidationService>();
         refundMatchService = Substitute.For<IRefundMatchService>();
         matchService = Substitute.For<IMatchService>();
-        logService = Substitute.For<ILogService>();
+        logService = Substitute.For<LogService>();
 
         var settings = new AppSettingsKey()
         {

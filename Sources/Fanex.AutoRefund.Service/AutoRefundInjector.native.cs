@@ -21,7 +21,7 @@ public static class AutoRefundInjector
     {
         service.AddSingleton<IDynamicRepository, DynamicRepository>();
         service.AddSingleton<IMatchPoolService, MatchPoolServiceImp>();
-        service.AddTransient<ILogService, LogServiceImp>();
+        service.AddTransient<LogService, LogServiceImp>();
         service.AddTransient<IValidationService, ValidationServiceImp>();
         service.AddTransient<IAutoRefundController, AutoRefundControllerImp>();
         service.AddTransient<IMaintenanceService, MaintenanceServiceImp>();
@@ -31,7 +31,6 @@ public static class AutoRefundInjector
         service.AddTransient<IValidationRelateMatchService, ValidationRelateMatchServiceImp>();
         service.AddTransient<IMatchRefundController, MatchRefundControllerImp>();
         service.AddTransient<IMatchService, MatchServiceImp>();
-        service.AddTransient<LogDirectlyService, LogDirectlyServiceImp>();
 
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));
         service.AddSingleton<IUMCacheService, UMCacheService>();
@@ -39,6 +38,7 @@ public static class AutoRefundInjector
         service.AddSingleton<ONEbook.UM.Services.IMaintenanceService, ONEbook.UM.Services.MaintenanceService>();
         service.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         service.AddSingleton<ScaleOutSettleService, ScaleOutSettleServiceImp>();
+        service.AddTransient<GeneralService, GeneralServiceImp>();
 
         var mapperConfig = new MapperConfiguration(mc =>
         {

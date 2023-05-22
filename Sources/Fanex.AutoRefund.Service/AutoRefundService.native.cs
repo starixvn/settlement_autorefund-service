@@ -12,6 +12,7 @@ using ONEbook.UM.AspNetCore;
 using ONEbook.UM.Configurations;
 using ONEbook.UM.Transport;
 using SharpRaven;
+using LogService = Fanex.Logging.LogService;
 
 namespace Fanex.AutoRefund.Service;
 

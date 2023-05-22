@@ -24,8 +24,6 @@ public class MatchServiceImp : IMatchService
 {
     private readonly IDynamicRepository repository;
 
-    private const string KEY_LEAGUEID = "Settlement-AutoPayout-AutoInstant-LeagueId";
-
     private readonly ICache cache;
 
     private readonly AppSettingsKey appSettingsKey;
@@ -42,21 +40,14 @@ public class MatchServiceImp : IMatchService
     public async Task<List<Match>> GetMatches()
     {
         var matches = (await repository.FetchAsync<Match>(new MatchListingCriteria())).ToList();
-        cache.TryGet(KEY_LEAGUEID, out int leagueId);
+        var (_, leagueId) = await cache.TryGetAsync<int>(CacheKey.LeagueId);
 
-        switch (appSettingsKey.EnvironmentName)
+        return appSettingsKey.EnvironmentName switch
         {
-            case "PRO":
-                return leagueId > 0
-                    ? (from m in matches where m.LeagueId != leagueId select m).ToList()
-                    : matches;
-
-            case "UAT":
-                return (from m in matches where m.LeagueId == leagueId select m).ToList();
-
-            default:
-                return matches;
-        }
+            "PRO" => leagueId > 0 ? (from m in matches where m.LeagueId != leagueId select m).ToList() : matches,
+            "UAT" => (from m in matches where m.LeagueId == leagueId select m).ToList(),
+            _ => matches
+        };
     }
 
     public async Task UpdateStatus(Match match, int statusId)

@@ -19,18 +19,19 @@ public class RefundMatchServiceImp : IRefundMatchService
     private readonly AppSettingsKey appSettingsKey;
 
     private readonly ScaleOutSettleService scaleOutSettleService;
-    private readonly LogDirectlyService logDirectlyService;
+
+    private readonly LogService logService;
 
     public RefundMatchServiceImp(
         IDynamicRepository repository,
         ScaleOutSettleService scaleOutSettleService,
         IOptions<AppSettingsKey> appSettingsKey,
-        LogDirectlyService logDirectlyService)
+        LogService logService)
     {
         this.appSettingsKey = appSettingsKey.Value;
         this.repository = repository;
         this.scaleOutSettleService = scaleOutSettleService;
-        this.logDirectlyService = logDirectlyService;
+        this.logService = logService;
     }
 
     public async Task<Result> Push(Match match)
@@ -47,7 +48,7 @@ public class RefundMatchServiceImp : IRefundMatchService
                 MatchId = match.MatchId
             };
 
-            logDirectlyService.WriteLog(criteria.MatchId, GenerateLogMessage(criteria));
+            logService.WriteLog(criteria.MatchId, GenerateLogMessage(criteria));
 
             Execute(criteria);
         }
