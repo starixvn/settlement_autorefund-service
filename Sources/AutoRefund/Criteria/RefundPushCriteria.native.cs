@@ -11,6 +11,14 @@ public class RefundPushCriteria : NonQueryCommand
 
     public string Action { get; } = "REFUND";
 
+    public int HalfTimeHome { get; } = 0;
+
+    public int HalfTimeAway { get; } = 0;
+
+    public int FullTimeHome { get; } = 0;
+
+    public int FullTimeAway { get; } = 0;
+
     public int ErrCode { get; set; }
 
     public string ErrMsg { get; set; }
