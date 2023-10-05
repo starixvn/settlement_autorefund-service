@@ -49,7 +49,6 @@ public class AutoRefund : IHostedService
     private void InitializeSetting()
     {
         StartUmSetting();
-        StartDataBaseSetting();
         StartLogSetting();
         LeagueSettingFactory.SettingFileWatcher();
     }
@@ -141,23 +140,6 @@ public class AutoRefund : IHostedService
            .UseConfig(umConfig)
            .UseCacheService(new UMCacheService(new CacheService()))
            .UseRestClient(new UMRestClient(umConfig));
-    }
-
-    private void StartDataBaseSetting()
-    {
-        var connections = configuration.GetSection("ConnectionStrings")
-                               .GetChildren()
-                               .AsEnumerable()
-                               .ToDictionary(
-                                        x => x.GetValue<string>("Name"),
-                                        y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
-                                );
-        DbSettingProviderManager
-          .StartNewSession()
-          .Use(connections)
-          .WithSqlServer()
-          .UseDefaultDbSettingProvider(resourcePath: configuration.GetSection("StoredProcedurePath").Value)
-          .Run();
     }
 
     private void StartLogSetting()
