@@ -2,6 +2,7 @@
 using AutoRefund.Models;
 using AutoRefund.Services;
 using Fanex.Data.Repository;
+using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut.Models;
 using Fanex.Settlement.ScaleOut.Request;
 using Fanex.Settlement.ScaleOut.Services;
@@ -21,6 +22,7 @@ public class RefundMatchServiceTests
         repository = Substitute.For<IDynamicRepository>();
         var settleService = Substitute.For<ScaleOutSettleService>();
         var logDirectlyService = Substitute.For<LogService>();
+        var xmlConvertService = Substitute.For<XmlConvertService>();
         var settings = new AppSettingsKey()
         {
             RetryInterval = 1000,
@@ -30,7 +32,7 @@ public class RefundMatchServiceTests
         };
         var appSettingsOptions = Options.Create(settings);
 
-        service = new RefundMatchServiceImp(repository, settleService, appSettingsOptions, logDirectlyService);
+        service = new RefundMatchServiceImp(repository, settleService, appSettingsOptions, logDirectlyService, xmlConvertService);
         settleService.ValidateEventAndTicket(Arg.Any<EventTicketRequest>()).Returns(new ResultMessage { ErrorMessage = "" });
     }
 

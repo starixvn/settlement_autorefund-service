@@ -1,6 +1,8 @@
-﻿using AutoRefund.Criteria;
+﻿using AutoRefund.Constants;
+using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Data.Repository;
+using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut.Request;
 using Fanex.Settlement.ScaleOut.Services;
 using Microsoft.Extensions.Options;
@@ -22,45 +24,81 @@ public class RefundMatchServiceImp : IRefundMatchService
 
     private readonly LogService logService;
 
+    private readonly XmlConvertService xmlConvertService;
+
     public RefundMatchServiceImp(
         IDynamicRepository repository,
         ScaleOutSettleService scaleOutSettleService,
         IOptions<AppSettingsKey> appSettingsKey,
-        LogService logService)
+        LogService logService,
+        XmlConvertService xmlConvertService)
     {
         this.appSettingsKey = appSettingsKey.Value;
         this.repository = repository;
         this.scaleOutSettleService = scaleOutSettleService;
         this.logService = logService;
+        this.xmlConvertService = xmlConvertService;
     }
 
     public async Task<Result> Push(Match match)
     {
-        const string actionName = "REFUND";
-        var result = await ValidateBeforeExecute(match, actionName);
+        var result = await ValidateBeforeExecute(match.MatchId);
 
         if (result.ErrCode == 0)
         {
-            await scaleOutSettleService.UpdateUnderSettlementFlag(match.MatchId, 0, actionName);
-            await UpdateMatchInfo(match, actionName);
-            var criteria = new RefundPushCriteria
-            {
-                MatchId = match.MatchId
-            };
+            await scaleOutSettleService.UpdateUnderSettlementFlag(match.MatchId, 0, ActionName.Refund);
+            await UpdateMatchInfo(match.MatchId);
 
-            logService.WriteLog(criteria.MatchId, GenerateLogMessage(criteria));
+            await WriteLog(match.MatchId);
 
-            Execute(criteria);
+            Execute(match.MatchId);
         }
 
         return result;
     }
 
-    private static string GenerateLogMessage(RefundPushCriteria criteria)
-        => $"NAP: Auto Calculate {criteria.Action} for matchId:{criteria.MatchId} score FT: 0-0 HT: 0-0";
-
-    private void Execute(RefundPushCriteria criteria)
+    private async Task WriteLog(int matchId)
     {
+        var insertLogCriteria = CreateLogCriteria(matchId);
+        await logService.WriteLogResettle(insertLogCriteria);
+
+        var message = GenerateLogMessage(matchId);
+        await logService.WriteLog(matchId, message);
+    }
+
+    private static string GenerateLogMessage(int matchId)
+        => $"NAP: Auto Calculate {ActionName.Refund} for matchId:{matchId} score FT: 0-0 HT: 0-0";
+
+    public InsertLogCriteria CreateLogCriteria(int matchId)
+    {
+        const int soccer = 1;
+        var resources = new List<ResourceItem>()
+        {
+            new() { ResourceId = ResourceId.Halftime, HomeValue = string.Empty, AwayValue = string.Empty },
+            new() { ResourceId = ResourceId.Final, HomeValue = string.Empty, AwayValue = string.Empty }
+        };
+
+        var selectedResources = xmlConvertService.Serialize(new Resources
+        {
+            ResourceItems = resources
+        });
+
+        return new InsertLogCriteria
+        {
+            MatchId = matchId,
+            Action = ActionName.Refund,
+            SportType = soccer,
+            SelectedResources = selectedResources
+        };
+    }
+
+    private void Execute(int matchId)
+    {
+        var criteria = new RefundPushCriteria
+        {
+            MatchId = matchId
+        };
+
         foreach (var server in appSettingsKey.SiteDbServer)
         {
             criteria.DbServer = server;
@@ -68,13 +106,13 @@ public class RefundMatchServiceImp : IRefundMatchService
         }
     }
 
-    private async Task<Result> ValidateBeforeExecute(Match match, string actionName)
+    private async Task<Result> ValidateBeforeExecute(int matchId)
     {
         const string mode = "ALL";
         var request = new EventTicketRequest
         {
-            MatchId = match.MatchId,
-            Action = actionName,
+            MatchId = matchId,
+            Action = ActionName.Refund,
             SpName = "NAP_Admin_Settlement_Refund_1_Push",
             IsAuto = true,
             Mode = mode,
@@ -89,12 +127,12 @@ public class RefundMatchServiceImp : IRefundMatchService
         };
     }
 
-    private async Task UpdateMatchInfo(Match match, string actionName)
+    private async Task UpdateMatchInfo(int matchId)
     {
         var requestUpdateInfo = new UpdateMatchInfoRequest
         {
-            MatchId = match.MatchId,
-            Action = actionName,
+            MatchId = matchId,
+            Action = ActionName.Refund,
             AdminId = 0,
         };
 

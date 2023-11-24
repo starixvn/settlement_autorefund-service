@@ -2,6 +2,7 @@
 <Functions>
 	<Function Name="AutoRefund">
 		<Setting Key="WriteLog_UserLog_Settle" SpName="WriteLog_UserLog_Settle" DbName="DBLOG.bodb_CustomerLog.bodbAdminNet" TimeOut="20" />
+		<Setting Key="NAP_SettlementLog_Ins" SpName="NAP_SettlementLog_Ins" DbName="DBLOG.bodb_CustomerLog.bodbAdminNet" />
 		<Setting Key="NAP_Set_AutoRefund_ScheduleSel" SpName="NAP_Set_AutoRefund_ScheduleSel" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Set_AutoRefund_ResultUpd" SpName="NAP_Set_AutoRefund_ResultUpd" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Set_SettlementStatusUpd" SpName="NAP_Set_SettlementStatusUpd" DbName="DBPRO.bodb02.bodbAdminNet" />

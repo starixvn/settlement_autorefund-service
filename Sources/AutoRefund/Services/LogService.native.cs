@@ -8,7 +8,9 @@ public interface LogService
 {
     Task ActionLog(Match match, string message);
 
-    void WriteLog(int matchId, string message);
+    Task WriteLog(int matchId, string message);
+
+    Task WriteLogResettle(InsertLogCriteria criteria);
 }
 
 public class LogServiceImp : LogService
@@ -26,21 +28,19 @@ public class LogServiceImp : LogService
         await repository.ExecuteAsync(criteria);
     }
 
-    public void WriteLog(int matchId, string message)
+    public async Task WriteLog(int matchId, string message)
     {
-        try
+        var criteria = new LogDirectlyCriteria
         {
-            var criteria = new LogDirectlyCriteria
-            {
-                Extend = matchId,
-                Doing = message,
-            };
+            Extend = matchId,
+            Doing = message,
+        };
 
-            repository.Execute(criteria);
-        }
-        catch (Exception e)
-        {
-            Fanex.Logging.LogService.Error("Fanex.AutoRefund.Service(Write Log Directly): ", e);
-        }
+        await repository.ExecuteAsync(criteria);
+    }
+
+    public async Task WriteLogResettle(InsertLogCriteria criteria)
+    {
+        await repository.ExecuteAsync(criteria);
     }
 }

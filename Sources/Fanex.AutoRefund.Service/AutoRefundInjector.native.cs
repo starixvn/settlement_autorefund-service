@@ -3,6 +3,7 @@ using AutoRefund.Services;
 using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
+using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
 using Fanex.Settlement.ScaleOut.Services;
 using Microsoft.AspNetCore.Http;
@@ -39,6 +40,7 @@ public static class AutoRefundInjector
         service.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         service.AddSingleton<ScaleOutSettleService, ScaleOutSettleServiceImp>();
         service.AddTransient<GeneralService, GeneralServiceImp>();
+        service.AddTransient<XmlConvertService, XmlConvertServiceImp>();
 
         var mapperConfig = new MapperConfiguration(mc =>
         {
