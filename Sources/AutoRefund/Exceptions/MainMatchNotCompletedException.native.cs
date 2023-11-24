@@ -20,6 +20,7 @@ public class MainMatchNotCompletedException : AutoRefundException
     {
     }
 
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
     protected MainMatchNotCompletedException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {

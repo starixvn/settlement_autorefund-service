@@ -20,6 +20,7 @@ public class RemarkException : AutoRefundException
     {
     }
 
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
     protected RemarkException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {

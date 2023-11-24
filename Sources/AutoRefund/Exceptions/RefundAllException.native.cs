@@ -20,6 +20,7 @@ public class RefundAllException : AutoRefundException
     {
     }
 
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
     protected RefundAllException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {

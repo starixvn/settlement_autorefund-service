@@ -1,8 +1,5 @@
-﻿using AutoRefund;
-using AutoRefund.Services;
+﻿using AutoRefund.Services;
 using Fanex.Caching;
-using Fanex.Data;
-using Fanex.Data.SqlServer;
 using Fanex.Logging;
 using Fanex.Logging.Sentry.RavenClient;
 using Microsoft.Extensions.Configuration;
@@ -50,7 +47,6 @@ public class AutoRefund : IHostedService
     {
         StartUmSetting();
         StartLogSetting();
-        LeagueSettingFactory.SettingFileWatcher();
     }
 
     private static void InitializeExtraComponent()

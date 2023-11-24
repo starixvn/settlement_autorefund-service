@@ -45,12 +45,13 @@ public class MatchServiceTests
         await cache.SetAsync(CacheKey.LeagueId, leagueId, cachePolicy);
     }
 
-    private static List<Match> MatchesTest => new()
-    {
-        new Match { MatchId = 1, LeagueId = 123 },
-        new Match { MatchId = 2, LeagueId = 1 },
-        new Match { MatchId = 2, LeagueId = 2 }
-    };
+    private static List<Match> MatchesTest =>
+        new()
+        {
+            new Match { MatchId = 1, LeagueId = 123 },
+            new Match { MatchId = 2, LeagueId = 1 },
+            new Match { MatchId = 2, LeagueId = 2 }
+        };
 
     [Fact]
     public async Task GetMatches_EnvironmentNameIsPROAndExistLeagueTest_ReturnsExcludeLeagueTest()

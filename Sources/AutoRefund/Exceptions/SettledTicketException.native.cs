@@ -20,6 +20,7 @@ public class SettledTicketException : AutoRefundException
     {
     }
 
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
     protected SettledTicketException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {

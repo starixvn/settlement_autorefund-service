@@ -20,6 +20,7 @@ public class MainMatchNotDecisiveException : AutoRefundException
     {
     }
 
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
     protected MainMatchNotDecisiveException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {

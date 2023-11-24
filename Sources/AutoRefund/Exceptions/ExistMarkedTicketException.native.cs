@@ -25,10 +25,9 @@ public class ExistMarkedTicketException : AutoRefundException
     {
     }
 
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
     protected ExistMarkedTicketException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {
     }
-
-
 }

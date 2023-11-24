@@ -13,8 +13,6 @@ public class MatchRefundControllerTests
 
     private readonly IValidationService validationService;
 
-    private readonly IRefundMatchService refundMatchService;
-
     private readonly IMatchService matchService;
 
     private readonly LogService logService;
@@ -25,7 +23,7 @@ public class MatchRefundControllerTests
     {
         matchPoolService = Substitute.For<IMatchPoolService>();
         validationService = Substitute.For<IValidationService>();
-        refundMatchService = Substitute.For<IRefundMatchService>();
+        var refundMatchService = Substitute.For<IRefundMatchService>();
         matchService = Substitute.For<IMatchService>();
         logService = Substitute.For<LogService>();
 
@@ -44,10 +42,7 @@ public class MatchRefundControllerTests
     {
         // Arrange
         var match = new Match();
-        validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(call =>
-        {
-            throw new AutoRefundException();
-        });
+        validationService.When(fake => fake.VerifyMatchBeforeExecution(match)).Do(_ => throw new AutoRefundException());
 
         // Act
         await service.Process(match);

@@ -13,7 +13,7 @@ using ONEbook.UM.Configurations;
 using ONEbook.UM.Helpers;
 using ONEbook.UM.Transport;
 
-namespace Fanex.AutoRefund;
+namespace Fanex.AutoRefund.Service;
 
 public static class AutoRefundInjector
 {

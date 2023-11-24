@@ -28,7 +28,7 @@ public class ValidationRelateMatchTests
     public void VerifyRelateMatch_MainMatchIsNotSettled_ThrowException()
     {
         // Arrange
-        var matchChecking = new MatchChecking { ParentSettlementStatusID = 1, EventStatus = "running" };
+        var matchChecking = new MatchChecking { ParentSettlementStatusId = 1, EventStatus = "running" };
 
         // Assert
         Assert.Throws<MainMatchNotCompletedException>(() => service.VerifyRelateMatch(matchChecking));
@@ -38,7 +38,7 @@ public class ValidationRelateMatchTests
     public void VerifyRelateMatch_MainIsDraw_ThrowException()
     {
         // Arrange
-        var matchChecking = new MatchChecking { ParentSettlementStatusID = 4, EventStatus = "running", ParentAwayValue = 1, ParentHomeValue = 1 };
+        var matchChecking = new MatchChecking { ParentSettlementStatusId = 4, EventStatus = "running", ParentAwayValue = 1, ParentHomeValue = 1 };
 
         // Assert
         Assert.Throws<MainMatchNotDecisiveException>(() => service.VerifyRelateMatch(matchChecking));
@@ -48,7 +48,7 @@ public class ValidationRelateMatchTests
     public void VerifyRelateMatch_PassAllMatchChecking_DoesNotThrowException()
     {
         // Arrange
-        var matchChecking = new MatchChecking { ParentSettlementStatusID = 4, EventStatus = "running", ParentAwayValue = 1, ParentHomeValue = 2 };
+        var matchChecking = new MatchChecking { ParentSettlementStatusId = 4, EventStatus = "running", ParentAwayValue = 1, ParentHomeValue = 2 };
 
         // Assert
         var exception = Record.Exception(() => service.VerifyRelateMatch(matchChecking));

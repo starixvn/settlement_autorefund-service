@@ -20,6 +20,7 @@ public class CurrentMatchIsSettledException : AutoRefundException
     {
     }
 
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
     protected CurrentMatchIsSettledException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {

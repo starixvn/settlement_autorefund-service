@@ -5,24 +5,24 @@ namespace AutoRefund.Criteria;
 
 public class LogCriteria : NonQueryCommand
 {
-    private readonly int refundSingleAction = 81022;
+    private const int RefundSingleAction = 81022;
 
     public LogCriteria(Match match, string errorMessage)
     {
         MatchId = match.MatchId;
         Remark = errorMessage;
-        ActionId = refundSingleAction;
+        ActionId = RefundSingleAction;
     }
 
-    public int UserId { get; }
+    public int UserId { get; set; }
 
     public int MatchId { get; set; }
 
     public string Remark { get; set; }
 
-    public string IP { get; } = string.Empty;
+    public string IP { get; set; } = string.Empty;
 
-    public int ActionId { get; }
+    public int ActionId { get; set; }
 
     public override bool IsValid() => MatchId > 0;
 
