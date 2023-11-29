@@ -49,6 +49,7 @@ public static class AutoRefundInjector
 
         var mapper = mapperConfig.CreateMapper();
         service.AddSingleton(mapper);
+        service.AddMemoryCache();
         ConfigureRedis(service, configuration);
     }
 

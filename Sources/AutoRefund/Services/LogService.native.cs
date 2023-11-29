@@ -1,8 +1,7 @@
-﻿using AutoRefund.Criteria;
-using AutoRefund.Models;
-using Fanex.Data.Repository;
+﻿namespace AutoRefund.Services;
 
-namespace AutoRefund.Services;
+using Criteria;
+using Models;
 
 public interface LogService
 {

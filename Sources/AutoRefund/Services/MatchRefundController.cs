@@ -1,9 +1,8 @@
-﻿using AutoRefund.Constants;
-using AutoRefund.Exceptions;
-using AutoRefund.Models;
-using Microsoft.Extensions.Options;
+﻿namespace AutoRefund.Services;
 
-namespace AutoRefund.Services;
+using Constants;
+using Exceptions;
+using Models;
 
 public interface IMatchRefundController
 {

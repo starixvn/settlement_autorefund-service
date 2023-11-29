@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace AutoRefund.Exceptions;
+﻿namespace AutoRefund.Exceptions;
 
 [Serializable]
 public class MarkedTicketException : AutoRefundException

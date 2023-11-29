@@ -1,11 +1,8 @@
 ﻿using AutoRefund.Constants;
 using AutoRefund.Criteria;
 using AutoRefund.Models;
-using Fanex.Data.Repository;
-using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut.Request;
 using Fanex.Settlement.ScaleOut.Services;
-using Microsoft.Extensions.Options;
 
 namespace AutoRefund.Services;
 
@@ -69,10 +66,10 @@ public class RefundMatchServiceImp : IRefundMatchService
     private static string GenerateLogMessage(int matchId)
         => $"NAP: Auto Calculate {ActionName.Refund} for matchId:{matchId} score FT: 0-0 HT: 0-0";
 
-    public InsertLogCriteria CreateLogCriteria(int matchId)
+    private InsertLogCriteria CreateLogCriteria(int matchId)
     {
         const int soccer = 1;
-        var resources = new List<ResourceItem>()
+        var resources = new List<ResourceItem>
         {
             new() { ResourceId = ResourceId.Halftime, HomeValue = string.Empty, AwayValue = string.Empty },
             new() { ResourceId = ResourceId.Final, HomeValue = string.Empty, AwayValue = string.Empty }

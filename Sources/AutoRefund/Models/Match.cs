@@ -12,8 +12,7 @@ public class Match
 
     public override bool Equals(object obj)
     {
-        return obj != null
-               && (obj is Match match)
+        return (obj is Match match)
                && match.MatchId == MatchId;
     }
 
