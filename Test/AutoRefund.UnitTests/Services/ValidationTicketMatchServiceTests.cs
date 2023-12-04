@@ -10,7 +10,6 @@ namespace AutoRefund.UnitTests.Services;
 public class ValidationTicketMatchServiceTests
 {
     private readonly IValidationTicketMatchService service;
-    private readonly IDynamicRepository repository;
 
     public ValidationTicketMatchServiceTests()
     {
@@ -22,11 +21,10 @@ public class ValidationTicketMatchServiceTests
             SiteDbServer = new List<string> { "ABC" }
         };
         var appSettingsOptions = Options.Create(settings);
-        repository = Substitute.For<IDynamicRepository>();
+        var repository = Substitute.For<IDynamicRepository>();
 
         service = new ValidationTicketServiceImp(appSettingsOptions, repository);
     }
-
 
     [Fact]
     public async void VerifyTicketMatch_PassAllMatchChecking_DoesNotThrowsSettledTicketException()
@@ -36,7 +34,6 @@ public class ValidationTicketMatchServiceTests
         {
             MatchId = 1,
             TypeId = 1,
-
         };
 
         // Assert

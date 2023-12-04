@@ -21,17 +21,27 @@ public class MatchChecking
                 SettlementStatus = new string(status),
             };
         }
+        set => throw new NotImplementedException();
     }
 
-    public int ParentSettlementStatusID { get; set; }
+    public int ParentSettlementStatusId { get; set; }
 
-    public int SettlementStatusID { get; set; }
+    public int SettlementStatusId { get; set; }
 
     public string EventStatus { get; set; }
 
-    public bool IsMainMatchSettled => ParentSettlementStatusID == Calculated;
+    public bool IsMainMatchSettled
+    {
+        get => ParentSettlementStatusId == Calculated;
+        set => throw new NotImplementedException();
+    }
 
-    public bool IsSettled => !string.IsNullOrWhiteSpace(EventStatus) && EventStatus.Equals(Settled, StringComparison.OrdinalIgnoreCase);
+    public bool IsSettled
+    {
+        get => !string.IsNullOrWhiteSpace(EventStatus) &&
+               EventStatus.Equals(Settled, StringComparison.OrdinalIgnoreCase);
+        set => throw new NotImplementedException();
+    }
 
     public bool IsRefundedSingle { get; set; }
 

@@ -1,11 +1,10 @@
-﻿using AutoRefund.Constants;
-using AutoRefund.Criteria;
-using AutoRefund.Models;
-using Fanex.Caching;
-using Fanex.Data.Repository;
-using Microsoft.Extensions.Options;
+﻿using Fanex.Caching;
 
 namespace AutoRefund.Services;
+
+using Constants;
+using Criteria;
+using Models;
 
 public interface IMatchService
 {

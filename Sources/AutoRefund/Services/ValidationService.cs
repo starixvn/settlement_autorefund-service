@@ -1,6 +1,6 @@
-﻿using AutoRefund.Models;
+﻿namespace AutoRefund.Services;
 
-namespace AutoRefund.Services;
+using Models;
 
 public interface IValidationService
 {

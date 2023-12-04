@@ -13,13 +13,11 @@ public class ValidationServiceTests
 
     private readonly IValidationRelateMatchService validationRelateMatchService;
 
-    private readonly IMatchService matchService;
-
     private readonly IValidationService service;
 
     public ValidationServiceTests()
     {
-        matchService = Substitute.For<IMatchService>();
+        var matchService = Substitute.For<IMatchService>();
         validationSettingMatchService = Substitute.For<IValidationSettingMatchService>();
         validationTicketMatchService = Substitute.For<IValidationTicketMatchService>();
         validationRelateMatchService = Substitute.For<IValidationRelateMatchService>();

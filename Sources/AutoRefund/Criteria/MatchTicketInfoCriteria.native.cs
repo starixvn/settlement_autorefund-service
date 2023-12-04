@@ -1,7 +1,4 @@
-﻿using Fanex.Data;
-using Fanex.Data.Repository;
-
-namespace AutoRefund.Criteria;
+﻿namespace AutoRefund.Criteria;
 
 public class MatchTicketInfoCriteria : NonQueryCommand
 {

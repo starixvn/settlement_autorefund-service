@@ -3,6 +3,7 @@ using AutoRefund.Services;
 using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
+using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
 using Fanex.Settlement.ScaleOut.Services;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +14,7 @@ using ONEbook.UM.Configurations;
 using ONEbook.UM.Helpers;
 using ONEbook.UM.Transport;
 
-namespace Fanex.AutoRefund;
+namespace Fanex.AutoRefund.Service;
 
 public static class AutoRefundInjector
 {
@@ -39,6 +40,7 @@ public static class AutoRefundInjector
         service.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         service.AddSingleton<ScaleOutSettleService, ScaleOutSettleServiceImp>();
         service.AddTransient<GeneralService, GeneralServiceImp>();
+        service.AddTransient<XmlConvertService, XmlConvertServiceImp>();
 
         var mapperConfig = new MapperConfiguration(mc =>
         {
@@ -47,6 +49,7 @@ public static class AutoRefundInjector
 
         var mapper = mapperConfig.CreateMapper();
         service.AddSingleton(mapper);
+        service.AddMemoryCache();
         ConfigureRedis(service, configuration);
     }
 

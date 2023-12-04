@@ -1,7 +1,6 @@
-﻿using AutoRefund.Models;
-using Fanex.Data.Repository;
+﻿namespace AutoRefund.Criteria;
 
-namespace AutoRefund.Criteria;
+using Models;
 
 public class MatchCheckingCriteria : NonQueryCommand
 {

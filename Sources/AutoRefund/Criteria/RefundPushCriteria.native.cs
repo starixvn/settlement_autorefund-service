@@ -1,31 +1,28 @@
-﻿using Fanex.Data;
-using Fanex.Data.Repository;
-
-namespace AutoRefund.Criteria;
+﻿namespace AutoRefund.Criteria;
 
 public class RefundPushCriteria : NonQueryCommand
 {
     public int MatchId { get; set; }
 
-    public int AdminId { get; }
+    public int AdminId { get; set; }
 
-    public string Action { get; } = "REFUND";
+    public string Action { get; set; } = "REFUND";
 
-    public int HalfTimeHome { get; } = 0;
+    public int HalfTimeHome { get; set; } = 0;
 
-    public int HalfTimeAway { get; } = 0;
+    public int HalfTimeAway { get; set; } = 0;
 
-    public int FullTimeHome { get; } = 0;
+    public int FullTimeHome { get; set; } = 0;
 
-    public int FullTimeAway { get; } = 0;
+    public int FullTimeAway { get; set; } = 0;
 
     public int ErrCode { get; set; }
 
     public string ErrMsg { get; set; }
 
-    public int IsAuto { get; } = 1;
+    public int IsAuto { get; set; } = 1;
 
-    public string BroadcastSessionId { get; } = Guid.NewGuid().ToString();
+    public string BroadcastSessionId { get; set; } = Guid.NewGuid().ToString();
 
     [SpParam(Ignored = true)]
     public string DbServer { get; set; }

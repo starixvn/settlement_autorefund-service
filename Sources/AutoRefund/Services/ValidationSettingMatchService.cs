@@ -1,7 +1,7 @@
-﻿using AutoRefund.Exceptions;
-using AutoRefund.Models;
+﻿namespace AutoRefund.Services;
 
-namespace AutoRefund.Services;
+using Exceptions;
+using Models;
 
 public interface IValidationSettingMatchService
 {
@@ -20,7 +20,7 @@ public class ValidationSettingMatchServiceImp : IValidationSettingMatchService
             throw new RefundAllException();
         }
 
-        if (conditionsToCheck.Any(item => item) || matchChecking.IsHoldResourceId)
+        if (Array.Exists(conditionsToCheck, item => item) || matchChecking.IsHoldResourceId)
         {
             throw new RemarkException();
         }

@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFramework>net7.0</TargetFramework>
+	  <TargetFramework>net8.0</TargetFramework>
 	  <Nullable>disable</Nullable>
 	  <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>Exe</OutputType>
-    <CodeAnalysisRuleSet>..\..\.sonarlint\auto-refund-servicecsharp.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   
   <ItemGroup>
@@ -21,7 +20,6 @@
 	  <None Remove="AutoRefundInjector.native.cs.orig" />
 	</ItemGroup>
 	<ItemGroup>
-		<AdditionalFiles Include="..\..\.sonarlint\auto-refund-service\CSharp\SonarLint.xml" Link="SonarLint.xml" />
 		<Content Include="appsettings.json" />
 		<Content Include="appsettings.LOCAL.json" />
 		<Content Include="appsettings.PROD.json">
@@ -37,10 +35,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="12.0.1" />
-		<PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="1.0.1" />
+		<PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="1.0.1.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="8.0.0" />
 		<PackageReference Include="ONEbook.UM.Transport" Version="3.1.2" />
 	</ItemGroup>
 

@@ -5,7 +5,7 @@ namespace AutoRefund.Services;
 
 public interface IMaintenanceService
 {
-    bool IsMaintenance { get; }
+    bool IsMaintenance { get; set; }
 }
 
 public class MaintenanceServiceImp : IMaintenanceService
@@ -23,5 +23,6 @@ public class MaintenanceServiceImp : IMaintenanceService
 
             return downTime.IsUnderMaintenanceTime;
         }
+        set => throw new NotImplementedException();
     }
 }

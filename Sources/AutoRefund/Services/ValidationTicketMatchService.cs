@@ -1,10 +1,8 @@
-﻿using AutoRefund.Criteria;
-using AutoRefund.Exceptions;
-using AutoRefund.Models;
-using Fanex.Data.Repository;
-using Microsoft.Extensions.Options;
+﻿namespace AutoRefund.Services;
 
-namespace AutoRefund.Services;
+using Criteria;
+using Exceptions;
+using Models;
 
 public interface IValidationTicketMatchService
 {

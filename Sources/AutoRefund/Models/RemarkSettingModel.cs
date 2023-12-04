@@ -14,15 +14,44 @@ public class RemarkSettingModel
 
     public string SettlementStatus { get; set; }
 
-    public bool IsPending => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus[0].Equals('1');
+    public bool IsPending
+    {
+        get => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus[0].Equals('1');
+        set => throw new NotImplementedException();
+    }
 
-    public bool IsUndecided => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > UndecidedPosition && SettlementStatus[UndecidedPosition].Equals('1');
+    public bool IsUndecided
+    {
+        get => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > UndecidedPosition &&
+               SettlementStatus[UndecidedPosition].Equals('1');
+        set => throw new NotImplementedException();
+    }
 
-    public bool IsMtdHold => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > MtdHoldPosition && SettlementStatus[MtdHoldPosition].Equals('1');
+    public bool IsMtdHold
+    {
+        get => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > MtdHoldPosition &&
+               SettlementStatus[MtdHoldPosition].Equals('1');
+        set => throw new NotImplementedException();
+    }
 
-    public bool IsRefundAll => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > RefundAllPosition && SettlementStatus[RefundAllPosition].Equals('1');
+    public bool IsRefundAll
+    {
+        get => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > RefundAllPosition &&
+               SettlementStatus[RefundAllPosition].Equals('1');
+        set => throw new NotImplementedException();
+    }
 
-    public bool IsHoldKey => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > HoldKeyPosition && SettlementStatus[HoldKeyPosition].Equals('1');
+    public bool IsHoldKey
+    {
+        get => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > HoldKeyPosition &&
+               SettlementStatus[HoldKeyPosition].Equals('1');
+        set => throw new NotImplementedException();
+    }
 
-    public bool IsUnderSettle => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > UnderSettlePosition && SettlementStatus[UnderSettlePosition].Equals('1');
+    public bool IsUnderSettle
+    {
+        get => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > UnderSettlePosition &&
+               SettlementStatus[UnderSettlePosition].Equals('1');
+        set => throw new NotImplementedException();
+    }
 }

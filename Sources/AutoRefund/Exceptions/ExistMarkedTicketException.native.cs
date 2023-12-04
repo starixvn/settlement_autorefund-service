@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace AutoRefund.Exceptions;
+﻿namespace AutoRefund.Exceptions;
 
 [Serializable]
 public class ExistMarkedTicketException : AutoRefundException
@@ -25,10 +23,9 @@ public class ExistMarkedTicketException : AutoRefundException
     {
     }
 
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
     protected ExistMarkedTicketException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {
     }
-
-
 }

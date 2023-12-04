@@ -1,6 +1,6 @@
-﻿using AutoRefund.Models;
+﻿namespace AutoRefund.Services;
 
-namespace AutoRefund.Services;
+using Models;
 
 public interface IMatchPoolService
 {
@@ -26,7 +26,11 @@ public class MatchPoolServiceImp : IMatchPoolService
         lockObject = new object();
     }
 
-    public List<Match> PoolOfMatches => poolOfMatches;
+    public List<Match> PoolOfMatches
+    {
+        get => poolOfMatches;
+        set => throw new NotImplementedException();
+    }
 
     public void RemoveAndUpdateStatus(Match match, int statusId)
     {

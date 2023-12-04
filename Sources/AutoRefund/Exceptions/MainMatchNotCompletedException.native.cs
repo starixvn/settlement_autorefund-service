@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace AutoRefund.Exceptions;
+﻿namespace AutoRefund.Exceptions;
 
 [Serializable]
 public class MainMatchNotCompletedException : AutoRefundException
@@ -20,6 +18,7 @@ public class MainMatchNotCompletedException : AutoRefundException
     {
     }
 
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
     protected MainMatchNotCompletedException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {

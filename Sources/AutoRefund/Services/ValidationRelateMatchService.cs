@@ -1,7 +1,7 @@
-﻿using AutoRefund.Exceptions;
-using AutoRefund.Models;
+﻿namespace AutoRefund.Services;
 
-namespace AutoRefund.Services;
+using Exceptions;
+using Models;
 
 public interface IValidationRelateMatchService
 {

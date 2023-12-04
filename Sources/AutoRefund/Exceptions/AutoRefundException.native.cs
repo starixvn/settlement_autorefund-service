@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace AutoRefund.Exceptions;
+﻿namespace AutoRefund.Exceptions;
 
 [Serializable]
 public class AutoRefundException : Exception
@@ -19,6 +17,7 @@ public class AutoRefundException : Exception
     {
     }
 
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
     protected AutoRefundException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {

@@ -13,7 +13,6 @@ public class AutoRefundControllerTests
 
     private readonly IAutoRefundController controller;
 
-
     public AutoRefundControllerTests()
     {
         matchPoolService = Substitute.For<IMatchPoolService>();
@@ -32,7 +31,6 @@ public class AutoRefundControllerTests
 
         // Act
         await controller.ProcessAsync();
-        Thread.Sleep(1000);
 
         // Assert
         await matchRefundController.Received().Process(match);
