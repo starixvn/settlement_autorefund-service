@@ -12,6 +12,7 @@
   </ItemGroup>
 	<ItemGroup>
 	  <None Remove="appsettings.json" />
+	  <None Remove="appsettings.KLDR.json" />
 	  <None Remove="appsettings.LOCAL.json" />
 	  <None Remove="appsettings.PROD.json" />
 	  <None Remove="appsettings.SIT.json" />
@@ -20,6 +21,9 @@
 	  <None Remove="AutoRefundInjector.native.cs.orig" />
 	</ItemGroup>
 	<ItemGroup>
+		<Content Include="appsettings.KLDR.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="appsettings.json" />
 		<Content Include="appsettings.LOCAL.json" />
 		<Content Include="appsettings.PROD.json">
