@@ -1,6 +1,8 @@
 ﻿using AutoRefund.Services;
 using Fanex.Caching;
 using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry.RavenClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -59,7 +61,12 @@ public class AutoRefund : IHostedService
         e.SetObserved();
         e.Exception.Handle(x =>
         {
-            LogService.Error(x.Message, x);
+            var logMessage = new LogMessage(x.Message)
+                 .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(x))
+                 .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                 .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(x))
+                 .ToString();
+            LogService.Error(logMessage);
             return true;
         });
     }
