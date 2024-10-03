@@ -22,19 +22,22 @@ public class RefundMatchServiceImp : IRefundMatchService
     private readonly LogService logService;
 
     private readonly XmlConvertService xmlConvertService;
+    private readonly IMatchService matchService;
 
     public RefundMatchServiceImp(
         IDynamicRepository repository,
         ScaleOutSettleService scaleOutSettleService,
         IOptions<AppSettingsKey> appSettingsKey,
         LogService logService,
-        XmlConvertService xmlConvertService)
+        XmlConvertService xmlConvertService,
+        IMatchService matchService)
     {
         this.appSettingsKey = appSettingsKey.Value;
         this.repository = repository;
         this.scaleOutSettleService = scaleOutSettleService;
         this.logService = logService;
         this.xmlConvertService = xmlConvertService;
+        this.matchService = matchService;
     }
 
     public async Task<Result> Push(Match match)
@@ -48,7 +51,9 @@ public class RefundMatchServiceImp : IRefundMatchService
 
             await WriteLog(match.MatchId);
 
-            Execute(match.MatchId);
+            await Execute(match.MatchId);
+
+            await matchService.UpdateStatus(match, MatchStatus.Completed);
         }
 
         return result;
@@ -89,18 +94,23 @@ public class RefundMatchServiceImp : IRefundMatchService
         };
     }
 
-    private void Execute(int matchId)
+    private async Task Execute(int matchId)
     {
         var criteria = new RefundPushCriteria
         {
             MatchId = matchId
         };
 
-        foreach (var server in appSettingsKey.SiteDbServer)
-        {
-            criteria.DbServer = server;
-            repository.Execute(criteria);
-        }
+        var servers = appSettingsKey.SiteDbServer;
+        var tasks = servers.Select(server => ExecuteOneSiteDb(criteria, server)).ToList();
+        await Task.WhenAll(tasks);
+
+    }
+
+    private async Task ExecuteOneSiteDb(RefundPushCriteria criteria, string dbServer)
+    {
+        criteria.DbServer = dbServer;
+        await repository.ExecuteAsync(criteria);
     }
 
     private async Task<Result> ValidateBeforeExecute(int matchId)
