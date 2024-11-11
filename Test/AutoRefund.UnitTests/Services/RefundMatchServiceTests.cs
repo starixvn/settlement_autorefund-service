@@ -15,12 +15,15 @@ namespace AutoRefund.UnitTests.Services;
 public class RefundMatchServiceTests
 {
     private readonly IDynamicRepository repository;
-    private readonly IRefundMatchService service;
+    private readonly ScaleOutSettleService scaleOutSettleService;
+    private readonly RefundMatchServiceImp service;
 
     public RefundMatchServiceTests()
     {
         repository = Substitute.For<IDynamicRepository>();
         var settleService = Substitute.For<ScaleOutSettleService>();
+        scaleOutSettleService = Substitute.For<ScaleOutSettleService>();
+        var matchService = Substitute.For<IMatchService>();
         var logDirectlyService = Substitute.For<LogService>();
         var xmlConvertService = Substitute.For<XmlConvertService>();
         var settings = new AppSettingsKey()
@@ -28,11 +31,11 @@ public class RefundMatchServiceTests
             RetryInterval = 1000,
             RetryCount = 15,
             EnvironmentName = "PRO",
-            SiteDbServer = new List<string> { "ABC" }
+            SiteDbServer = ["ABC"]
         };
         var appSettingsOptions = Options.Create(settings);
 
-        service = new RefundMatchServiceImp(repository, settleService, appSettingsOptions, logDirectlyService, xmlConvertService);
+        service = new RefundMatchServiceImp(repository, scaleOutSettleService, appSettingsOptions, logDirectlyService, xmlConvertService, matchService);
         settleService.ValidateEventAndTicket(Arg.Any<EventTicketRequest>()).Returns(new ResultMessage { ErrorMessage = "" });
     }
 
@@ -43,10 +46,11 @@ public class RefundMatchServiceTests
         var match = new Match { MatchId = 1 };
 
         // Act
+        scaleOutSettleService.ValidateEventAndTicket(Arg.Any<EventTicketRequest>()).Returns(new ResultMessage());
         var result = service.Push(match);
 
         // Assert
-        repository.Received().Execute(Arg.Any<RefundPushCriteria>());
+        repository.Received().ExecuteAsync(Arg.Any<RefundPushCriteria>());
         Assert.NotNull(result);
     }
 }

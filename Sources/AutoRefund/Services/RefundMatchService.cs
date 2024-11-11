@@ -11,35 +11,15 @@ public interface IRefundMatchService
     Task<Result> Push(Match match);
 }
 
-public class RefundMatchServiceImp : IRefundMatchService
+public class RefundMatchServiceImp(
+    IDynamicRepository repository,
+    ScaleOutSettleService scaleOutSettleService,
+    IOptions<AppSettingsKey> appSettingsKey,
+    LogService logService,
+    XmlConvertService xmlConvertService,
+    IMatchService matchService)
+    : IRefundMatchService
 {
-    private readonly IDynamicRepository repository;
-
-    private readonly AppSettingsKey appSettingsKey;
-
-    private readonly ScaleOutSettleService scaleOutSettleService;
-
-    private readonly LogService logService;
-
-    private readonly XmlConvertService xmlConvertService;
-    private readonly IMatchService matchService;
-
-    public RefundMatchServiceImp(
-        IDynamicRepository repository,
-        ScaleOutSettleService scaleOutSettleService,
-        IOptions<AppSettingsKey> appSettingsKey,
-        LogService logService,
-        XmlConvertService xmlConvertService,
-        IMatchService matchService)
-    {
-        this.appSettingsKey = appSettingsKey.Value;
-        this.repository = repository;
-        this.scaleOutSettleService = scaleOutSettleService;
-        this.logService = logService;
-        this.xmlConvertService = xmlConvertService;
-        this.matchService = matchService;
-    }
-
     public async Task<Result> Push(Match match)
     {
         var result = await ValidateBeforeExecute(match.MatchId);
@@ -101,10 +81,9 @@ public class RefundMatchServiceImp : IRefundMatchService
             MatchId = matchId
         };
 
-        var servers = appSettingsKey.SiteDbServer;
+        var servers = appSettingsKey.Value.SiteDbServer;
         var tasks = servers.Select(server => ExecuteOneSiteDb(criteria, server)).ToList();
         await Task.WhenAll(tasks);
-
     }
 
     private async Task ExecuteOneSiteDb(RefundPushCriteria criteria, string dbServer)
