@@ -19,29 +19,18 @@ public interface IMatchService
     Task CheckMissedMatch();
 }
 
-public class MatchServiceImp : IMatchService
+public class MatchServiceImp(
+    IDynamicRepository repository,
+    ICache cache,
+    IOptions<AppSettingsKey> appSettingsKey)
+    : IMatchService
 {
-    private readonly IDynamicRepository repository;
-
-    private readonly ICache cache;
-
-    private readonly AppSettingsKey appSettingsKey;
-
-    public MatchServiceImp(IDynamicRepository repository,
-        ICache cache,
-        IOptions<AppSettingsKey> appSettingsKey)
-    {
-        this.repository = repository;
-        this.cache = cache;
-        this.appSettingsKey = appSettingsKey.Value;
-    }
-
     public async Task<List<Match>> GetMatches()
     {
         var matches = (await repository.FetchAsync<Match>(new MatchListingCriteria())).ToList();
         var (_, leagueId) = await cache.TryGetAsync<int>(CacheKey.LeagueId);
 
-        return appSettingsKey.EnvironmentName switch
+        return appSettingsKey.Value.EnvironmentName switch
         {
             "PRO" => leagueId > 0 ? (from m in matches where m.LeagueId != leagueId select m).ToList() : matches,
             "UAT" => (from m in matches where m.LeagueId == leagueId select m).ToList(),

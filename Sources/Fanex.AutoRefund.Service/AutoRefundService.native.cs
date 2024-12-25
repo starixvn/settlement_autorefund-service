@@ -1,115 +1,54 @@
 ﻿using AutoRefund.Services;
-using Fanex.Caching;
-using Fanex.Logging;
 using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.Database;
-using Fanex.Logging.Sentry.RavenClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using ONEbook.UM;
-using ONEbook.UM.AspNetCore;
-using ONEbook.UM.Configurations;
-using ONEbook.UM.Transport;
-using SharpRaven;
+using ONEbook.UM.Services;
 using LogService = Fanex.Logging.LogService;
 
 namespace Fanex.AutoRefund.Service;
 
-public class AutoRefund : IHostedService
+public class AutoRefund(
+    IAutoRefundController autoRefundController,
+    IConfiguration configuration,
+    IMatchService matchService,
+    IMaintenanceService maintenanceService)
+    : BackgroundService
 {
-    private readonly IMaintenanceService maintenanceService;
-
-    private readonly IAutoRefundController autoRefundController;
-
-    private readonly IMatchService matchService;
-
-    private readonly IConfiguration configuration;
-
-    private bool running;
-
     private int counter;
 
     private int timeCounter;
 
-    public AutoRefund(
-        IAutoRefundController autoRefundController,
-        IConfiguration configuration,
-        IMatchService matchService,
-        IMaintenanceService maintenanceService)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        this.autoRefundController = autoRefundController;
-        this.matchService = matchService;
-        this.maintenanceService = maintenanceService;
-        this.configuration = configuration;
-        InitializeExtraComponent();
-        InitializeSetting();
-    }
+        using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(configuration.GetValue<int>("ServiceInterval")));
 
-    private void InitializeSetting()
-    {
-        StartUmSetting();
-        StartLogSetting();
-    }
-
-    private static void InitializeExtraComponent()
-    {
-        TaskScheduler.UnobservedTaskException += TaskSchedulerUnobservedTaskException;
-    }
-
-    private static void TaskSchedulerUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
-    {
-        e.SetObserved();
-        e.Exception.Handle(x =>
+        while (await timer.WaitForNextTickAsync(stoppingToken))
         {
-            var logMessage = new LogMessage(x.Message)
-                 .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(x))
-                 .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
-                 .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(x))
-                 .ToString();
-            LogService.Error(logMessage);
-            return true;
-        });
-    }
-
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        running = true;
-        var autoRefundThread = new Thread(RefundThreadProcess);
-        Console.WriteLine($"AutoRefund Starting at {DateTime.Now}");
-        autoRefundThread.Start();
-        return Task.CompletedTask;
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        running = false;
-        Console.WriteLine($"AutoRefund Stopping at {DateTime.Now}");
-        return Task.CompletedTask;
-    }
-
-    private void RefundThreadProcess()
-    {
-        while (running)
-        {
-            if (!maintenanceService.IsMaintenance)
-            {
-                MainProcess();
-                Thread.Sleep(int.Parse(configuration.GetSection("ServiceInterval").Value));
-            }
+            await HandleAutoAsync();
         }
     }
 
-    private void MainProcess()
+    private async Task HandleAutoAsync()
     {
         try
         {
-            autoRefundController.ProcessAsync();
-            HandleMissedMatch();
-            HandleGarbageCollector();
+            var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
+            if (!isMaintenance)
+            {
+                await autoRefundController.ProcessAsync();
+                HandleMissedMatch();
+                HandleGarbageCollector();
+            }
         }
         catch (Exception exception)
         {
-            LogService.Error("Fanex.AutoRefund.Service:", exception);
+            var logMessage = new LogMessage(exception.Message)
+                .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(exception))
+                .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(exception))
+                .ToString();
+            await LogService.ErrorAsync(logMessage);
         }
     }
 
@@ -133,29 +72,5 @@ public class AutoRefund : IHostedService
         }
 
         timeCounter += int.Parse(configuration.GetSection("ServiceInterval").Value);
-    }
-
-    private void StartUmSetting()
-    {
-        var umConfig = new UMClientConfiguration().Initialize(configuration);
-
-        UMClientManager
-           .UseConfig(umConfig)
-           .UseCacheService(new UMCacheService(new CacheService()))
-           .UseRestClient(new UMRestClient(umConfig));
-    }
-
-    private void StartLogSetting()
-    {
-        var logEngine = new List<ILogEngine>();
-
-        var sentryEngineOptions = new SentryEngineOptions
-        {
-            Dsn = new Dsn(configuration.GetSection("SentryToken").Value)
-        };
-
-        logEngine.Add(new SentryLogging(sentryEngineOptions));
-
-        LogManager.SetDefaultLogCategory(configuration.GetSection("SiteCategory").Value).Use(logEngine);
     }
 }

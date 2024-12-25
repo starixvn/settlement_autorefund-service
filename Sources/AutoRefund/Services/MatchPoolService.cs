@@ -11,20 +11,11 @@ public interface IMatchPoolService
     void RemoveMatch(Match match);
 }
 
-public class MatchPoolServiceImp : IMatchPoolService
+public class MatchPoolServiceImp(IMatchService matchService) : IMatchPoolService
 {
-    private readonly IMatchService matchService;
+    private readonly List<Match> poolOfMatches = new();
 
-    private readonly List<Match> poolOfMatches;
-
-    private readonly object lockObject;
-
-    public MatchPoolServiceImp(IMatchService matchService)
-    {
-        this.matchService = matchService;
-        poolOfMatches = new List<Match>();
-        lockObject = new object();
-    }
+    private readonly Lock lockObject = new();
 
     public List<Match> PoolOfMatches
     {

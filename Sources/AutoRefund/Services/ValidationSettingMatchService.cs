@@ -13,7 +13,8 @@ public class ValidationSettingMatchServiceImp : IValidationSettingMatchService
     public void VerifySettingMatch(MatchChecking matchChecking)
     {
         var remark = matchChecking.Remark;
-        bool[] conditionsToCheck = { remark.IsMtdHold, remark.IsUndecided, remark.IsPending, remark.IsUnderSettle, remark.IsHoldKey };
+        bool[] conditionsToCheck = [remark.IsMtdHold, remark.IsUndecided, remark.IsPending, remark.IsUnderSettle, remark.IsHoldKey
+        ];
 
         if (!remark.IsRefundAll)
         {

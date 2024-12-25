@@ -9,18 +9,9 @@ public interface IValidationTicketMatchService
     Task VerifyTicketMatch(Match match);
 }
 
-public class ValidationTicketServiceImp : IValidationTicketMatchService
+public class ValidationTicketServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDynamicRepository repository)
+    : IValidationTicketMatchService
 {
-    private readonly AppSettingsKey appSettingsKey;
-
-    private readonly IDynamicRepository repository;
-
-    public ValidationTicketServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDynamicRepository repository)
-    {
-        this.appSettingsKey = appSettingsKey.Value;
-        this.repository = repository;
-    }
-
     public async Task VerifyTicketMatch(Match match)
     {
         var listTicketInfo = await GetAllTicketInfo(match);
@@ -38,20 +29,20 @@ public class ValidationTicketServiceImp : IValidationTicketMatchService
 
     private async Task<List<MatchTicketInfo>> GetAllTicketInfo(Match match)
     {
-        var listTicketInfo = new List<MatchTicketInfo>();
-        foreach (var server in appSettingsKey.SiteDbServer)
+        var criteria = new MatchTicketInfoCriteria
         {
-            var criteria = new MatchTicketInfoCriteria
-            {
-                MatchId = match.MatchId,
-                TypeId = match.TypeId,
-                DbServer = server
-            };
+            MatchId = match.MatchId,
+            TypeId = match.TypeId,
+        };
 
-            var ticketInfo = await repository.GetAsync<MatchTicketInfo>(criteria) ?? new MatchTicketInfo();
-            listTicketInfo.Add(ticketInfo);
-        }
-
+        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => GetTicketInfo(s, criteria));
+        var listTicketInfo = (await Task.WhenAll(tasks.ToArray())).ToList();
         return listTicketInfo;
+    }
+
+    private async Task<MatchTicketInfo> GetTicketInfo(string server, MatchTicketInfoCriteria criteria)
+    {
+        criteria.DbServer = server;
+        return await repository.GetAsync<MatchTicketInfo>(criteria) ?? new MatchTicketInfo();
     }
 }

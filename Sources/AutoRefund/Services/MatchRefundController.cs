@@ -9,43 +9,22 @@ public interface IMatchRefundController
     Task Process(Match match);
 }
 
-public class MatchRefundControllerImp : IMatchRefundController
+public class MatchRefundControllerImp(
+    IMatchPoolService matchPoolService,
+    IValidationService validationService,
+    IRefundMatchService refundMatchService,
+    IMatchService matchService,
+    LogService logService,
+    IOptions<AppSettingsKey> appSettingsKey)
+    : IMatchRefundController
 {
-    private readonly IMatchPoolService matchPoolService;
-
-    private readonly IValidationService validationService;
-
-    private readonly IRefundMatchService refundMatchService;
-
-    private readonly IMatchService matchService;
-
-    private readonly AppSettingsKey appSettingsKey;
-
-    private readonly LogService logService;
-
-    public MatchRefundControllerImp(
-        IMatchPoolService matchPoolService,
-        IValidationService validationService,
-        IRefundMatchService refundMatchService,
-        IMatchService matchService,
-        LogService logService,
-        IOptions<AppSettingsKey> appSettingsKey)
-    {
-        this.appSettingsKey = appSettingsKey.Value;
-        this.matchPoolService = matchPoolService;
-        this.validationService = validationService;
-        this.refundMatchService = refundMatchService;
-        this.matchService = matchService;
-        this.logService = logService;
-    }
-
     public async Task Process(Match match)
     {
         var started = true;
         match.IsChecking = true;
         var retryCount = 0;
         await matchService.UpdateStatus(match, MatchStatus.Running);
-        while (started && retryCount < appSettingsKey.RetryCount + 1)
+        while (started && retryCount < appSettingsKey.Value.RetryCount + 1)
         {
             try
             {
@@ -89,14 +68,14 @@ public class MatchRefundControllerImp : IMatchRefundController
     private async Task<int> ProcessWhenCachedException(int retryCount, Match match, AutoRefundException exception)
     {
         await matchService.UpdateRemark(match, exception.Description, MatchStatus.Running);
-        if (retryCount >= appSettingsKey.RetryCount)
+        if (retryCount >= appSettingsKey.Value.RetryCount)
         {
             await logService.ActionLog(match, exception.Description);
             matchPoolService.RemoveAndUpdateStatus(match, MatchStatus.Failed);
         }
         else
         {
-            await Task.Delay(appSettingsKey.RetryInterval);
+            await Task.Delay(appSettingsKey.Value.RetryInterval);
         }
 
         return retryCount + 1;

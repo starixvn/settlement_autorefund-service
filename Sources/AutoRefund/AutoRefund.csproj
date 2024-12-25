@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-	  <TargetFramework>net8.0</TargetFramework>
-	  <Nullable>disable</Nullable>
-	  <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <Configurations>Debug;Release;LOCAL</Configurations>
   </PropertyGroup>
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Remove="AppSettingKeys.native.cs" />
     <Compile Remove="Constants\MatchType.cs" />
@@ -19,24 +18,18 @@
     <Compile Remove="Exceptions\MatchSingleRefundedException.native.cs" />
     <Compile Remove="Exceptions\SettingOffException.cs" />
   </ItemGroup>
-
-
-
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
-    <PackageReference Include="Fanex.Caching" Version="2.2.5" />
+    <PackageReference Include="Fanex.Caching" Version="2.2.7" />
     <PackageReference Include="Fanex.Caching.Redis.AspNetCore" Version="2.2.5" />
-    <PackageReference Include="Fanex.Data" Version="4.3.0.2" />
-    <PackageReference Include="Fanex.Data.Repository" Version="4.3.0.2" />
-    <PackageReference Include="Fanex.Data.SqlServer" Version="4.3.0.2" />
-    <PackageReference Include="Fanex.Logging" Version="2.0.1.1" />
+    <PackageReference Include="Fanex.Data" Version="4.3.2" />
+    <PackageReference Include="Fanex.Data.Repository" Version="4.3.2" />
+    <PackageReference Include="Fanex.Data.SqlServer" Version="4.3.2" />
+    <PackageReference Include="Fanex.Logging" Version="2.0.2" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
     <PackageReference Include="Fanex.Settlement.ScaleOut" Version="1.4.6.1" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
-    <PackageReference Include="ONEbook.UM.AspNetCore" Version="3.1.1.1" />
-    <PackageReference Include="ONEbook.UM.Transport" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
   </ItemGroup>
-
 </Project>

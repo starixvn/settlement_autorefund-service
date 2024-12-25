@@ -1,78 +1,72 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-	  <TargetFramework>net8.0</TargetFramework>
-	  <Nullable>disable</Nullable>
-	  <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
-  
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-	<ItemGroup>
-	  <None Remove="appsettings.json" />
-	  <None Remove="appsettings.KLDR.json" />
-	  <None Remove="appsettings.LOCAL.json" />
-	  <None Remove="appsettings.PROD.json" />
-	  <None Remove="appsettings.SIT.json" />
-	  <None Remove="appsettings.UAT.json" />
-	  <None Remove="auto-league-settings.ini" />
-	  <None Remove="AutoRefundInjector.native.cs.orig" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Include="appsettings.KLDR.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="appsettings.json" />
-		<Content Include="appsettings.LOCAL.json" />
-		<Content Include="appsettings.PROD.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="appsettings.SIT.json" />
-		<Content Include="appsettings.UAT.json" />
-		<Content Include="App_Data\SpName.xml">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Properties\launchSettings.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="AutoMapper" Version="13.0.1" />
-		<PackageReference Include="Fanex.Logging.Extensions" Version="1.0.6.1" />
-		<PackageReference Include="Fanex.Logging.Extensions.Database" Version="1.0.8" />
-		<PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="1.0.1.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="8.0.1" />
-		<PackageReference Include="ONEbook.UM.Transport" Version="3.1.2" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\AutoRefund\AutoRefund.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Update="appsettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="appsettings.LOCAL.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="appsettings.PRO.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="appsettings.SIT.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="appsettings.UAT.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="App_Data\SpName.xml">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+  <ItemGroup>
+    <None Remove="appsettings.json" />
+    <None Remove="appsettings.KLDR.json" />
+    <None Remove="appsettings.LOCAL.json" />
+    <None Remove="appsettings.PROD.json" />
+    <None Remove="appsettings.SIT.json" />
+    <None Remove="appsettings.UAT.json" />
+    <None Remove="auto-league-settings.ini" />
+    <None Remove="AutoRefundInjector.native.cs.orig" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="appsettings.KLDR.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="appsettings.json" />
+    <Content Include="appsettings.LOCAL.json" />
+    <Content Include="appsettings.PROD.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="appsettings.SIT.json" />
+    <Content Include="appsettings.UAT.json" />
+    <Content Include="App_Data\SpName.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Properties\launchSettings.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="Fanex.Logging.Extensions" Version="1.1.0" />
+    <PackageReference Include="Fanex.Logging.Extensions.Database" Version="1.1.0" />
+    <PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="2.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.0" />
+    <PackageReference Include="ONEbook.UM" Version="3.1.8" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AutoRefund\AutoRefund.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.LOCAL.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.PRO.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.SIT.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.UAT.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="App_Data\SpName.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
