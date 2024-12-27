@@ -1,4 +1,4 @@
-﻿namespace AutoRefund.Constants;
+﻿namespace AutoRefund.Core;
 
 public static class ActionName
 {

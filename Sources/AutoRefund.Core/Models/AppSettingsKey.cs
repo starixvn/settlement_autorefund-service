@@ -1,4 +1,4 @@
-﻿namespace AutoRefund.Models;
+﻿namespace AutoRefund.Core.Models;
 
 public class AppSettingsKey
 {

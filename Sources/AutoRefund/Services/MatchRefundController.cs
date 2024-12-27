@@ -1,6 +1,7 @@
 ﻿namespace AutoRefund.Services;
 
-using Constants;
+using AutoRefund.Core;
+using AutoRefund.Core.Models;
 using Exceptions;
 using Models;
 

@@ -1,4 +1,5 @@
-﻿using AutoRefund.Constants;
+﻿using AutoRefund.Core;
+using AutoRefund.Core.Models;
 using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Settlement.ScaleOut.Request;

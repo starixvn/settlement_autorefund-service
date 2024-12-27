@@ -10,8 +10,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="AppSettingKeys.native.cs" />
-    <Compile Remove="Constants\MatchType.cs" />
-    <Compile Remove="Constants\SettingsKey.cs" />
     <Compile Remove="Criteria\CheckingMarkedTicketsCriteria.cs" />
     <Compile Remove="Criteria\PushCriteria.cs" />
     <Compile Remove="Criteria\RefundMPPushCriteriacs.cs" />
@@ -31,5 +29,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AutoRefund.Core\AutoRefund.Core.csproj" />
   </ItemGroup>
 </Project>

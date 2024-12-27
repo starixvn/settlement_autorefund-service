@@ -1,4 +1,4 @@
-﻿using AutoRefund.Models;
+﻿using AutoRefund.Core.Models;
 using Fanex.AutoRefund.Service;
 using Fanex.Data.SqlServer;
 using Fanex.Logging.Sentry.RavenClient;
