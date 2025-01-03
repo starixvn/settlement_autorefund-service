@@ -1,19 +1,32 @@
-﻿namespace AutoEarlyRefund.Features.CheckSettleStatusMatch;
+﻿using AutoEarlyRefund.Models;
+using AutoEarlyRefund.Services;
 
-public class CheckSettleStatusMatchHandler
+namespace AutoEarlyRefund.Features.CheckSettleStatusMatch;
+
+public class CheckSettleStatusMatchHandler : IValidateHandler
 {
     private readonly IDynamicRepository repository;
-    public CheckSettleStatusMatchHandler(IDynamicRepository repository)
+    private readonly IValidateHandler? next;
+    public CheckSettleStatusMatchHandler(IDynamicRepository repository, IValidateHandler? next)
     {
         this.repository = repository;
+        this.next = next;
     }
 
-    public async Task HandleAsync(int matchId, CancellationToken cancellationToken)
+    public async Task<bool> HandleAsync(Match match)
     {
         var criteria = new CheckSettleStatusMatchCriteria
         {
-            MatchId = matchId
+            MatchId = match.MatchId
         };
-        await repository.ExecuteAsync(criteria, cancellationToken: cancellationToken);
+
+        await repository.ExecuteAsync(criteria);
+
+        if (criteria.ErrCode == 0 && next != null)
+        {
+            return await next.HandleAsync(match);
+        }
+
+        return criteria.ErrCode == 0;
     }
 }

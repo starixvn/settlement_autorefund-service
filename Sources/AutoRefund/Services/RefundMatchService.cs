@@ -55,13 +55,13 @@ public class RefundMatchServiceImp(
     private InsertLogCriteria CreateLogCriteria(int matchId)
     {
         const int soccer = 1;
-        var resources = new List<ResourceItem>
+        var resources = new List<Core.Models.ResourceItem>
         {
             new() { ResourceId = ResourceId.Halftime, HomeValue = string.Empty, AwayValue = string.Empty },
             new() { ResourceId = ResourceId.Final, HomeValue = string.Empty, AwayValue = string.Empty }
         };
 
-        var selectedResources = xmlConvertService.Serialize(new Resources
+        var selectedResources = xmlConvertService.Serialize(new Core.Models.Resources<ResourceItem>
         {
             ResourceItems = resources
         });

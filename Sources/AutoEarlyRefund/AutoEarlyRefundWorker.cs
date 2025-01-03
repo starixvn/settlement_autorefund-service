@@ -1,20 +1,33 @@
-﻿namespace AutoEarlyRefund;
+﻿using AutoEarlyRefund.Features.FetchItems;
+using AutoEarlyRefund.Services;
+using ONEbook.UM.Services;
 
-public class AutoEarlyRefundWorker : BackgroundService
+namespace AutoEarlyRefund;
+
+public class AutoEarlyRefundWorker(
+    IConfiguration configuration,
+    MatchPoolService matchPoolService,
+    ISettleOpaqueFacade settleOpaqueFacade,
+    IMaintenanceService maintenanceService) : BackgroundService
 {
-    private readonly IConfiguration configuration;
-
-    public AutoEarlyRefundWorker(IConfiguration configuration)
-    {
-        this.configuration = configuration;
-    }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(configuration.GetValue<int>("ServiceInterval")));
+        var intervalTime = TimeSpan.FromMilliseconds(configuration.GetValue<int>("ServiceInterval"));
+        using PeriodicTimer timer = new(intervalTime);
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
-            //await HandleAutoAsync();
+            var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
+            if (isMaintenance)
+            {
+                return;
+            }
+
+            var matches = await matchPoolService.PeekNewMatch();
+            matches.ForEach(match =>
+            {
+                Task.Run(() => settleOpaqueFacade.Settle(match));
+            });
         }
     }
 }

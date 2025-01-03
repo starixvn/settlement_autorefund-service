@@ -1,7 +1,4 @@
-﻿using AutoRefund.Core.Models;
-using Fanex.Settlement.Converter.Services;
-
-namespace AutoEarlyRefund.Models;
+﻿namespace AutoEarlyRefund.Models;
 
 public class Match
 {
@@ -30,5 +27,17 @@ public class Match
         ResourcesXml = xml;
 
         return this;
+    }
+
+
+    public override bool Equals(object obj)
+    {
+        return (obj is Match match)
+               && match.MatchId == MatchId;
+    }
+
+    public override int GetHashCode()
+    {
+        return MatchId;
     }
 }

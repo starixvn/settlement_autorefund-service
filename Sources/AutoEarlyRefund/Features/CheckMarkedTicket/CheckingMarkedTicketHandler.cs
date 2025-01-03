@@ -1,34 +1,37 @@
-﻿namespace AutoEarlyRefund.Features.CheckMarkedTicket;
+﻿using AutoEarlyRefund.Models;
+using AutoEarlyRefund.Services;
 
-public class CheckingMarkedTicketHandler
+namespace AutoEarlyRefund.Features.CheckMarkedTicket;
+
+public class CheckingMarkedTicketHandler(
+    IDynamicRepository repository,
+    IOptions<AppSettingsKey> appSettingsKey,
+    IValidateHandler? next)
+    : IValidateHandler
 {
-    private readonly IDynamicRepository repository;
-    private readonly IOptions<AppSettingsKey> appSettingsKey;
-
-    public CheckingMarkedTicketHandler(IDynamicRepository repository, IOptions<AppSettingsKey> appSettingsKey)
-    {
-        this.repository = repository;
-        this.appSettingsKey = appSettingsKey;
-    }
-
-    public async Task<bool> HandleAsync(int matchId, CancellationToken cancellationToken)
+    public async Task<bool> HandleAsync(Match match)
     {
         var criteria = new CheckingMarkedTicketCriteria
         {
-            MatchId = matchId
+            MatchId = match.MatchId
         };
 
-        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => CheckMarkedTicket(s, criteria, cancellationToken));
+        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => CheckMarkedTicket(s, criteria));
 
-        var results = await Task.WhenAll(tasks.ToArray());
+        var results = (await Task.WhenAll(tasks.ToArray())).ToList();
 
-        return results.Any(x => x);
+        if (results.Exists(x => !x) && next != null)
+        {
+            return await next.HandleAsync(match);
+        }
+
+        return results.Exists(x => x);
     }
 
-    private async Task<bool> CheckMarkedTicket(string s, CheckingMarkedTicketCriteria criteria, CancellationToken cancellationToken)
+    private async Task<bool> CheckMarkedTicket(string s, CheckingMarkedTicketCriteria criteria)
     {
         criteria.DbServer = s;
-        await repository.ExecuteAsync(criteria, cancellationToken: cancellationToken);
+        await repository.ExecuteAsync(criteria);
 
         return criteria.IsExistMarkedTicket;
     }

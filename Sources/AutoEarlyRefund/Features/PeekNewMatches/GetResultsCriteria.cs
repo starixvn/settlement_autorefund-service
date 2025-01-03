@@ -2,7 +2,7 @@
 
 namespace AutoEarlyRefund.Features.FetchItems;
 
-public class FetchItemsCriteria : CriteriaBase
+public class GetResultsCriteria : CriteriaBase
 {
     public override string GetSettingKey() => "NAP_Set_AutoRefund_Resource_ScheduleSel";
 

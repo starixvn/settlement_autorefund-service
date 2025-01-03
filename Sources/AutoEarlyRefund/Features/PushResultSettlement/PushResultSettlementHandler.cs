@@ -2,7 +2,12 @@
 
 namespace AutoEarlyRefund.Features.PushResultSettlement;
 
-public class PushResultSettlementHandler
+public interface IPushResultSettlementHandler
+{
+    Task HandleAsync(Match match, CancellationToken cancellationToken);
+}
+
+public class PushResultSettlementHandler : IPushResultSettlementHandler
 {
     private readonly IDynamicRepository repository;
     private readonly IOptions<AppSettingsKey> appSettingsKey;
@@ -26,6 +31,7 @@ public class PushResultSettlementHandler
         var tasks = appSettingsKey.Value.SiteDbServer.Select(s => PushResultSettlement(s, criteria, cancellationToken));
         await Task.WhenAll(tasks.ToArray());
     }
+
     private async Task PushResultSettlement(string s, PushResultSettlementCriteria criteria, CancellationToken cancellationToken)
     {
         criteria.DbServer = s;

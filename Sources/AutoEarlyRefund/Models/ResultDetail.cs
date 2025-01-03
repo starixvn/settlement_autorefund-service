@@ -7,4 +7,6 @@ public class ResultDetail
     public string HomeValue { get; set; }
     public string AwayValue { get; set; }
     public DateTime LastModifyDate { get; set; }
+
+    public override string ToString() => $"{ResourceId}({HomeValue}-{AwayValue})";
 }
