@@ -1,6 +1,4 @@
-﻿using Fanex.Data.Repository;
-
-namespace AutoEarlyRefund.Features.FetchItems;
+﻿namespace AutoEarlyRefund.Features.PeekNewMatches;
 
 public class GetResultsCriteria : CriteriaBase
 {

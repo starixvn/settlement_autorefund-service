@@ -2,8 +2,8 @@
 
 namespace AutoRefund.Services;
 
-using AutoRefund.Core;
 using AutoRefund.Core.Models;
+using Core;
 using Criteria;
 using Models;
 

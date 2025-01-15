@@ -5,18 +5,14 @@ namespace AutoEarlyRefund.Features.WriteLog;
 public interface IWriteLogService
 {
     Task WriteLogErrorSettle(Match match, string errorMessage);
+
     Task WriteLogPreSettlement(Match match);
+
     Task WriteLogSettle(Match match);
 }
 
-public class WriteLogService : IWriteLogService
+public class WriteLogService(IDynamicRepository repository) : IWriteLogService
 {
-    private readonly IDynamicRepository repository;
-    public WriteLogService(IDynamicRepository repository)
-    {
-        this.repository = repository;
-    }
-
     public async Task WriteLogPreSettlement(Match match)
     {
         await repository.ExecuteAsync(new WriteLogPreSettlementCriteria
@@ -39,7 +35,6 @@ public class WriteLogService : IWriteLogService
         await repository.ExecuteAsync(criteria);
     }
 
-
     public async Task WriteLogErrorSettle(Match match, string errorMessage)
     {
         await repository.ExecuteAsync(new WriteLogErrorSettleCriteria
@@ -49,6 +44,4 @@ public class WriteLogService : IWriteLogService
             //ActionId = ActionId.EarlyType
         });
     }
-
-
 }

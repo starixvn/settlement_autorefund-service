@@ -6,7 +6,7 @@ namespace AutoEarlyRefund.Features.CheckMarkedTicket;
 public class CheckingMarkedTicketHandler(
     IDynamicRepository repository,
     IOptions<AppSettingsKey> appSettingsKey,
-    IValidateHandler? next)
+    IValidateHandler next)
     : IValidateHandler
 {
     public async Task<bool> HandleAsync(Match match)

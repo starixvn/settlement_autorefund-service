@@ -1,7 +1,7 @@
 ﻿using AutoEarlyRefund.Models;
 using AutoRefund.Core;
 
-namespace AutoEarlyRefund.Features.FetchItems;
+namespace AutoEarlyRefund.Features.PeekNewMatches;
 
 public interface GetMatchesService
 {

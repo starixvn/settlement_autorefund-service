@@ -3,18 +3,9 @@ using AutoEarlyRefund.Services;
 
 namespace AutoEarlyRefund.Features.CheckEventAndTicket;
 
-public class CheckEventAndTicketHandler : IValidateHandler
+public class CheckEventAndTicketHandler(ScaleOutSettleService scaleOutSettleService, IValidateHandler next)
+    : IValidateHandler
 {
-    private readonly ScaleOutSettleService scaleOutSettleService;
-    private readonly IValidateHandler? next;
-
-
-    public CheckEventAndTicketHandler(ScaleOutSettleService scaleOutSettleService, IValidateHandler? next)
-    {
-        this.scaleOutSettleService = scaleOutSettleService;
-        this.next = next;
-    }
-
     public async Task<bool> HandleAsync(Match match)
     {
         var request = new EventTicketRequest

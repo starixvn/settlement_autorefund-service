@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<AppSettingsKey>(builder.Configuration);
 
-builder.Services.AddOneBookUm(builder.Configuration);
+builder.Services.AddOneBookUmForService(builder.Configuration);
 
 builder.Services.AddFanexLogSentry(builder.Configuration);
 
@@ -24,7 +24,7 @@ builder.Services.AddAutoMapper();
 
 builder.Services.AddAutoEarlyRefund();
 
-//builder.Services.AddHostedService<AutoRefundService>();
+//builder.Services.AddHostedService<Fanex.AutoRefund.Service.AutoRefund>();
 builder.Services.AddHostedService<AutoEarlyRefundWorker>();
 
 builder.Services.InitializeServices(builder.Configuration);

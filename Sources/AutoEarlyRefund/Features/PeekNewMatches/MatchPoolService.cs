@@ -1,20 +1,12 @@
 ﻿using AutoEarlyRefund.Models;
 
-namespace AutoEarlyRefund.Features.FetchItems;
+namespace AutoEarlyRefund.Features.PeekNewMatches;
 
-public class MatchPoolService
+public class MatchPoolService(GetMatchesService fetchItemsHandler)
 {
-    private readonly GetMatchesService fetchItemsHandler;
-
-    private readonly object lockObject = new();
+    private readonly Lock lockObject = new();
 
     private readonly List<Match> poolOfMatches = [];
-    public List<Match> PoolOfMatches => poolOfMatches;
-
-    public MatchPoolService(GetMatchesService fetchItemsHandler)
-    {
-        this.fetchItemsHandler = fetchItemsHandler;
-    }
 
     public void Remove(Match match)
     {
@@ -36,5 +28,4 @@ public class MatchPoolService
             return newMatches;
         }
     }
-
 }
