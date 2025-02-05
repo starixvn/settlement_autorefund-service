@@ -2,6 +2,7 @@
 using AutoEarlyRefund.Features.PushResultSettlement;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
+using AutoRefund.Core;
 
 namespace AutoEarlyRefund.Services;
 
@@ -21,17 +22,25 @@ public class SettleOpaqueFacadeImp(
 
     public async Task Settle(Match match)
     {
-        await validateHandler.HandleAsync(match);
+        try
+        {
+            await validateHandler.HandleAsync(match);
 
-        await writeLogService.WriteLogPreSettlement(match);
-        await writeLogService.WriteLogSettle(match);
+            await writeLogService.WriteLogPreSettlement(match);
+            await writeLogService.WriteLogSettle(match);
 
-        await insOrUpdAutoPayoutResultHandler.Handle(match, 1);
-        await UpdateMatch(match);
+            await insOrUpdAutoPayoutResultHandler.Handle(match, MatchStatus.Running);
+            await UpdateMatch(match);
 
-        await pushResultSettlementHandler.HandleAsync(match, CancellationToken.None);
+            await pushResultSettlementHandler.HandleAsync(match, CancellationToken.None);
 
-        await insOrUpdAutoPayoutResultHandler.Handle(match, 2);
+            await insOrUpdAutoPayoutResultHandler.Handle(match, MatchStatus.Completed);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
     }
 
 

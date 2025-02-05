@@ -12,6 +12,9 @@ public class BaseResourceItem
 
     [XmlAttribute("Away")]
     public string AwayValue { get; set; }
+
+    [XmlAttribute("Remark")]
+    public string Remark { get; set; }
 }
 
 

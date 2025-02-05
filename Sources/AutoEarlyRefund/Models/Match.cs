@@ -14,7 +14,8 @@ public class Match
             {
                 ResourceId = x.ResourceId,
                 HomeValue = x.HomeValue,
-                AwayValue = x.AwayValue
+                AwayValue = x.AwayValue,
+                Remark = x.Remark
             }).ToList();
 
         var resources = new Resources<ResourceItem>

@@ -7,11 +7,18 @@ public interface IInsOrUpdAutoPayoutResultHandler
     Task Handle(Match match, int statusId);
 }
 
-public class InsOrUpdAutoPayoutResultHandler(IDynamicRepository repository) : IInsOrUpdAutoPayoutResultHandler
+public class InsOrUpdAutoRefundResultHandler : IInsOrUpdAutoPayoutResultHandler
 {
+    private readonly IDynamicRepository repository;
+
+    public InsOrUpdAutoRefundResultHandler(IDynamicRepository repository)
+    {
+        this.repository = repository;
+    }
+
     public async Task Handle(Match match, int statusId)
     {
-        await repository.ExecuteAsync(new AutoPayoutResultInsOrUpdCriteria
+        await repository.ExecuteAsync(new InsOrUpdAutoRefundResultCriteria
         {
             MatchId = match.MatchId,
             StatusId = statusId,
