@@ -11,5 +11,9 @@ public class ResultDetail
     public byte ResultStatusId { get; set; }
     public short SettlementStatusId { get; set; }
 
+    public byte ResultSetting { get; set; }
+    public bool IsConfirmedRefund { get; set; }
+    public bool IsConfirmedRefundSdt { get; set; }
+
     public override string ToString() => $"{ResourceId}({HomeValue}-{AwayValue})";
 }
