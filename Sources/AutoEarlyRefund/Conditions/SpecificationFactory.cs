@@ -2,10 +2,10 @@
 
 namespace AutoEarlyRefund.Conditions;
 
-public class SpecificationFactory
+public static class SpecificationFactory
 {
 
-    public static ISpecification<ResultDetail> CreateSpecification(SourcesConditions condition)
+    public static ISpecification<Resource> CreateSpecification(SourcesConditions condition)
     {
         return condition.Conditions switch
         {

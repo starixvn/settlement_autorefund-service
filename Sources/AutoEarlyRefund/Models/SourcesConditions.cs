@@ -4,7 +4,7 @@ public class SourcesConditions
 {
     public int Id { get; set; }
     public short SportType { get; set; }
-    public string SourceId { get; set; }
+    public string ResourceId { get; set; }
     public string RuleName { get; set; }
 
     public string Action { get; set; }

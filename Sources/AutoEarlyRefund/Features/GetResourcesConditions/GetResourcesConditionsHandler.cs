@@ -13,22 +13,19 @@ namespace AutoEarlyRefund.Features.GetResourcesConditions
             this.repository = repository;
         }
 
-        public async Task<List<SourcesConditions>> HandleAsync(
-            short sportType,
-            short matchType,
-            short childMatchType,
-            List<TargetResourceTrigger> targetResourceTriggers)
+        public async Task<List<SourcesConditions>> HandleAsync(List<TargetResourceTrigger> targetResourceTriggers)
         {
-            var targetResources = targetResourceTriggers.First().TargetResource.Split(',').ToList();
-            var x = targetResources
-                .Where(x => x == "38301")
-                .Select(x => new
-                {
-                    ResourceId = x,
-                    SportType = sportType,
-                    childMatchType = childMatchType,
-                    matchType = matchType
-                }).ToList();
+            var x = targetResourceTriggers
+                .SelectMany(x => x.TargetResourceIds).Distinct()
+                .Where(x => x == "38301" || x == "38401")
+                .ToList();
+            var z = x.Select(x => new
+            {
+                ResourceId = x,
+                SportType = 1,
+                childMatchType = 202,
+                MatchType = 2
+            }).ToList();
 
             var options = new JsonSerializerOptions
             {
@@ -36,7 +33,7 @@ namespace AutoEarlyRefund.Features.GetResourcesConditions
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
-            var json = JsonSerializer.Serialize(x, options);
+            var json = JsonSerializer.Serialize(z, options);
 
             var results = await repository.FetchAsync<SourcesConditions>(new GetResourcesConditionsCriteria
             {

@@ -1,6 +1,7 @@
 ﻿using AutoEarlyRefund.Features.CheckEventAndTicket;
 using AutoEarlyRefund.Features.CheckSettleStatusMatch;
 using AutoEarlyRefund.Features.GetResourcesConditions;
+using AutoEarlyRefund.Features.GetResourcesInfo;
 using AutoEarlyRefund.Features.GetResourcesTrigger;
 using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
 using AutoEarlyRefund.Features.PeekNewMatches;
@@ -27,7 +28,8 @@ public static class AutoEarlyRefundExtensions
             .AddSingleton<IWriteLogService, WriteLogService>()
             .AddSingleton<ISettleOpaqueFacade, SettleOpaqueFacadeImp>()
             .AddSingleton<GetResourcesTriggerHandler>()
-            .AddSingleton<GetResourcesConditionsHandler>();
+            .AddSingleton<GetResourcesConditionsHandler>()
+            .AddSingleton<GetResourcesInfoHandler>();
 
         return services;
     }
