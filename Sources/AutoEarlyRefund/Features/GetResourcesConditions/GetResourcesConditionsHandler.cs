@@ -16,15 +16,34 @@ namespace AutoEarlyRefund.Features.GetResourcesConditions
         public async Task<List<SourcesConditions>> HandleAsync(List<TargetResourceTrigger> targetResourceTriggers)
         {
             var x = targetResourceTriggers
-                .SelectMany(x => x.TargetResourceIds).Distinct()
-                .Where(x => x == "38301" || x == "38401")
+                .SelectMany(x => x.TargetResourceIds.Select(r => new TargetResourceTrigger
+                {
+                    Id = x.Id,
+                    SportType = x.SportType,
+                    Action = x.Action,
+                    MatchType = x.MatchType,
+                    ChildMatchType = x.ChildMatchType,
+                    Conditions = x.Conditions,
+                    TargetIsCrrMatch = x.TargetIsCrrMatch,
+                    TargetIsCrrResource = x.TargetIsCrrResource,
+                    TargetResourceChildMatchType = x.TargetResourceChildMatchType,
+                    TargetResource = r
+
+                })).DistinctBy(x => new
+                {
+                    x.SportType,
+                    x.MatchType,
+                    x.ChildMatchType,
+                    x.TargetResource
+                })
                 .ToList();
+
             var z = x.Select(x => new
             {
-                ResourceId = x,
-                SportType = 1,
-                childMatchType = 202,
-                MatchType = 2
+                ResourceId = x.TargetResourceIds.First(),
+                SportType = x.SportType,
+                childMatchType = x.ChildMatchType,
+                MatchType = x.MatchType,
             }).ToList();
 
             var options = new JsonSerializerOptions

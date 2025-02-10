@@ -13,6 +13,8 @@ public class Resource
     public string AwayValue { get; set; } = string.Empty;
     public short ResultStatusId { get; set; }
     public short SettlementStatusId { get; set; }
-    public bool IsConfirmedRefundSdt { get; set; }
-    public bool IsConfirmedRefund { get; set; }
+
+    public byte ResultSetting { get; set; }
+    public bool IsConfirmedRefundSdt => (ResultSetting & (1 << 2)) != 0;
+    public bool IsConfirmedRefund => (ResultSetting & (1 << 1)) != 0;
 }

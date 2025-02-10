@@ -2,7 +2,12 @@
 
 public class GetResourcesInfoCriteria : CriteriaBase
 {
-    public string ResourceInfo { get; set; } = string.Empty;
+    public GetResourcesInfoCriteria(string resourceInfo)
+    {
+        ResourceInfo = resourceInfo ?? string.Empty;
+    }
+
+    public string ResourceInfo { get; set; }
     public override string GetSettingKey() => "NAP_Set_AutoRefund_ResourceInfo_Sel";
 
     public override bool IsValid() => true;

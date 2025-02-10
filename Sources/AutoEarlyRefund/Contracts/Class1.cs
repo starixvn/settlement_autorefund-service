@@ -32,6 +32,7 @@ public record ResultsCalculated(
 
 public record ResultsRefunded(
     int MatchId,
+    int LeagueId,
     short ShortType,
     short ChildMatchType,
     string Action,
@@ -39,12 +40,12 @@ public record ResultsRefunded(
     );
 
 public record ResultsRefundConfirmed(
+    int MatchId,
+    int LeagueId,
+    short ShortType,
+    short ChildMatchType,
+    string Action,
+    List<ResourceItem> Resources,
+    string EventId = "CfnRefundSDT"
     );
 
-
-public class ResourceItem
-{
-    public string ResourceId { get; set; }
-    public string HomeValue { get; set; }
-    public string AwayValue { get; set; }
-}

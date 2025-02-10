@@ -5,9 +5,9 @@ namespace AutoEarlyRefund.Conditions;
 public static class SpecificationFactory
 {
 
-    public static ISpecification<Resource> CreateSpecification(SourcesConditions condition)
+    public static ISpecification<SourcesConditions> CreateSpecification(SourcesConditions condition)
     {
-        return condition.Conditions switch
+        return (condition.SourceAction) switch
         {
             "Refund" => new RefundedSpecification(),
             "CfnRefund" => new ConfirmedRefundSpecification(),
