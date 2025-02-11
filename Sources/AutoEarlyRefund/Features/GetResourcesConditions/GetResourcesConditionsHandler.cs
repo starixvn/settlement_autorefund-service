@@ -44,7 +44,9 @@ namespace AutoEarlyRefund.Features.GetResourcesConditions
                 SportType = x.SportType,
                 childMatchType = x.ChildMatchType,
                 MatchType = x.MatchType,
-            }).ToList();
+            })
+            //.Where(x => x.ResourceId == "393")
+            .ToList();
 
             var options = new JsonSerializerOptions
             {

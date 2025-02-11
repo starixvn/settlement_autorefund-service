@@ -38,7 +38,7 @@ public class GetResourcesInfoHandler
 
         var resources = await repository.FetchAsync<Resource>(new GetResourcesInfoCriteria(json));
 
-        var newResources = sourcesConditions.Join(
+        var newResources = sourcesConditions.GroupJoin(
             resources,
             sc => sc.SourceResource,
             s => s.SourceResource,
@@ -56,15 +56,7 @@ public class GetResourcesInfoHandler
                 SourceResource = sc.SourceResource,
                 Conditions = sc.Conditions,
 
-                MatchId = s.MatchId,
-                ParentId = s.ParentId,
-                ResultTable = s.ResultTable,
-                HomeValue = s.HomeValue,
-                AwayValue = s.AwayValue,
-                ResultStatusId = s.ResultStatusId,
-                SettlementStatusId = s.SettlementStatusId,
-                IsConfirmedRefund = s.IsConfirmedRefund,
-                IsConfirmedRefundSdt = s.IsConfirmedRefundSdt
+                Resource = s.FirstOrDefault()
             }).ToList();
 
         return newResources;

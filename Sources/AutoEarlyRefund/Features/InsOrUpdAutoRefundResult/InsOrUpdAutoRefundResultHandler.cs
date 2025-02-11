@@ -18,11 +18,12 @@ public class InsOrUpdAutoRefundResultHandler : IInsOrUpdAutoPayoutResultHandler
 
     public async Task Handle(Match match, int statusId)
     {
-        await repository.ExecuteAsync(new InsOrUpdAutoRefundResultCriteria
+        var criteria = new InsOrUpdAutoRefundResultCriteria
         {
             MatchId = match.MatchId,
             StatusId = statusId,
             SelectedResources = match.ResourcesXml
-        });
+        };
+        await repository.ExecuteAsync(criteria);
     }
 }

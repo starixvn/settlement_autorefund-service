@@ -20,7 +20,7 @@ public class RefundedSpecification : ISpecification<SourcesConditions>
 {
     public bool IsSatisfiedBy(SourcesConditions entity)
     {
-        return entity.SettlementStatusId == (short)SettleStatus.Refunded;
+        return entity.Resource?.SettlementStatusId == (short)SettleStatus.Refunded;
     }
 }
 
@@ -28,7 +28,7 @@ public class CalculatedSpecification : ISpecification<SourcesConditions>
 {
     public bool IsSatisfiedBy(SourcesConditions entity)
     {
-        return entity.SettlementStatusId == (short)SettleStatus.Calculated;
+        return entity.Resource?.SettlementStatusId == (short)SettleStatus.Calculated;
     }
 }
 
@@ -36,7 +36,7 @@ public class ConfirmedRefundSdtSpecification : ISpecification<SourcesConditions>
 {
     public bool IsSatisfiedBy(SourcesConditions entity)
     {
-        return entity.IsConfirmedRefundSdt;
+        return entity.Resource is not null && entity.Resource.IsConfirmedRefundSdt;
     }
 }
 
@@ -44,7 +44,7 @@ public class ConfirmedRefundSpecification : ISpecification<SourcesConditions>
 {
     public bool IsSatisfiedBy(SourcesConditions entity)
     {
-        return entity.IsConfirmedRefund;
+        return entity.Resource is not null && entity.Resource.IsConfirmedRefund;
     }
 }
 

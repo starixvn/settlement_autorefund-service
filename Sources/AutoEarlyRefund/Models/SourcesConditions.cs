@@ -15,18 +15,7 @@ public class SourcesConditions
     public string SourceResource { get; set; } = string.Empty;
     public string Conditions { get; set; } = string.Empty;
 
-    //Source Resource Info
-    #region Resource Details
-    public int MatchId { get; set; }
-    public int ParentId { get; set; }
-    public int ResultTable { get; set; }
-    public string HomeValue { get; set; } = string.Empty;
-    public string AwayValue { get; set; } = string.Empty;
-    public short ResultStatusId { get; set; }
-    public short SettlementStatusId { get; set; }
-    public bool IsConfirmedRefundSdt { get; set; }
-    public bool IsConfirmedRefund { get; set; }
-    #endregion
+    public Resource Resource { get; set; }
 
-    public override string ToString() => $"{ResourceId}{RuleName}, Target: {SourceResource}({HomeValue}-{AwayValue})";
+    public override string ToString() => $"{ResourceId}-{RuleName}, Target: {SourceResource}";
 }

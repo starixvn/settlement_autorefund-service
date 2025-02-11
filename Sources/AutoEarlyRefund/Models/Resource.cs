@@ -1,4 +1,6 @@
-﻿namespace AutoEarlyRefund.Models;
+﻿using System.Text.Json;
+
+namespace AutoEarlyRefund.Models;
 
 public class Resource
 {
@@ -17,4 +19,7 @@ public class Resource
     public byte ResultSetting { get; set; }
     public bool IsConfirmedRefundSdt => (ResultSetting & (1 << 2)) != 0;
     public bool IsConfirmedRefund => (ResultSetting & (1 << 1)) != 0;
+
+    public override string ToString()
+        => JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
 }

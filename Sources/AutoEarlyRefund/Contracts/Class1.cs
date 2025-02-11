@@ -36,7 +36,8 @@ public record ResultsRefunded(
     short ShortType,
     short ChildMatchType,
     string Action,
-    List<ResourceItem> Resources
+    List<ResourceItem> Resources,
+    string EventId = "Refund"
     );
 
 public record ResultsRefundConfirmed(

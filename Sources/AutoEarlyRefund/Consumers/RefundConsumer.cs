@@ -17,65 +17,77 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
     readonly GetResourcesConditionsHandler getResourcesConditionsHandler;
     private readonly GetResourcesInfoHandler resourcesInfoHandler;
     private readonly IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler;
+    private readonly XmlConvertService xmlConvertService;
 
     public RefundConsumer(
         ILogger<RefundConsumer> logger,
         GetResourcesTriggerHandler getResourcesTriggerHandler,
         GetResourcesConditionsHandler getResourcesConditionsHandler,
         GetResourcesInfoHandler resourcesInfoHandler,
-        IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler)
+        IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler,
+        XmlConvertService xmlConvertService)
     {
         this.logger = logger;
         this.getResourcesTriggerHandler = getResourcesTriggerHandler;
         this.getResourcesConditionsHandler = getResourcesConditionsHandler;
         this.resourcesInfoHandler = resourcesInfoHandler;
         this.insOrUpdAutoPayoutResultHandler = insOrUpdAutoPayoutResultHandler;
+        this.xmlConvertService = xmlConvertService;
     }
 
     public async Task Consume(ConsumeContext<ResultsRefunded> context)
     {
         logger.LogInformation("Refund result received: {MatchId}", context.Message.MatchId);
 
-        var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(new GetResourcesTriggerCriteria
+        var criteria = new GetResourcesTriggerCriteria
         {
-            Action = context.Message.Action,
-            SportType = context.Message.ShortType,
-            ChildMatchType = context.Message.ChildMatchType,
+            Action = context.Message.EventId,
+            SportType = 1,
+            ChildMatchType = 202,
             ResourceIds = string.Join(",", context.Message.Resources.Select(x => x.ResourceId))
-        });
+        };
 
-        var resourceConditions = await getResourcesConditionsHandler.HandleAsync(triggerResources);
-
-        var resultDetails = (await resourcesInfoHandler.HandleAsync(context.Message.MatchId, resourceConditions))
-            .ToDictionary(x => x.SourceResource, x => x);
-
-        var conditions = resourceConditions
-            .GroupBy(x => new { x.ResourceId, x.RuleName })
-            .ToDictionary(g => g.Key, g => g.ToList());
-
-        var validResults = new List<string>();
-        foreach (var (ruleKey, sourceCondition) in conditions)
+        var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(criteria);
+        if (triggerResources.Count == 0)
         {
-            var valid = sourceCondition.All(sc =>
-                resultDetails.TryGetValue(sc.SourceResource, out var resultDetail));
-
-            if (valid)
-            {
-                validResults.Add(ruleKey.ResourceId);
-                break;
-            }
+            logger.LogInformation("Refund result Done: {MatchId}", context.Message.MatchId);
+            return;
         }
+        var resourceConditions = await getResourcesConditionsHandler.HandleAsync(triggerResources);
+        var sourceResources = await resourcesInfoHandler.HandleAsync(context.Message.MatchId, resourceConditions);
+
+        var validResults = sourceResources
+            .Where(x => x.Resource is not null)
+            .GroupBy(x => x.ResourceId)
+            .SelectMany(group =>
+                group.GroupBy(x => x.RuleName)
+                    .Where(ruleGroup => ruleGroup.All(sc =>
+                        SpecificationFactory.CreateSpecification(sc).IsSatisfiedBy(sc)))
+                    .Select(ruleGroup => new
+                    {
+                        ResourceId = group.Key,
+                        RuleName = ruleGroup.Key,
+                    })
+                    .Take(1)
+            )
+            .ToList();
 
         var match = new Match
         {
             MatchId = context.Message.MatchId,
-            LeagueId = context.Message.LeagueId,
-            ResultDetails = []
-        };
+            ResultDetails = validResults.Select(x => new ResultDetail
+            {
+                ResourceId = x.ResourceId,
+                HomeValue = "",
+                AwayValue = "",
+                Remark = x.RuleName,
+            }).ToList()
+        }.WithResourcesXml(xmlConvertService);
 
-        await this.insOrUpdAutoPayoutResultHandler.Handle(match, 0);
 
+        //await this.insOrUpdAutoPayoutResultHandler.Handle(match, 0);
 
+        logger.LogInformation("Refund result Done: {MatchId}", context.Message.MatchId);
     }
 
     public async Task Consume(ConsumeContext<ResultsRefundConfirmed> context)
@@ -90,6 +102,11 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
         };
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(criteria);
+        if (triggerResources.Count == 0)
+        {
+            logger.LogInformation("Refund result Done: {MatchId}", context.Message.MatchId);
+            return;
+        }
         var conditions = await getResourcesConditionsHandler.HandleAsync(triggerResources);
         var sourceResources = await resourcesInfoHandler.HandleAsync(context.Message.MatchId, conditions);
 
