@@ -7,6 +7,7 @@ public class SourcesConditions
     public string ResourceId { get; set; } = string.Empty;
     public short ChildMatchType { get; set; }
     public short MatchType { get; set; }
+    public int RuleId { get; set; }
     public string RuleName { get; set; } = string.Empty;
 
     public string SourceAction { get; set; }
@@ -17,5 +18,5 @@ public class SourcesConditions
 
     public Resource Resource { get; set; }
 
-    public override string ToString() => $"{ResourceId}-{RuleName}, Target: {SourceResource}";
+    public override string ToString() => $"{ResourceId}-{RuleName}-{SourceMatchType}-{SourceChildMatchType}-{SourceResource}, Target: {SourceResource}";
 }

@@ -15,7 +15,8 @@ public class Match
                 ResourceId = x.ResourceId,
                 HomeValue = x.HomeValue,
                 AwayValue = x.AwayValue,
-                Remark = x.Remark
+                Remark = x.Remark,
+                SourceId = x.SourceId,
             }).ToList();
 
         var resources = new Resources<ResourceItem>
@@ -29,7 +30,6 @@ public class Match
 
         return this;
     }
-
 
     public override bool Equals(object obj)
     {

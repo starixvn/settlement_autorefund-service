@@ -22,7 +22,6 @@ public class ResourceItem : BaseResourceItem
 {
     private string determined = "0";
 
-
     [XmlAttribute("OtherInfo")]
     public string OtherInfo { get; set; }
 
@@ -35,6 +34,9 @@ public class ResourceItem : BaseResourceItem
 
     [XmlIgnore]
     public bool IsSettleDetermined { get; set; }
+
+    [XmlAttribute("SourceId")]
+    public string SourceId { get; set; }
 }
 
 

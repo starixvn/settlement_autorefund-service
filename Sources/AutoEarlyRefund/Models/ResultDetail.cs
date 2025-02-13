@@ -3,6 +3,7 @@ public class ResultDetail
 {
     public int MatchId { get; set; }
     public int LeagueId { get; set; }
+    public string SourceId { get; set; }
     public string ResourceId { get; set; } = string.Empty;
     public string HomeValue { get; set; } = string.Empty;
     public string AwayValue { get; set; } = string.Empty;

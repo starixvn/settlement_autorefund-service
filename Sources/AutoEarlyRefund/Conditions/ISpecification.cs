@@ -48,6 +48,34 @@ public class ConfirmedRefundSpecification : ISpecification<SourcesConditions>
     }
 }
 
+public class ConfirmedRefundNTSpecification : ISpecification<SourcesConditions>
+{
+    public bool IsSatisfiedBy(SourcesConditions entity)
+    {
+        return entity.Resource is not null
+            && entity.Resource.IsConfirmedRefund
+            && entity.Resource.CfmHomeValue == "NT";
+    }
+}
+
+public class ParentMatchCalculatedWinLostSpecification : ISpecification<SourcesConditions>
+{
+    public bool IsSatisfiedBy(SourcesConditions entity)
+    {
+        return entity.Resource?.SettlementStatusId == (short)SettleStatus.Calculated
+            && !entity.Resource.HomeValue.Equals(entity.Resource.AwayValue);
+    }
+}
+
+public class RelatedMatchCalculatedWinLostSpecification : ISpecification<SourcesConditions>
+{
+    public bool IsSatisfiedBy(SourcesConditions entity)
+    {
+        return entity.Resource?.SettlementStatusId == (short)SettleStatus.Calculated
+            && !entity.Resource.HomeValue.Equals(entity.Resource.AwayValue);
+    }
+}
+
 public class UseCaseSpecification : ISpecification<SourcesConditions>
 {
     private readonly List<ISpecification<SourcesConditions>> conditions;

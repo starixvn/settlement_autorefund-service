@@ -9,10 +9,12 @@ public class Resource
     public short SportType { get; set; }
     public int ResultTable { get; set; }
     public string SourceResource { get; set; } = string.Empty;
-    public int SourceMatchType { get; set; }
-    public int SourceChildMatchType { get; set; }
+    public short SourceMatchType { get; set; }
+    public short SourceChildMatchType { get; set; }
     public string HomeValue { get; set; } = string.Empty;
     public string AwayValue { get; set; } = string.Empty;
+    public string CfmHomeValue { get; set; } = string.Empty;
+    public string CfmAwayValue { get; set; } = string.Empty;
     public short ResultStatusId { get; set; }
     public short SettlementStatusId { get; set; }
 

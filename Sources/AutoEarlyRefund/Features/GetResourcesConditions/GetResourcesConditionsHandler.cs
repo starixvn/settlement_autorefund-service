@@ -13,7 +13,7 @@ namespace AutoEarlyRefund.Features.GetResourcesConditions
             this.repository = repository;
         }
 
-        public async Task<List<SourcesConditions>> HandleAsync(List<TargetResourceTrigger> targetResourceTriggers)
+        public async Task<List<SourcesConditions>> GetConditionsAsync(List<TargetResourceTrigger> targetResourceTriggers)
         {
             var x = targetResourceTriggers
                 .SelectMany(x => x.TargetResourceIds.Select(r => new TargetResourceTrigger
@@ -36,32 +36,33 @@ namespace AutoEarlyRefund.Features.GetResourcesConditions
                     x.ChildMatchType,
                     x.TargetResource
                 })
-                .ToList();
-
-            var z = x.Select(x => new
-            {
-                ResourceId = x.TargetResourceIds.First(),
-                SportType = x.SportType,
-                childMatchType = x.ChildMatchType,
-                MatchType = x.MatchType,
-            })
-            //.Where(x => x.ResourceId == "393")
+                .Select(x => new SourcesConditionsItemRequest
+                {
+                    ResourceId = x.TargetResourceIds.First(),
+                    SportType = x.SportType,
+                    childMatchType = x.ChildMatchType,
+                    MatchType = x.MatchType,
+                    RuleId = 0,
+                })
             .ToList();
 
+            return await GetConditionsAsync(x);
+        }
+
+        public async Task<List<SourcesConditions>> GetConditionsAsync(List<SourcesConditionsItemRequest> request)
+        {
             var options = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
-            var json = JsonSerializer.Serialize(z, options);
+            var json = JsonSerializer.Serialize(request, options);
 
             var results = await repository.FetchAsync<SourcesConditions>(new GetResourcesConditionsCriteria
             {
                 ResourceInfo = json
             });
-
-
 
             return results.ToList();
         }

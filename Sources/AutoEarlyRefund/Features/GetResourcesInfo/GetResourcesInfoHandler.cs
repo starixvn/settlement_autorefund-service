@@ -23,10 +23,10 @@ public class GetResourcesInfoHandler
                 x.SourceResource
             }).Select(x => new
             {
-                SourceResource = x.Key.SourceResource,
-                SportType = x.Key.SportType,
-                SourceMatchType = x.Key.SourceMatchType,
-                sourceChildMatchType = x.Key.SourceChildMatchType,
+                x.Key.SourceResource,
+                x.Key.SportType,
+                x.Key.SourceMatchType,
+                x.Key.SourceChildMatchType,
                 MatchId = matchId
             }).ToList();
 
@@ -40,8 +40,8 @@ public class GetResourcesInfoHandler
 
         var newResources = sourcesConditions.GroupJoin(
             resources,
-            sc => sc.SourceResource,
-            s => s.SourceResource,
+            sc => new { sc.SourceResource, sc.SourceMatchType, sc.SourceChildMatchType },
+            s => new { s.SourceResource, s.SourceMatchType, s.SourceChildMatchType },
             (sc, s) => new SourcesConditions
             {
                 Id = sc.Id,

@@ -11,7 +11,6 @@ public interface ISettleOpaqueFacade
     Task Settle(Match match);
 }
 
-
 public class SettleOpaqueFacadeImp(
     ScaleOutSettleService scaleOutSettleService,
     IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler,
