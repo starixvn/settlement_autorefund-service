@@ -1,4 +1,4 @@
-﻿namespace AutoRefund.Models;
+﻿namespace AutoRefund.Core.Models;
 
 public class Result
 {
@@ -11,4 +11,6 @@ public class Result
     public int ErrCode { get; set; }
 
     public string ErrMsg { get; set; }
+
+    public bool IsSuccess => ErrCode == 0;
 }

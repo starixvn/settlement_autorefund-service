@@ -1,4 +1,5 @@
 ﻿using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+using AutoEarlyRefund.Features.PeekNewMatches;
 using AutoEarlyRefund.Features.PushResultSettlement;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
@@ -16,19 +17,24 @@ public class SettleOpaqueFacadeImp(
     IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler,
     IPushResultSettlementHandler pushResultSettlementHandler,
     IWriteLogService writeLogService,
-    IValidateHandler validateHandler) : ISettleOpaqueFacade
+    IValidateHandler validateHandler,
+    MatchPoolService matchPoolService) : ISettleOpaqueFacade
 {
 
     public async Task Settle(Match match)
     {
         try
         {
-            await validateHandler.HandleAsync(match);
-
+            var result = await validateHandler.HandleAsync(match);
+            if (!result.IsSuccess)
+            {
+                return;
+            }
             await writeLogService.WriteLogPreSettlement(match);
             await writeLogService.WriteLogSettle(match);
 
             await insOrUpdAutoPayoutResultHandler.Handle(match, MatchStatus.Running);
+
             await UpdateMatch(match);
 
             await pushResultSettlementHandler.HandleAsync(match, CancellationToken.None);
@@ -39,6 +45,10 @@ public class SettleOpaqueFacadeImp(
         {
             Console.WriteLine(ex);
             throw;
+        }
+        finally
+        {
+            matchPoolService.Remove(match);
         }
     }
 

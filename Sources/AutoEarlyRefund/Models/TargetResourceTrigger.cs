@@ -8,13 +8,13 @@ public class TargetResourceTrigger
     public short MatchType { get; set; }
     public short ChildMatchType { get; set; }
     public string Conditions { get; set; } = string.Empty;
-    public bool TargetIsCrrMatch { get; set; }
-    public bool TargetIsCrrResource { get; set; }
-    public string TargetResourceChildMatchType { get; set; } = string.Empty;
+    public int TargetIsCrrMatch { get; set; }
+    public int TargetIsCrrResource { get; set; }
+    public int TargetResourceChildMatchType { get; set; }
     public string TargetResource { get; set; } = string.Empty;
 
-    public List<string> TargetResourceIds => !string.IsNullOrEmpty(TargetResource)
-            ? TargetResource.Split(',').ToList()
+    public string[] TargetResourceIds => !string.IsNullOrEmpty(TargetResource)
+            ? TargetResource.Split(',')
             : [];
 }
 

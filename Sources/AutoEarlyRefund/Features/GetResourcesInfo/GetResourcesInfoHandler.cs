@@ -47,6 +47,7 @@ public class GetResourcesInfoHandler
                 Id = sc.Id,
                 SportType = sc.SportType,
                 ResourceId = sc.ResourceId,
+                RuleId = sc.RuleId,
                 RuleName = sc.RuleName,
                 SourceAction = sc.SourceAction,
                 MatchType = sc.MatchType,

@@ -16,30 +16,28 @@ public class CheckingMarkedTicketHandler : IValidateHandler
         this.next = next;
     }
 
-    //public CheckingMarkedTicketHandler(IDynamicRepository repository, IOptions<AppSettingsKey> appSettingsKey)
-    //{
-    //    this.repository = repository;
-    //    this.appSettingsKey = appSettingsKey;
-    //}
-
-    public async Task<bool> HandleAsync(Match match)
+    public async Task<Result> HandleAsync(Match match)
     {
         var criteria = new CheckingMarkedTicketCriteria
         {
             MatchId = match.MatchId,
-            Action = "REFUND"
+            ResourceIds = string.Join(",", match.ResultDetails.Select(x => x.ResourceId)),
         };
 
         var tasks = appSettingsKey.Value.SiteDbServer.Select(s => CheckMarkedTicket(s, criteria));
 
         var results = await Task.WhenAll(tasks.ToArray());
 
-        //if (results.Any(x => !x) && next != null)
-        //{
-        return await next.HandleAsync(match);
-        //}
+        if (results.All(x => !x) && next != null)
+        {
+            return await next.HandleAsync(match);
+        }
 
-        return results.Any(x => x);
+        return new Result
+        {
+            ErrCode = 111,
+            ErrMsg = "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again."
+        };
     }
 
     private async Task<bool> CheckMarkedTicket(string s, CheckingMarkedTicketCriteria criteria)

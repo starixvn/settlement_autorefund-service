@@ -7,7 +7,7 @@ public class Match
     public List<ResultDetail> ResultDetails { get; set; } = [];
     public string ResourcesXml { get; set; } = "";
 
-    public Match WithResourcesXml(XmlConvertService xmlConvertService)
+    public Match WithResourcesXml(XmlConvertService xmlConvertService, bool hasOtherInfo = true)
     {
         var selectedResources = ResultDetails
             .Select(x => new ResourceItem
@@ -17,6 +17,7 @@ public class Match
                 AwayValue = x.AwayValue,
                 Remark = x.Remark,
                 SourceId = x.SourceId,
+                OtherInfo = hasOtherInfo ? x.OtherInfo : string.Empty,
             }).ToList();
 
         var resources = new Resources<ResourceItem>

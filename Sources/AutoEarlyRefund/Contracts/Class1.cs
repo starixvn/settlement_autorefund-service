@@ -1,13 +1,14 @@
 ﻿namespace AutoEarlyRefund.Contracts;
 public record MatchCalculated(
     int MatchId,
+    int ParentId,
     short ShortType,
     short ChildMatchType,
-    string Action,
     int? HalfTimeHomeScore,
     int? HalfTimeAwayScore,
     int? FinalHomeScore,
-    int? FinalAwayScore
+    int? FinalAwayScore,
+     string Action = "Cal"
     );
 
 

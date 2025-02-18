@@ -33,23 +33,24 @@ namespace AutoEarlyRefund.Features.GetResourcesConditions
                 {
                     x.SportType,
                     x.MatchType,
-                    x.ChildMatchType,
+                    x.TargetResourceChildMatchType,
                     x.TargetResource
                 })
-                .Select(x => new SourcesConditionsItemRequest
+                .Select(x => new SourcesConditionsItem
                 {
                     ResourceId = x.TargetResourceIds.First(),
                     SportType = x.SportType,
-                    childMatchType = x.ChildMatchType,
+                    ChildMatchType = (short)x.TargetResourceChildMatchType,
                     MatchType = x.MatchType,
                     RuleId = 0,
                 })
+
             .ToList();
 
             return await GetConditionsAsync(x);
         }
 
-        public async Task<List<SourcesConditions>> GetConditionsAsync(List<SourcesConditionsItemRequest> request)
+        public async Task<List<SourcesConditions>> GetConditionsAsync(List<SourcesConditionsItem> request)
         {
             var options = new JsonSerializerOptions
             {

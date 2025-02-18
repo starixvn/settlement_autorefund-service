@@ -1,17 +1,18 @@
-﻿using AutoEarlyRefund.Models;
+﻿
+using AutoEarlyRefund.Models;
 
 namespace AutoEarlyRefund.Services;
 
 public interface IValidateHandler
 {
-    Task<bool> HandleAsync(Match match);
+    Task<Result> HandleAsync(Match match);
 }
 
 
 public class DefaultValidateHandler : IValidateHandler
 {
-    public async Task<bool> HandleAsync(Match match)
+    public async Task<Result> HandleAsync(Match match)
     {
-        return true;
+        return new Result();
     }
 }

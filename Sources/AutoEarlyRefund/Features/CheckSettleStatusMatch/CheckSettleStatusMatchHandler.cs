@@ -7,26 +7,36 @@ public class CheckSettleStatusMatchHandler : IValidateHandler
 {
     private readonly IDynamicRepository repository;
     private readonly IValidateHandler next;
+
     public CheckSettleStatusMatchHandler(IValidateHandler next, IDynamicRepository repository)
     {
         this.repository = repository;
         this.next = next;
     }
 
-    public async Task<bool> HandleAsync(Match match)
+    public async Task<Result> HandleAsync(Match match)
     {
         var criteria = new CheckSettleStatusMatchCriteria
         {
-            MatchId = match.MatchId
+            MatchId = match.MatchId,
+            Action = "REFUND",
+            IsEarly = true,
+            IsAutoRefund = true
         };
 
-        //await repository.ExecuteAsync(criteria);
+        await repository.ExecuteAsync(criteria);
 
-        //if (criteria.ErrCode == 0 && next != null)
+        var result = new Result
+        {
+            ErrCode = criteria.ErrCode,
+            ErrMsg = criteria.ErrMsg
+        };
+
+        if (result.IsSuccess && next is not null)
         {
             return await next.HandleAsync(match);
         }
 
-        return criteria.ErrCode == 0;
+        return result;
     }
 }

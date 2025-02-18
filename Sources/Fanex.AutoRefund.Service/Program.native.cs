@@ -57,7 +57,7 @@ builder.Services.InitializeServices(builder.Configuration);
 builder.Services.AddAutoEarlyRefund();
 
 //builder.Services.AddHostedService<AutoRefundService>();
-//builder.Services.AddHostedService<AutoEarlyRefundWorker>();
+builder.Services.AddHostedService<AutoEarlyRefundWorker>();
 
 var app = builder.Build();
 

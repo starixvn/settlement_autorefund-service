@@ -18,7 +18,9 @@ public class GetMatchesServiceImp(
     {
         var resultDetails = await repository.FetchAsync<ResultDetail>(new GetResultsCriteria());
 
+
         var matches = resultDetails
+            //.Where(x => x.ResourceId == "393")
             .GroupBy(x => new { x.MatchId, x.LeagueId })
             .Select(group => new Match
             {

@@ -1,20 +1,25 @@
-﻿namespace AutoEarlyRefund.Models;
+﻿using System.Text.Json;
+using AutoEarlyRefund.Features.GetResourcesConditions;
+
+namespace AutoEarlyRefund.Models;
 public class ResultDetail
 {
     public int MatchId { get; set; }
     public int LeagueId { get; set; }
-    public string SourceId { get; set; }
+    public int SportType { get; set; }
+    public string SourceId { get; set; } = string.Empty;
     public string ResourceId { get; set; } = string.Empty;
     public string HomeValue { get; set; } = string.Empty;
     public string AwayValue { get; set; } = string.Empty;
-    public DateTime LastModifyDate { get; set; }
     public string Remark { get; set; } = string.Empty;
-    public byte ResultStatusId { get; set; }
-    public short SettlementStatusId { get; set; }
+    public int ChildMatchType { get; set; }
+    public string OtherInfo { get; set; } = string.Empty;
 
-    public byte ResultSetting { get; set; }
-    public bool IsConfirmedRefund { get; set; }
-    public bool IsConfirmedRefundSdt { get; set; }
+    public SourcesConditionsItem? Conditions
+        => JsonSerializer.Deserialize<SourcesConditionsItem>(OtherInfo, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
 
     public override string ToString() => $"{ResourceId}({HomeValue}-{AwayValue})";
 }
