@@ -37,6 +37,7 @@ public class ResourceItem : BaseResourceItem
 
     [XmlAttribute("SourceId")]
     public string SourceId { get; set; }
+
 }
 
 

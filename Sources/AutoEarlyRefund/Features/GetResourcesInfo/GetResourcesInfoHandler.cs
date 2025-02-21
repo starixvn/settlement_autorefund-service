@@ -4,44 +4,28 @@ using AutoEarlyRefund.Models;
 
 namespace AutoEarlyRefund.Features.GetResourcesInfo;
 
-public class GetResourcesInfoHandler
+public class GetResourcesInfoHandler(IDynamicRepository repository)
 {
-    private readonly IDynamicRepository repository;
-
-    public GetResourcesInfoHandler(IDynamicRepository repository)
-    {
-        this.repository = repository;
-    }
     public async Task<List<SourcesConditions>> HandleAsync(int matchId, List<SourcesConditions> sourcesConditions)
     {
-        var groupBySources = sourcesConditions
-            .GroupBy(x => new
-            {
-                x.SportType,
-                x.SourceMatchType,
-                x.SourceChildMatchType,
-                x.SourceResource
-            }).Select(x => new
-            {
-                x.Key.SourceResource,
-                x.Key.SportType,
-                x.Key.SourceMatchType,
-                x.Key.SourceChildMatchType,
-                MatchId = matchId
-            }).ToList();
+        var groupedSources = GetDistinctGroupedSources(sourcesConditions, matchId);
 
-        var json = JsonSerializer.Serialize(groupBySources, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
+        var json = SerializeToJson(groupedSources);
 
         var resources = await repository.FetchAsync<Resource>(new GetResourcesInfoCriteria(json));
 
-        var newResources = sourcesConditions.GroupJoin(
+        var newResources = MapSourcesWithResources(sourcesConditions, resources.ToList());
+
+        return newResources;
+    }
+
+    private static List<SourcesConditions> MapSourcesWithResources(
+        List<SourcesConditions> sourcesConditions,
+        List<Resource> resources)
+        => sourcesConditions.GroupJoin(
             resources,
-            sc => new { sc.SourceResource, sc.SourceMatchType, sc.SourceChildMatchType },
-            s => new { s.SourceResource, s.SourceMatchType, s.SourceChildMatchType },
+            sc => new { sc.SourceResourceId, sc.SourceMatchType, sc.SourceChildMatchType },
+            s => new { SourceResourceId = s.SourceResource, s.SourceMatchType, s.SourceChildMatchType },
             (sc, s) => new SourcesConditions
             {
                 Id = sc.Id,
@@ -56,10 +40,32 @@ public class GetResourcesInfoHandler
                 SourceChildMatchType = sc.SourceChildMatchType,
                 SourceResource = sc.SourceResource,
                 Conditions = sc.Conditions,
+                SourceResourceId = sc.SourceResourceId,
 
                 Resource = s.FirstOrDefault()
             }).ToList();
 
-        return newResources;
-    }
+
+    private static List<ResourceInfoItemRequest> GetDistinctGroupedSources(List<SourcesConditions> sourcesConditions, int matchId)
+        => sourcesConditions
+            .Select(sc => new ResourceInfoItemRequest
+            {
+                SportType = sc.SportType,
+                SourceMatchType = sc.SourceMatchType,
+                SourceChildMatchType = sc.SourceChildMatchType,
+                SourceResource = sc.SourceResource,
+                MatchId = matchId
+
+            })
+
+            .Distinct()
+            .ToList();
+
+
+    private static string SerializeToJson(List<ResourceInfoItemRequest> groupedSources)
+        => JsonSerializer.Serialize(groupedSources, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        });
 }

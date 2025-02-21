@@ -33,13 +33,13 @@ public class SettleOpaqueFacadeImp(
             await writeLogService.WriteLogPreSettlement(match);
             await writeLogService.WriteLogSettle(match);
 
-            await insOrUpdAutoPayoutResultHandler.Handle(match, MatchStatus.Running);
+            await insOrUpdAutoPayoutResultHandler.Handle(match, AutoRefund.Core.ResultRefundStatus.Running);
 
             await UpdateMatch(match);
 
             await pushResultSettlementHandler.HandleAsync(match, CancellationToken.None);
 
-            await insOrUpdAutoPayoutResultHandler.Handle(match, MatchStatus.Completed);
+            await insOrUpdAutoPayoutResultHandler.Handle(match, AutoRefund.Core.ResultRefundStatus.Completed);
         }
         catch (Exception ex)
         {

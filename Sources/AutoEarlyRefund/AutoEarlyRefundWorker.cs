@@ -27,7 +27,7 @@ public class AutoEarlyRefundWorker(
 
             foreach (var item in matches)
             {
-                await settleOpaqueFacade.Settle(item);
+                //await settleOpaqueFacade.Settle(item);
             }
         }
     }

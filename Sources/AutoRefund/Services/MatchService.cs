@@ -73,7 +73,7 @@ public class MatchServiceImp(
     {
         var criteria = new UpdateStatusCriteria
         {
-            StatusId = MatchStatus.Failed
+            StatusId = ResultRefundStatus.Failed
         };
         await repository.ExecuteAsync(criteria);
     }

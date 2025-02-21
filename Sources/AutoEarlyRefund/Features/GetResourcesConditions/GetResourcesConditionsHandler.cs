@@ -4,18 +4,53 @@ using AutoEarlyRefund.Models;
 
 namespace AutoEarlyRefund.Features.GetResourcesConditions
 {
-    public class GetResourcesConditionsHandler
+    public class GetResourcesConditionsHandler(IDynamicRepository repository)
     {
-        private readonly IDynamicRepository repository;
-
-        public GetResourcesConditionsHandler(IDynamicRepository repository)
+        public async Task<List<SourcesConditions>> GetConditionsAsync(short matchType, List<TargetResourceTrigger> targetResourceTriggers)
         {
-            this.repository = repository;
+            var sourcesConditionsItems = GetSourcesConditionsItems(targetResourceTriggers)
+                .Select(x => x.WithMatchType(matchType))
+                .ToList();
+
+            var conditions = await GetConditionsAsync(sourcesConditionsItems);
+
+            return conditions.SelectMany(x => x.SourceResourceIds.Select(sr => new SourcesConditions
+            {
+                Id = x.Id,
+                SportType = x.SportType,
+                ResourceId = x.ResourceId,
+                RuleId = x.RuleId,
+                RuleName = x.RuleName,
+                SourceAction = x.SourceAction,
+                MatchType = x.MatchType,
+                ChildMatchType = x.ChildMatchType,
+                SourceMatchType = x.SourceMatchType,
+                SourceChildMatchType = x.SourceChildMatchType,
+                SourceResource = x.SourceResource,
+                SourceResourceId = sr,
+                Conditions = x.Conditions,
+            })).ToList();
         }
 
-        public async Task<List<SourcesConditions>> GetConditionsAsync(List<TargetResourceTrigger> targetResourceTriggers)
+        public async Task<List<SourcesConditions>> GetConditionsAsync(List<SourcesConditionsItem> request)
         {
-            var x = targetResourceTriggers
+            var json = JsonSerializer.Serialize(
+                request,
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                });
+
+            var results = await repository.FetchAsync<SourcesConditions>(new GetResourcesConditionsCriteria(json));
+
+            return results.ToList();
+        }
+
+
+        private List<SourcesConditionsItem> GetSourcesConditionsItems(List<TargetResourceTrigger> targetResourceTriggers)
+        {
+            return targetResourceTriggers
                 .SelectMany(x => x.TargetResourceIds.Select(r => new TargetResourceTrigger
                 {
                     Id = x.Id,
@@ -42,30 +77,8 @@ namespace AutoEarlyRefund.Features.GetResourcesConditions
                     SportType = x.SportType,
                     ChildMatchType = (short)x.TargetResourceChildMatchType,
                     MatchType = x.MatchType,
-                    RuleId = 0,
                 })
-
-            .ToList();
-
-            return await GetConditionsAsync(x);
-        }
-
-        public async Task<List<SourcesConditions>> GetConditionsAsync(List<SourcesConditionsItem> request)
-        {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            };
-
-            var json = JsonSerializer.Serialize(request, options);
-
-            var results = await repository.FetchAsync<SourcesConditions>(new GetResourcesConditionsCriteria
-            {
-                ResourceInfo = json
-            });
-
-            return results.ToList();
+                .ToList();
         }
     }
 }

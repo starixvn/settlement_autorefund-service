@@ -34,7 +34,7 @@ public class RefundMatchServiceImp(
 
             await Execute(match.MatchId);
 
-            await matchService.UpdateStatus(match, MatchStatus.Completed);
+            await matchService.UpdateStatus(match, ResultRefundStatus.Completed);
         }
 
         return result;

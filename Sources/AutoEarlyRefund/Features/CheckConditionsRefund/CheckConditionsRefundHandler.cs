@@ -6,22 +6,12 @@ using AutoEarlyRefund.Services;
 
 namespace AutoEarlyRefund.Features.CheckConditionsRefund;
 
-public class CheckConditionsRefundHandler : IValidateHandler
+public class CheckConditionsRefundHandler(
+    IValidateHandler next,
+    GetResourcesConditionsHandler conditionsHandler,
+    GetResourcesInfoHandler getResourcesInfoHandler)
+    : IValidateHandler
 {
-    private readonly IValidateHandler next;
-    private readonly GetResourcesConditionsHandler conditionsHandler;
-    private readonly GetResourcesInfoHandler getResourcesInfoHandler;
-
-    public CheckConditionsRefundHandler(
-        IValidateHandler next,
-        GetResourcesConditionsHandler conditionsHandler,
-        GetResourcesInfoHandler getResourcesInfoHandler)
-    {
-        this.next = next;
-        this.conditionsHandler = conditionsHandler;
-        this.getResourcesInfoHandler = getResourcesInfoHandler;
-    }
-
     public async Task<Result> HandleAsync(Match match)
     {
         var request = match.ResultDetails.Select(x => new SourcesConditionsItem
@@ -64,7 +54,7 @@ public class CheckConditionsRefundHandler : IValidateHandler
         };
 
 
-        if (result.IsSuccess && next is not null)
+        if (result.IsSuccess && next is not null && match.ResultDetails.Any())
         {
             return await next.HandleAsync(match);
         }

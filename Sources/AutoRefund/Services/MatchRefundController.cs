@@ -24,7 +24,7 @@ public class MatchRefundControllerImp(
         var started = true;
         match.IsChecking = true;
         var retryCount = 0;
-        await matchService.UpdateStatus(match, MatchStatus.Running);
+        await matchService.UpdateStatus(match, ResultRefundStatus.Running);
         while (started && retryCount < appSettingsKey.Value.RetryCount + 1)
         {
             try
@@ -54,7 +54,7 @@ public class MatchRefundControllerImp(
         if (!string.IsNullOrWhiteSpace(result.ErrMsg))
         {
             await logService.ActionLog(match, result.ErrMsg);
-            await matchService.UpdateRemark(match, result.ErrMsg, MatchStatus.Failed);
+            await matchService.UpdateRemark(match, result.ErrMsg, ResultRefundStatus.Failed);
         }
         matchPoolService.RemoveMatch(match);
     }
@@ -62,17 +62,17 @@ public class MatchRefundControllerImp(
     private async Task ProcessStopLoop(Match match, string error)
     {
         await logService.ActionLog(match, error);
-        await matchService.UpdateRemark(match, error, MatchStatus.Failed);
+        await matchService.UpdateRemark(match, error, ResultRefundStatus.Failed);
         matchPoolService.RemoveMatch(match);
     }
 
     private async Task<int> ProcessWhenCachedException(int retryCount, Match match, AutoRefundException exception)
     {
-        await matchService.UpdateRemark(match, exception.Description, MatchStatus.Running);
+        await matchService.UpdateRemark(match, exception.Description, ResultRefundStatus.Running);
         if (retryCount >= appSettingsKey.Value.RetryCount)
         {
             await logService.ActionLog(match, exception.Description);
-            matchPoolService.RemoveAndUpdateStatus(match, MatchStatus.Failed);
+            matchPoolService.RemoveAndUpdateStatus(match, ResultRefundStatus.Failed);
         }
         else
         {

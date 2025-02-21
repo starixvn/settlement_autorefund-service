@@ -5,8 +5,10 @@ public static class ActionName
     public const string Refund = "REFUND";
 }
 
-public static class MatchStatus
+public static class ResultRefundStatus
 {
+    public const int Initial = 0;
+
     public const int Running = 1;
 
     public const int Completed = 2;
