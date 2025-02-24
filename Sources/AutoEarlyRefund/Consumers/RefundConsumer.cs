@@ -137,17 +137,11 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
 
     private async Task HandleConsumer(int matchId, List<TargetResourceTrigger> triggerResources)
     {
-        if (triggerResources.Count == 0)
-        {
-            return;
-        }
+        if (triggerResources.Count == 0) return;
 
         var relatedMatchItems = await GetRelatedMatchItems(matchId, triggerResources);
 
-        if (relatedMatchItems.Count == 0)
-        {
-            return;
-        }
+        if (relatedMatchItems.Count == 0) return;
 
         var matchType = relatedMatchItems.First().MatchType;
         var targetMatchId = relatedMatchItems.First().TargetMatchId;
@@ -155,43 +149,8 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
         var conditions = await getResourcesConditionsHandler.GetConditionsAsync(matchType, triggerResources);
         var sourceResources = await resourcesInfoHandler.HandleAsync(targetMatchId, conditions);
 
-        var newSourceResources = sourceResources
-            .Where(x => x.Resource is not null)
-            .GroupBy(x => x.ResourceId)
-            .ToDictionary(g => g.Key, g => g.ToList());
-
-        var validResults = new List<SourcesConditions>();
-        foreach (var (resourceId, item) in newSourceResources)
-        {
-            var ruleGroup = item
-                .GroupBy(x => x.RuleId)
-                .ToDictionary(g => g.Key, g => g.ToList());
-
-            foreach (var (ruleId, condition) in ruleGroup)
-            {
-                var valid = condition.All(sc =>
-                {
-                    var spec = SpecificationFactory.CreateSpecification(sc);
-                    var isSatisfiedBy = spec.IsSatisfiedBy(sc);
-                    return isSatisfiedBy;
-                });
-
-                if (valid)
-                {
-                    var validCondition = condition.FirstOrDefault(x => x.SourceResourceId == resourceId && x.Resource.IsConfirmedRefundSdt)
-                        ?? condition.First();
-
-                    validResults.Add(validCondition);
-                    break;
-                }
-
-            }
-        }
-
-        if (validResults.Count == 0)
-        {
-            return;
-        }
+        var validResults = ExtractValidResults(sourceResources);
+        if (!validResults.Any()) return;
 
         var match = BuildMatch(targetMatchId, matchType, validResults);
 
@@ -199,6 +158,30 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
     }
 
 
+    private List<SourcesConditions> ExtractValidResults(List<SourcesConditions> sourceResources)
+    {
+        return sourceResources
+            .Where(x => x.Resource != null)
+            .GroupBy(x => x.ResourceId)
+            .SelectMany(group => ProcessResourceGroup(group))
+            .ToList();
+    }
+
+    private IEnumerable<SourcesConditions> ProcessResourceGroup(IGrouping<string, SourcesConditions> resourceGroup)
+    {
+        foreach (var ruleGroup in resourceGroup.GroupBy(x => x.RuleId))
+        {
+            var spec = new AllSpecification<SourcesConditions>(
+                ruleGroup.Select(sc => SpecificationFactory.CreateSpecification(sc)).ToArray());
+
+            if (ruleGroup.All(sc => spec.IsSatisfiedBy(sc)))
+            {
+                yield return ruleGroup.FirstOrDefault(x => x.SourceResourceId == resourceGroup.Key && x.Resource!.IsConfirmedRefundSdt)
+                             ?? ruleGroup.First();
+                yield break;
+            }
+        }
+    }
 
     private Match BuildMatch(int targetMatchId, short matchType, List<SourcesConditions> validResults)
     {
@@ -208,8 +191,8 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
             ResultDetails = validResults.Select(x => new ResultDetail
             {
                 ResourceId = x.ResourceId,
-                HomeValue = x.Resource.CfmHomeValue,
-                AwayValue = x.Resource.CfmAwayValue,
+                HomeValue = x.Resource!.CfmHomeValue,
+                AwayValue = x.Resource!.CfmAwayValue,
                 SourceId = x.RuleId.ToString(),
                 OtherInfo = JsonSerializer.Serialize(new { matchType, ruleId = x.RuleId })
             }).ToList()

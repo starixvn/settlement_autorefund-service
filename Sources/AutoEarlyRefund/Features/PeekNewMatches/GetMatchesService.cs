@@ -20,12 +20,13 @@ public class GetMatchesServiceImp(
 
 
         var matches = resultDetails
-            //.Where(x => x.ResourceId == "393")
-            .GroupBy(x => new { x.MatchId, x.LeagueId })
+            .GroupBy(x => new { x.MatchId, x.LeagueId, x.SportType, x.ChildMatchType })
             .Select(group => new Match
             {
                 MatchId = group.Key.MatchId,
                 LeagueId = group.Key.LeagueId,
+                SportType = group.Key.SportType,
+                ChildMatchType = group.Key.ChildMatchType,
                 ResultDetails = group.ToList()
             })
             .Select(x => x.WithResourcesXml(xmlConvertService));
@@ -49,9 +50,3 @@ public class GetMatchesServiceImp(
         };
     }
 }
-
-// need to
-// have to
-// must
-// must not
-// not have to

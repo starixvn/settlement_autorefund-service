@@ -4,7 +4,12 @@ using AutoEarlyRefund.Models;
 
 namespace AutoEarlyRefund.Features.GetResourcesInfo;
 
-public class GetResourcesInfoHandler(IDynamicRepository repository)
+public interface IGetResourcesInfoHandler
+{
+    Task<List<SourcesConditions>> HandleAsync(int matchId, List<SourcesConditions> sourcesConditions);
+}
+
+public class GetResourcesInfoHandler(IDynamicRepository repository) : IGetResourcesInfoHandler
 {
     public async Task<List<SourcesConditions>> HandleAsync(int matchId, List<SourcesConditions> sourcesConditions)
     {

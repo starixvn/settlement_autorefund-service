@@ -7,6 +7,23 @@ public interface ISpecification<T>
     bool IsSatisfiedBy(T entity);
 }
 
+
+public class AllSpecification<T> : ISpecification<T>
+{
+    private readonly ISpecification<T>[] specifications;
+
+    public AllSpecification(params ISpecification<T>[] specifications)
+    {
+        this.specifications = specifications;
+    }
+
+    public bool IsSatisfiedBy(T entity)
+    {
+        return specifications.All(spec => spec.IsSatisfiedBy(entity));
+    }
+}
+
+
 public class DefaultSpecification : ISpecification<SourcesConditions>
 {
     public bool IsSatisfiedBy(SourcesConditions entity)
@@ -73,19 +90,5 @@ public class RelatedMatchCalculatedWinLostSpecification : ISpecification<Sources
     {
         return entity.Resource?.SettlementStatusId == (short)SettleStatus.Calculated
             && !entity.Resource.HomeValue.Equals(entity.Resource.AwayValue);
-    }
-}
-
-public class UseCaseSpecification : ISpecification<SourcesConditions>
-{
-    private readonly List<ISpecification<SourcesConditions>> conditions;
-
-    public UseCaseSpecification(List<ISpecification<SourcesConditions>> conditions)
-    {
-        this.conditions = conditions;
-    }
-    public bool IsSatisfiedBy(SourcesConditions entity)
-    {
-        return conditions.All(x => x.IsSatisfiedBy(entity));
     }
 }

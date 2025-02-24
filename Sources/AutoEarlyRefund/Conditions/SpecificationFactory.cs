@@ -1,5 +1,4 @@
 ﻿using AutoEarlyRefund.Models;
-//using ConditionTuple = (string SourceAction, short? SourceMatchType, short? SourceChildMatchType, string? Conditions);
 namespace AutoEarlyRefund.Conditions;
 
 public static class SpecificationFactory

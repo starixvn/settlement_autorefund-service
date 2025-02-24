@@ -17,7 +17,7 @@ public class SourcesConditions
     public string SourceResourceId { get; set; }
     public string Conditions { get; set; } = string.Empty;
 
-    public Resource Resource { get; set; }
+    public Resource? Resource { get; set; }
 
     public List<string> SourceResourceIds => SourceResource.Split(',').ToList();
     public override string ToString() => $"{ResourceId}-{RuleName}-{SourceMatchType}-{SourceChildMatchType}, Target: {SourceResourceId}";

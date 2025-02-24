@@ -3,7 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace AutoEarlyRefund.Features.GetRefundMatchInfoSel;
 
-public class GetRefundMatchInfoHandler
+public interface IGetRefundMatchInfoHandler
+{
+    Task<List<RelatedMatchItem>> HandleAsync(List<GetRelatedMatchItemRequest> request);
+}
+
+public class GetRefundMatchInfoHandler : IGetRefundMatchInfoHandler
 {
     private readonly IDynamicRepository repository;
 

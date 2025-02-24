@@ -4,6 +4,8 @@ public class Match
 {
     public int MatchId { get; set; }
     public int LeagueId { get; set; }
+    public short SportType { get; set; }
+    public short ChildMatchType { get; set; }
     public List<ResultDetail> ResultDetails { get; set; } = [];
     public string ResourcesXml { get; set; } = "";
 
@@ -35,11 +37,11 @@ public class Match
     public override bool Equals(object obj)
     {
         return (obj is Match match)
-               && match.MatchId == MatchId;
+               && match.MatchId == MatchId && match.ChildMatchType == ChildMatchType;
     }
 
     public override int GetHashCode()
     {
-        return MatchId;
+        return MatchId ^ ChildMatchType;
     }
 }

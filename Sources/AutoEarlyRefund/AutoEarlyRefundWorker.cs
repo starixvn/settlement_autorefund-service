@@ -15,7 +15,7 @@ public class AutoEarlyRefundWorker(
         var intervalTime = TimeSpan.FromMilliseconds(configuration.GetValue<int>("ServiceInterval"));
         using PeriodicTimer timer = new(intervalTime);
 
-        //while (await timer.WaitForNextTickAsync(stoppingToken))
+        while (await timer.WaitForNextTickAsync(stoppingToken))
         {
             var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
             if (isMaintenance)
@@ -25,10 +25,12 @@ public class AutoEarlyRefundWorker(
 
             var matches = await matchPoolService.PeekNewMatch();
 
-            foreach (var item in matches)
-            {
-                //await settleOpaqueFacade.Settle(item);
-            }
+            matches.ForEach(x => Task.Run(() => settleOpaqueFacade.Settle(x)));
+
+            //foreach (var item in matches)
+            //{
+            //    //await settleOpaqueFacade.Settle(item);
+            //}
         }
     }
 }

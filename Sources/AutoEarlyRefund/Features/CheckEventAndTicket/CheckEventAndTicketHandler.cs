@@ -5,22 +5,11 @@ using Mapster;
 
 namespace AutoEarlyRefund.Features.CheckEventAndTicket;
 
-public class CheckEventAndTicketHandler : IValidateHandler
+public class CheckEventAndTicketHandler(
+    IValidateHandler next,
+    GeneralService generalService,
+    XmlConvertService xmlConvertService) : IValidateHandler
 {
-    private readonly GeneralService generalService;
-    private readonly IValidateHandler next;
-    private readonly XmlConvertService xmlConvertService;
-
-    public CheckEventAndTicketHandler(
-        IValidateHandler next,
-        GeneralService generalService,
-        XmlConvertService xmlConvertService)
-    {
-        this.generalService = generalService;
-        this.next = next;
-        this.xmlConvertService = xmlConvertService;
-    }
-
     public async Task<Result> HandleAsync(Match match)
     {
         var newMatch = match.WithResourcesXml(xmlConvertService, false);
@@ -53,11 +42,8 @@ public class CheckEventAndTicketHandler : IValidateHandler
             ErrMsg = resultMsg.ErrorMessage
         };
 
-        if (result.IsSuccess && next is not null)
-        {
-            return await next.HandleAsync(match);
-        }
-
-        return result;
+        return result.IsSuccess && next is not null
+            ? await next.HandleAsync(match)
+            : result;
     }
 }

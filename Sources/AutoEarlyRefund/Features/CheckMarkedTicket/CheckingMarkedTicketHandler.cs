@@ -3,7 +3,12 @@ using AutoEarlyRefund.Services;
 
 namespace AutoEarlyRefund.Features.CheckMarkedTicket;
 
-public class CheckingMarkedTicketHandler : IValidateHandler
+public interface ICheckingMarkedTicketHandler
+{
+    Task<Result> HandleAsync(Match match);
+}
+
+public class CheckingMarkedTicketHandler : IValidateHandler, ICheckingMarkedTicketHandler
 {
     private readonly IDynamicRepository repository;
     private readonly IOptions<AppSettingsKey> appSettingsKey;

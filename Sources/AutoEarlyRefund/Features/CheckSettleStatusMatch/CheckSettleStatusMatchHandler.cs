@@ -3,7 +3,12 @@ using AutoEarlyRefund.Services;
 
 namespace AutoEarlyRefund.Features.CheckSettleStatusMatch;
 
-public class CheckSettleStatusMatchHandler : IValidateHandler
+public interface ICheckSettleStatusMatchHandler
+{
+    Task<Result> HandleAsync(Match match);
+}
+
+public class CheckSettleStatusMatchHandler : IValidateHandler, ICheckSettleStatusMatchHandler
 {
     private readonly IDynamicRepository repository;
     private readonly IValidateHandler next;

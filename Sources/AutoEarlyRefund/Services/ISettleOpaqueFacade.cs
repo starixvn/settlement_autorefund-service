@@ -1,9 +1,10 @@
-﻿using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+﻿using AutoEarlyRefund.Contracts;
+using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
 using AutoEarlyRefund.Features.PeekNewMatches;
 using AutoEarlyRefund.Features.PushResultSettlement;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
-using AutoRefund.Core;
+using MassTransit;
 
 namespace AutoEarlyRefund.Services;
 
@@ -18,7 +19,8 @@ public class SettleOpaqueFacadeImp(
     IPushResultSettlementHandler pushResultSettlementHandler,
     IWriteLogService writeLogService,
     IValidateHandler validateHandler,
-    MatchPoolService matchPoolService) : ISettleOpaqueFacade
+    MatchPoolService matchPoolService,
+    IPublishEndpoint publishEndpoint) : ISettleOpaqueFacade
 {
 
     public async Task Settle(Match match)
@@ -28,6 +30,8 @@ public class SettleOpaqueFacadeImp(
             var result = await validateHandler.HandleAsync(match);
             if (!result.IsSuccess)
             {
+                match.ResultDetails.ForEach(x => x.Remark = result.ErrMsg);
+                await insOrUpdAutoPayoutResultHandler.Handle(match, AutoRefund.Core.ResultRefundStatus.Failed);
                 return;
             }
             await writeLogService.WriteLogPreSettlement(match);
@@ -40,6 +44,17 @@ public class SettleOpaqueFacadeImp(
             await pushResultSettlementHandler.HandleAsync(match, CancellationToken.None);
 
             await insOrUpdAutoPayoutResultHandler.Handle(match, AutoRefund.Core.ResultRefundStatus.Completed);
+
+            await publishEndpoint.Publish(new ResultsRefunded(
+                match.MatchId,
+                match.SportType,
+                match.ChildMatchType,
+                match.ResultDetails.Select(x => new ResourceItem
+                {
+                    ResourceId = x.ResourceId,
+                    HomeValue = x.HomeValue,
+                    AwayValue = x.AwayValue,
+                }).ToList()), new CancellationTokenSource(TimeSpan.FromSeconds(2)).Token);
         }
         catch (Exception ex)
         {
