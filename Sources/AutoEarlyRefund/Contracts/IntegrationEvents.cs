@@ -13,33 +13,6 @@ public record MatchCalculated(
      string Action = "Cal"
     );
 
-public record MainMatchCalculated(
-    int MatchId,
-    int ParentId,
-    short ShortType,
-    short ChildMatchType,
-    int? HalfTimeHomeScore,
-    int? HalfTimeAwayScore,
-    int? FinalHomeScore,
-    int? FinalAwayScore,
-    string Action = "Cal"
-);
-
-
-public record ExtraMatchCalculated(
-    int MatchId,
-    int ParentId,
-    short ShortType,
-    short ChildMatchType,
-    int? HalfTimeHomeScore,
-    int? HalfTimeAwayScore,
-    int? FinalHomeScore,
-    int? FinalAwayScore,
-    string Action = "Cal"
-);
-
-
-
 public record ResultsCalculated(
     int MatchId,
     short ShortType,

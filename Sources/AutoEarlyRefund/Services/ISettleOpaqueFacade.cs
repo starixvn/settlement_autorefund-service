@@ -58,7 +58,7 @@ public class SettleOpaqueFacadeImp(
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+            Fanex.Logging.LogService.Error(ex.Message, ex);
             throw;
         }
         finally

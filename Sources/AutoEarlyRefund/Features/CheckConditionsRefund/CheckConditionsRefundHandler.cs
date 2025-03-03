@@ -34,12 +34,12 @@ public class CheckConditionsRefundHandler(
 
 
         match.ResultDetails = match.ResultDetails
-            .Where(x => validResults.Any(v => v.ResourceId == x.ResourceId))
+            .Where(x => validResults.Exists(v => v.ResourceId == x.ResourceId))
             .ToList();
 
         await HandleInvalidResults(match, validResults);
 
-        return next is not null && match.ResultDetails.Any()
+        return next is not null && match.ResultDetails.Count != 0
             ? await next.HandleAsync(match)
             : new Result();
     }
@@ -60,10 +60,13 @@ public class CheckConditionsRefundHandler(
     private async Task HandleInvalidResults(Match match, List<SourcesConditions> validResults)
     {
         var invalidResults = match.ResultDetails
-            .Where(x => validResults.All(v => v.ResourceId != x.ResourceId))
+            .Where(x => validResults.TrueForAll(v => v.ResourceId != x.ResourceId))
             .ToList();
 
-        if (!invalidResults.Any()) return;
+        if (invalidResults.Count == 0)
+        {
+            return;
+        }
 
         var failedMatch = new Match
         {

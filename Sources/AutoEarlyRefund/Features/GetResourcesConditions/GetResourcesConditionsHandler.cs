@@ -79,7 +79,7 @@ public class GetResourcesConditionsHandler(IDynamicRepository repository) : IGet
             })
             .Select(x => new SourcesConditionsItem
             {
-                ResourceId = x.TargetResourceIds.First(),
+                ResourceId = x.TargetResourceIds[0],
                 SportType = x.SportType,
                 ChildMatchType = (short)x.TargetResourceChildMatchType,
                 MatchType = x.MatchType,

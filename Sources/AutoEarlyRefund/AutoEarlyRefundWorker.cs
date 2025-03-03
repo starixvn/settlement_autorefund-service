@@ -26,11 +26,6 @@ public class AutoEarlyRefundWorker(
             var matches = await matchPoolService.PeekNewMatch();
 
             matches.ForEach(x => Task.Run(() => settleOpaqueFacade.Settle(x)));
-
-            //foreach (var item in matches)
-            //{
-            //    //await settleOpaqueFacade.Settle(item);
-            //}
         }
     }
 }

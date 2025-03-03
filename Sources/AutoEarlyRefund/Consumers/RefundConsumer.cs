@@ -13,8 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace AutoEarlyRefund.Consumers;
 
 public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<ResultsRefundConfirmedSdt>,
-    IConsumer<ResultsRefundConfirmed>, IConsumer<MatchCalculated>, IConsumer<MainMatchCalculated>,
-    IConsumer<ExtraMatchCalculated>, IConsumer<ResultsCalculated>
+    IConsumer<ResultsRefundConfirmed>, IConsumer<MatchCalculated>, IConsumer<ResultsCalculated>
 {
     private readonly ILogger<RefundConsumer> logger;
     private readonly GetResourcesTriggerHandler getResourcesTriggerHandler;
@@ -104,37 +103,6 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
     }
 
 
-    public async Task Consume(ConsumeContext<MainMatchCalculated> context)
-    {
-        logger.LogInformation($"MatchCalculated Received: {context.Message}");
-
-        var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
-            context.Message.Action,
-            context.Message.ShortType,
-            context.Message.ChildMatchType,
-            "00");
-
-        await HandleConsumer(context.Message.MatchId, triggerResources);
-
-        logger.LogInformation($"MatchCalculated Done: {context.Message}");
-
-    }
-
-    public async Task Consume(ConsumeContext<ExtraMatchCalculated> context)
-    {
-        logger.LogInformation($"ExtraMatchCalculated Received: {context.Message}");
-
-        var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
-            context.Message.Action,
-            context.Message.ShortType,
-            context.Message.ChildMatchType,
-            "00");
-
-        await HandleConsumer(context.Message.MatchId, triggerResources);
-
-        logger.LogInformation($"ExtraMatchCalculated Done: {context.Message}");
-    }
-
     private async Task HandleConsumer(int matchId, List<TargetResourceTrigger> triggerResources)
     {
         if (triggerResources.Count == 0) return;
@@ -172,7 +140,7 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
         foreach (var ruleGroup in resourceGroup.GroupBy(x => x.RuleId))
         {
             var spec = new AllSpecification<SourcesConditions>(
-                ruleGroup.Select(sc => SpecificationFactory.CreateSpecification(sc)).ToArray());
+                ruleGroup.Select(sc => SpecificationFactory.CreateSpecification(sc)).ToList());
 
             if (ruleGroup.All(sc => spec.IsSatisfiedBy(sc)))
             {

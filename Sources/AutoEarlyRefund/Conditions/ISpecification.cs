@@ -2,7 +2,7 @@
 
 namespace AutoEarlyRefund.Conditions;
 
-public interface ISpecification<T>
+public interface ISpecification<in T>
 {
     bool IsSatisfiedBy(T entity);
 }
@@ -10,9 +10,9 @@ public interface ISpecification<T>
 
 public class AllSpecification<T> : ISpecification<T>
 {
-    private readonly ISpecification<T>[] specifications;
+    private readonly List<ISpecification<T>> specifications;
 
-    public AllSpecification(params ISpecification<T>[] specifications)
+    public AllSpecification(params List<ISpecification<T>> specifications)
     {
         this.specifications = specifications;
     }
