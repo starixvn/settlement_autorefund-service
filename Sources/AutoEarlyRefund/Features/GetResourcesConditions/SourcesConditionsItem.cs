@@ -15,4 +15,6 @@ public class SourcesConditionsItem
         return this;
     }
 
+    public override string ToString()
+        => $"ResourceId: {ResourceId}, SportType: {SportType}, ChildMatchType: {ChildMatchType}, MatchType: {MatchType}, RuleId: {RuleId}";
 }

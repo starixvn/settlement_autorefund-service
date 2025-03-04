@@ -1,8 +1,8 @@
 ﻿namespace AutoEarlyRefund.Features.GetResourcesInfo;
 
-public class GetResourcesInfoCriteria : CriteriaBase
+public class GetSrcResourcesCriteria : CriteriaBase
 {
-    public GetResourcesInfoCriteria(string resourceInfo)
+    public GetSrcResourcesCriteria(string resourceInfo)
     {
         ResourceInfo = resourceInfo ?? string.Empty;
     }

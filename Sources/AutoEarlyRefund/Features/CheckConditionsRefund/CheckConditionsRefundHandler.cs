@@ -10,7 +10,7 @@ namespace AutoEarlyRefund.Features.CheckConditionsRefund;
 public class CheckConditionsRefundHandler(
     IValidateHandler next,
     GetResourcesConditionsHandler conditionsHandler,
-    GetResourcesInfoHandler getResourcesInfoHandler,
+    GetSrcResourcesHandler getResourcesInfoHandler,
     IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResult,
     XmlConvertService xmlConvertService)
     : IValidateHandler

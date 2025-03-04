@@ -6,21 +6,36 @@ namespace AutoEarlyRefund.Features.GetResourcesConditions;
 
 public interface IGetResourcesConditionsHandler
 {
-    Task<List<SourcesConditions>> GetConditionsAsync(List<SourcesConditionsItem> request);
-    Task<List<SourcesConditions>> GetConditionsAsync(short matchType, List<TargetResourceTrigger> targetResourceTriggers);
+    Task<List<SourcesConditions>> GetConditionsAsync(List<SourcesConditionsItem> sourcesConditionsItems);
+    Task<List<SourcesConditions>> GetConditionsAsync(short matchType, List<SourcesConditionsItem> targetResourceTriggers);
 }
 
 public class GetResourcesConditionsHandler(IDynamicRepository repository) : IGetResourcesConditionsHandler
 {
-    public async Task<List<SourcesConditions>> GetConditionsAsync(short matchType, List<TargetResourceTrigger> targetResourceTriggers)
+    public async Task<List<SourcesConditions>> GetConditionsAsync(short matchType, List<SourcesConditionsItem> sourcesConditionsItems)
     {
-        var sourcesConditionsItems = GetSourcesConditionsItems(targetResourceTriggers)
+        var request = sourcesConditionsItems
             .Select(x => x.WithMatchType(matchType))
             .ToList();
 
-        var conditions = await GetConditionsAsync(sourcesConditionsItems);
+        var conditions = await GetConditionsAsync(request);
 
-        return conditions.SelectMany(x => x.SourceResourceIds.Select(sr => new SourcesConditions
+        return conditions;
+    }
+
+    public async Task<List<SourcesConditions>> GetConditionsAsync(List<SourcesConditionsItem> sourcesConditionsItems)
+    {
+        var json = JsonSerializer.Serialize(
+            sourcesConditionsItems,
+            new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            });
+
+        var results = await repository.FetchAsync<SourcesConditions>(new GetResourcesConditionsCriteria(json));
+
+        return results.SelectMany(x => x.SourceResourceIds.Select(sr => new SourcesConditions
         {
             Id = x.Id,
             SportType = x.SportType,
@@ -36,54 +51,5 @@ public class GetResourcesConditionsHandler(IDynamicRepository repository) : IGet
             SourceResourceId = sr,
             Conditions = x.Conditions,
         })).ToList();
-    }
-
-    public async Task<List<SourcesConditions>> GetConditionsAsync(List<SourcesConditionsItem> request)
-    {
-        var json = JsonSerializer.Serialize(
-            request,
-            new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            });
-
-        var results = await repository.FetchAsync<SourcesConditions>(new GetResourcesConditionsCriteria(json));
-
-        return results.ToList();
-    }
-
-
-    private List<SourcesConditionsItem> GetSourcesConditionsItems(List<TargetResourceTrigger> targetResourceTriggers)
-    {
-        return targetResourceTriggers
-            .SelectMany(x => x.TargetResourceIds.Select(r => new TargetResourceTrigger
-            {
-                Id = x.Id,
-                SportType = x.SportType,
-                Action = x.Action,
-                MatchType = x.MatchType,
-                ChildMatchType = x.ChildMatchType,
-                Conditions = x.Conditions,
-                TargetIsCrrMatch = x.TargetIsCrrMatch,
-                TargetIsCrrResource = x.TargetIsCrrResource,
-                TargetResourceChildMatchType = x.TargetResourceChildMatchType,
-                TargetResource = r
-
-            })).DistinctBy(x => new
-            {
-                x.SportType,
-                x.MatchType,
-                x.TargetResourceChildMatchType,
-                x.TargetResource
-            })
-            .Select(x => new SourcesConditionsItem
-            {
-                ResourceId = x.TargetResourceIds[0],
-                SportType = x.SportType,
-                ChildMatchType = (short)x.TargetResourceChildMatchType,
-                MatchType = x.MatchType,
-            })
-            .ToList();
     }
 }

@@ -9,7 +9,7 @@ public interface IGetResourcesInfoHandler
     Task<List<SourcesConditions>> HandleAsync(int matchId, List<SourcesConditions> sourcesConditions);
 }
 
-public class GetResourcesInfoHandler(IDynamicRepository repository) : IGetResourcesInfoHandler
+public class GetSrcResourcesHandler(IDynamicRepository repository) : IGetResourcesInfoHandler
 {
     public async Task<List<SourcesConditions>> HandleAsync(int matchId, List<SourcesConditions> sourcesConditions)
     {
@@ -17,7 +17,7 @@ public class GetResourcesInfoHandler(IDynamicRepository repository) : IGetResour
 
         var json = SerializeToJson(groupedSources);
 
-        var resources = await repository.FetchAsync<Resource>(new GetResourcesInfoCriteria(json));
+        var resources = await repository.FetchAsync<Resource>(new GetSrcResourcesCriteria(json));
 
         var newResources = MapSourcesWithResources(sourcesConditions, resources.ToList());
 
@@ -62,8 +62,14 @@ public class GetResourcesInfoHandler(IDynamicRepository repository) : IGetResour
                 MatchId = matchId
 
             })
-
-            .Distinct()
+            .DistinctBy(x => new
+            {
+                x.SourceMatchType,
+                x.SourceChildMatchType,
+                x.SourceResource,
+                x.SportType,
+                x.MatchId
+            })
             .ToList();
 
 
@@ -74,3 +80,4 @@ public class GetResourcesInfoHandler(IDynamicRepository repository) : IGetResour
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         });
 }
+

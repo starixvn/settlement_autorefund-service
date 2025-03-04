@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using AutoEarlyRefund.Conditions;
 using AutoEarlyRefund.Contracts;
+using AutoEarlyRefund.Features.CheckStatusResults;
 using AutoEarlyRefund.Features.GetRefundMatchInfoSel;
 using AutoEarlyRefund.Features.GetResourcesConditions;
 using AutoEarlyRefund.Features.GetResourcesInfo;
@@ -18,19 +19,21 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
     private readonly ILogger<RefundConsumer> logger;
     private readonly GetResourcesTriggerHandler getResourcesTriggerHandler;
     readonly GetResourcesConditionsHandler getResourcesConditionsHandler;
-    private readonly GetResourcesInfoHandler resourcesInfoHandler;
+    private readonly GetSrcResourcesHandler resourcesInfoHandler;
     private readonly IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler;
     private readonly XmlConvertService xmlConvertService;
     private readonly GetRefundMatchInfoHandler getRefundMatchInfoHandler;
+    private readonly GetRefundResultsHandler getRefundResultsHandler;
 
     public RefundConsumer(
         ILogger<RefundConsumer> logger,
         GetResourcesTriggerHandler getResourcesTriggerHandler,
         GetResourcesConditionsHandler getResourcesConditionsHandler,
-        GetResourcesInfoHandler resourcesInfoHandler,
+        GetSrcResourcesHandler resourcesInfoHandler,
         IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler,
         XmlConvertService xmlConvertService,
-        GetRefundMatchInfoHandler getRefundMatchInfoHandler)
+        GetRefundMatchInfoHandler getRefundMatchInfoHandler,
+        GetRefundResultsHandler getRefundResultsHandler)
     {
         this.logger = logger;
         this.getResourcesTriggerHandler = getResourcesTriggerHandler;
@@ -39,6 +42,7 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
         this.insOrUpdAutoPayoutResultHandler = insOrUpdAutoPayoutResultHandler;
         this.xmlConvertService = xmlConvertService;
         this.getRefundMatchInfoHandler = getRefundMatchInfoHandler;
+        this.getRefundResultsHandler = getRefundResultsHandler;
     }
 
     public async Task Consume(ConsumeContext<ResultsRefunded> context)
@@ -46,10 +50,10 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
         logger.LogInformation($"ResultsRefunded Received: {context.Message}");
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
-            context.Message.Action,
-            context.Message.ShortType,
-            context.Message.ChildMatchType,
-            string.Join(",", context.Message.Resources.Select(x => x.ResourceId)));
+        context.Message.Action,
+        context.Message.ShortType,
+        context.Message.ChildMatchType,
+        string.Join(",", context.Message.Resources.Select(x => x.ResourceId)));
 
         await HandleConsumer(context.Message.MatchId, triggerResources);
 
@@ -114,7 +118,8 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
         var matchType = relatedMatchItems.First().MatchType;
         var targetMatchId = relatedMatchItems.First().TargetMatchId;
 
-        var conditions = await getResourcesConditionsHandler.GetConditionsAsync(matchType, triggerResources);
+        var validSourcesConditions = await getRefundResultsHandler.Handle(matchId, triggerResources);
+        var conditions = await getResourcesConditionsHandler.GetConditionsAsync(matchType, validSourcesConditions);
         var sourceResources = await resourcesInfoHandler.HandleAsync(targetMatchId, conditions);
 
         var validResults = ExtractValidResults(sourceResources);
@@ -122,18 +127,11 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
 
         var match = BuildMatch(targetMatchId, matchType, validResults);
 
-        await this.insOrUpdAutoPayoutResultHandler.Handle(match, AutoRefund.Core.ResultRefundStatus.Initial);
+        await insOrUpdAutoPayoutResultHandler.Handle(match, AutoRefund.Core.ResultRefundStatus.Initial);
     }
 
 
-    private List<SourcesConditions> ExtractValidResults(List<SourcesConditions> sourceResources)
-    {
-        return sourceResources
-            .Where(x => x.Resource != null)
-            .GroupBy(x => x.ResourceId)
-            .SelectMany(group => ProcessResourceGroup(group))
-            .ToList();
-    }
+
 
     private IEnumerable<SourcesConditions> ProcessResourceGroup(IGrouping<string, SourcesConditions> resourceGroup)
     {
@@ -159,7 +157,7 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
             ResultDetails = validResults.Select(x => new ResultDetail
             {
                 ResourceId = x.ResourceId,
-                HomeValue = x.Resource!.CfmHomeValue,
+                HomeValue = x.ResourceId.StartsWith("381") || x.ResourceId.StartsWith("382") ? "NT" : x.Resource!.CfmHomeValue,
                 AwayValue = x.Resource!.CfmAwayValue,
                 SourceId = x.RuleId.ToString(),
                 OtherInfo = JsonSerializer.Serialize(new { matchType, ruleId = x.RuleId })
@@ -174,6 +172,11 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
             MatchId = matchId,
             ChildMatchType = x.ChildMatchType,
             TargetChildMatchType = x.TargetResourceChildMatchType
+        }).DistinctBy(x => new
+        {
+            x.ChildMatchType,
+            x.TargetChildMatchType,
+            x.MatchId
         }).ToList();
 
         var relatedMatchItems = await getRefundMatchInfoHandler.HandleAsync(getRelatedMatchItemRequest);
@@ -201,5 +204,14 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
 
         logger.LogInformation($"ResultsRefundConfirmedSdt Done: {context.Message}");
 
+    }
+
+    private List<SourcesConditions> ExtractValidResults(List<SourcesConditions> sourceResources)
+    {
+        return sourceResources
+            .Where(x => x.Resource != null)
+            .GroupBy(x => x.ResourceId)
+            .SelectMany(group => ProcessResourceGroup(group))
+            .ToList();
     }
 }

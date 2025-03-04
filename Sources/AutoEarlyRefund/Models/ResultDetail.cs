@@ -14,6 +14,8 @@ public class ResultDetail
     public string Remark { get; set; } = string.Empty;
     public short ChildMatchType { get; set; }
     public string OtherInfo { get; set; } = string.Empty;
+    public int ResultStatusId { get; set; }
+    public int SettlementStatusId { get; set; }
 
     public SourcesConditionsItem? Conditions
         => JsonSerializer.Deserialize<SourcesConditionsItem>(OtherInfo, new JsonSerializerOptions

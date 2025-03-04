@@ -1,7 +1,7 @@
 ﻿using AutoEarlyRefund.Features.CheckConditionsRefund;
 using AutoEarlyRefund.Features.CheckEventAndTicket;
 using AutoEarlyRefund.Features.CheckMarkedTicket;
-using AutoEarlyRefund.Features.CheckSettleStatusMatch;
+using AutoEarlyRefund.Features.CheckStatusResults;
 using AutoEarlyRefund.Features.GetRefundMatchInfoSel;
 using AutoEarlyRefund.Features.GetResourcesConditions;
 using AutoEarlyRefund.Features.GetResourcesInfo;
@@ -24,7 +24,8 @@ public static class AutoEarlyRefundExtensions
             .Decorate<IValidateHandler, CheckConditionsRefundHandler>()
             .Decorate<IValidateHandler, CheckEventAndTicketHandler>()
             .Decorate<IValidateHandler, CheckingMarkedTicketHandler>()
-            .Decorate<IValidateHandler, CheckSettleStatusMatchHandler>()
+
+            //.Decorate<IValidateHandler, CheckSettleStatusMatchHandler>()
 
 
             .AddSingleton<MatchPoolService>()
@@ -35,9 +36,10 @@ public static class AutoEarlyRefundExtensions
             .AddSingleton<ISettleOpaqueFacade, SettleOpaqueFacadeImp>()
             .AddSingleton<GetResourcesTriggerHandler>()
             .AddSingleton<GetResourcesConditionsHandler>()
-            .AddSingleton<GetResourcesInfoHandler>()
+            .AddSingleton<GetSrcResourcesHandler>()
             .AddSingleton<GetRefundMatchInfoHandler>()
             .AddSingleton<CheckConditionsRefundHandler>()
+            .AddSingleton<GetRefundResultsHandler>()
             .AddMapster();
 
         return services;
