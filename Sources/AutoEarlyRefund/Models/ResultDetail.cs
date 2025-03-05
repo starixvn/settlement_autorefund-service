@@ -24,4 +24,14 @@ public class ResultDetail
         });
 
     public override string ToString() => $"{ResourceId}({HomeValue}-{AwayValue})";
+
+    public override bool Equals(object? obj) => obj is ResultDetail detail && MatchId == detail.MatchId && ResourceId == detail.ResourceId;
+    public override int GetHashCode() => HashCode.Combine(MatchId, ResourceId);
+
+
+    public ResultDetail WithRemark(string remark)
+    {
+        Remark = remark;
+        return this;
+    }
 }

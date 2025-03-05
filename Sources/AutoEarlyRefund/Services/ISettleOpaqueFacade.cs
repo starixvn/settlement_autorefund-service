@@ -56,6 +56,10 @@ public class SettleOpaqueFacadeImp(
                     AwayValue = x.AwayValue,
                 }).ToList()), new CancellationTokenSource(TimeSpan.FromSeconds(2)).Token);
         }
+        catch (AppException ex)
+        {
+            Fanex.Logging.LogService.Warn(ex.Message, ex);
+        }
         catch (Exception ex)
         {
             Fanex.Logging.LogService.Error(ex.Message, ex);

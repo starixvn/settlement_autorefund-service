@@ -1,4 +1,4 @@
-﻿namespace AutoEarlyRefund.Features.CheckStatusResults;
+﻿namespace AutoEarlyRefund.Features.GetRefundResults;
 
 public class GetRefundResultsItem
 {

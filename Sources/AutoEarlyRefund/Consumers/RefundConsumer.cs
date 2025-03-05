@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 using AutoEarlyRefund.Conditions;
 using AutoEarlyRefund.Contracts;
-using AutoEarlyRefund.Features.CheckStatusResults;
 using AutoEarlyRefund.Features.GetRefundMatchInfoSel;
+using AutoEarlyRefund.Features.GetRefundResults;
 using AutoEarlyRefund.Features.GetResourcesConditions;
 using AutoEarlyRefund.Features.GetResourcesInfo;
 using AutoEarlyRefund.Features.GetResourcesTrigger;
@@ -118,7 +118,7 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
         var matchType = relatedMatchItems.First().MatchType;
         var targetMatchId = relatedMatchItems.First().TargetMatchId;
 
-        var validSourcesConditions = await getRefundResultsHandler.Handle(matchId, triggerResources);
+        var validSourcesConditions = await getRefundResultsHandler.Handle(targetMatchId, triggerResources);
         var conditions = await getResourcesConditionsHandler.GetConditionsAsync(matchType, validSourcesConditions);
         var sourceResources = await resourcesInfoHandler.HandleAsync(targetMatchId, conditions);
 

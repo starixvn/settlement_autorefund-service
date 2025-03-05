@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using AutoEarlyRefund.Features.GetResourcesConditions;
 using AutoEarlyRefund.Models;
 
-namespace AutoEarlyRefund.Features.CheckStatusResults;
+namespace AutoEarlyRefund.Features.GetRefundResults;
 
 public class GetRefundResultsHandler
 {

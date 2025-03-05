@@ -39,6 +39,11 @@ public class CheckConditionsRefundHandler(
 
         await HandleInvalidResults(match, validResults);
 
+        if (match.ResultDetails.Count == 0)
+        {
+            throw new AppException();
+        }
+
         return next is not null && match.ResultDetails.Count != 0
             ? await next.HandleAsync(match)
             : new Result();
@@ -79,7 +84,7 @@ public class CheckConditionsRefundHandler(
                 ResourceId = x.ResourceId,
                 HomeValue = x.HomeValue,
                 AwayValue = x.AwayValue,
-                Remark = "Fail rule refund condition",
+                Remark = "ERROR:This result did incorrect rule refund condition",
                 SourceId = x.SourceId,
                 OtherInfo = x.OtherInfo,
             }).ToList()

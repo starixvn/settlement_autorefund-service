@@ -11,6 +11,7 @@ public enum SettleStatus
 public enum ResultStatus
 {
     AutoSettled = 2,
+    UnCal = 4,
     ManualSettled = 5
 }
 

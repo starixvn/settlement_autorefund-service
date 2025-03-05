@@ -1,8 +1,9 @@
 ﻿using AutoEarlyRefund.Features.CheckConditionsRefund;
 using AutoEarlyRefund.Features.CheckEventAndTicket;
 using AutoEarlyRefund.Features.CheckMarkedTicket;
-using AutoEarlyRefund.Features.CheckStatusResults;
+using AutoEarlyRefund.Features.CheckStatusRefundResults;
 using AutoEarlyRefund.Features.GetRefundMatchInfoSel;
+using AutoEarlyRefund.Features.GetRefundResults;
 using AutoEarlyRefund.Features.GetResourcesConditions;
 using AutoEarlyRefund.Features.GetResourcesInfo;
 using AutoEarlyRefund.Features.GetResourcesTrigger;
@@ -24,6 +25,7 @@ public static class AutoEarlyRefundExtensions
             .Decorate<IValidateHandler, CheckConditionsRefundHandler>()
             .Decorate<IValidateHandler, CheckEventAndTicketHandler>()
             .Decorate<IValidateHandler, CheckingMarkedTicketHandler>()
+            .Decorate<IValidateHandler, CheckStatusRefundResultsHandler>()
 
             //.Decorate<IValidateHandler, CheckSettleStatusMatchHandler>()
 
