@@ -2,6 +2,8 @@
 using AutoEarlyRefund.Features.CheckEventAndTicket;
 using AutoEarlyRefund.Features.CheckMarkedTicket;
 using AutoEarlyRefund.Features.CheckStatusRefundResults;
+using AutoEarlyRefund.Features.GetAutoRefundResults;
+using AutoEarlyRefund.Features.GetConfirmNtResults;
 using AutoEarlyRefund.Features.GetRefundMatchInfoSel;
 using AutoEarlyRefund.Features.GetRefundResults;
 using AutoEarlyRefund.Features.GetResourcesConditions;
@@ -10,6 +12,7 @@ using AutoEarlyRefund.Features.GetResourcesTrigger;
 using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
 using AutoEarlyRefund.Features.PeekNewMatches;
 using AutoEarlyRefund.Features.PushResultSettlement;
+using AutoEarlyRefund.Features.RefundConsumerHandler;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Services;
 using Mapster;
@@ -28,8 +31,6 @@ public static class AutoEarlyRefundExtensions
             .Decorate<IValidateHandler, CheckStatusRefundResultsHandler>()
 
             //.Decorate<IValidateHandler, CheckSettleStatusMatchHandler>()
-
-
             .AddSingleton<MatchPoolService>()
             .AddSingleton<GetMatchesService, GetMatchesServiceImp>()
             .AddSingleton<IInsOrUpdAutoPayoutResultHandler, InsOrUpdAutoRefundResultHandler>()
@@ -41,7 +42,10 @@ public static class AutoEarlyRefundExtensions
             .AddSingleton<GetSrcResourcesHandler>()
             .AddSingleton<GetRefundMatchInfoHandler>()
             .AddSingleton<CheckConditionsRefundHandler>()
-            .AddSingleton<GetRefundResultsHandler>()
+            .AddSingleton<GetResultDetailsHandler>()
+            .AddSingleton<GetConfirmNtResultsHandler>()
+            .AddSingleton<GetAutoRefundResultsHandler>()
+            .AddSingleton<RefundConsumerHandler>()
             .AddMapster();
 
         return services;

@@ -70,8 +70,8 @@ public class ConfirmedRefundNTSpecification : ISpecification<SourcesConditions>
     public bool IsSatisfiedBy(SourcesConditions entity)
     {
         return entity.Resource is not null
-            && entity.Resource.IsConfirmedRefund
-            && entity.Resource.CfmHomeValue == "NT";
+            && entity.Resource.ResultStatusId == (int)ResultStatus.Confirm
+            && entity.Resource.HomeValue == "NT";
     }
 }
 

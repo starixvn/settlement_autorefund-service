@@ -9,9 +9,7 @@ public class Match
     public List<ResultDetail> ResultDetails { get; set; } = [];
     public string ResourcesXml { get; set; } = "";
 
-    public Match WithResourcesXml(XmlConvertService xmlConvertService, bool hasOtherInfo = true)
-    {
-        var selectedResources = ResultDetails
+    public IEnumerable<ResourceItem> ResourceItems => ResultDetails
             .Select(x => new ResourceItem
             {
                 ResourceId = x.ResourceId,
@@ -19,12 +17,18 @@ public class Match
                 AwayValue = x.AwayValue,
                 Remark = x.Remark,
                 SourceId = x.SourceId,
-                OtherInfo = hasOtherInfo ? x.OtherInfo : string.Empty,
-            }).ToList();
+                OtherInfo = x.OtherInfo
+            });
 
+    public Match WithResourcesXml(XmlConvertService xmlConvertService, bool hasOtherInfo = true)
+    {
         var resources = new Resources<ResourceItem>
         {
-            ResourceItems = selectedResources
+            ResourceItems = ResourceItems.Select(x =>
+            {
+                x.OtherInfo = hasOtherInfo ? x.OtherInfo : string.Empty;
+                return x;
+            }).ToList()
         };
 
         var xml = xmlConvertService.Serialize(resources);

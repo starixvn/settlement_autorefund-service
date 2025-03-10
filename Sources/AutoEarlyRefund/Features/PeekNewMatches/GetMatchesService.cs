@@ -16,8 +16,7 @@ public class GetMatchesServiceImp(
 {
     public async Task<List<Match>> GetMatches()
     {
-        var resultDetails = await repository.FetchAsync<ResultDetail>(new GetResultsCriteria());
-
+        var resultDetails = await repository.FetchAsync<ResultDetail>(new GetPendingRefundResultsCriteria());
 
         var matches = resultDetails
             .GroupBy(x => new { x.MatchId, x.LeagueId, x.SportType, x.ChildMatchType })

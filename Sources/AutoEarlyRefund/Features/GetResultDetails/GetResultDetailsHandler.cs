@@ -5,15 +5,8 @@ using AutoEarlyRefund.Models;
 
 namespace AutoEarlyRefund.Features.GetRefundResults;
 
-public class GetRefundResultsHandler
+public class GetResultDetailsHandler(IDynamicRepository repository)
 {
-    private readonly IDynamicRepository repository;
-
-    public GetRefundResultsHandler(IDynamicRepository repository)
-    {
-        this.repository = repository;
-    }
-
     public async Task<List<SourcesConditionsItem>> Handle(int matchId, List<TargetResourceTrigger> targetResourceTriggers)
     {
         var sourcesConditions = GetSourcesConditionsItems(targetResourceTriggers);
@@ -27,24 +20,25 @@ public class GetRefundResultsHandler
 
     private async Task<List<ResultDetail>> GetResults(int matchId, List<SourcesConditionsItem> sourcesConditions)
     {
-        var request = sourcesConditions.Select(x => new GetRefundResultsItem
-        {
-            MatchId = matchId,
-            SportType = x.SportType,
-            ResourceId = x.ResourceId,
-        }).ToList();
+        var request = sourcesConditions
+            .Select(x => new GetResultDetailsItem(matchId, x.SportType, x.ResourceId))
+            .ToList();
 
         var json = SerializeToJson(request);
 
-        var results = (await repository.FetchAsync<ResultDetail>(new GetRefundResultsCriteria
+        var criteria = new GetResultDetailsCriteria
         {
             ResourceInfo = json
-        })).ToList();
+        };
 
-        return results.Where(x => x.ResultStatusId == (int)ResultStatus.ManualSettled || x.ResultStatusId == (int)ResultStatus.AutoSettled).ToList();
+        var results = await repository.FetchAsync<ResultDetail>(criteria);
+
+        return results
+            .Where(x => x.ResultStatusId == (int)ResultStatus.ManualSettled || x.ResultStatusId == (int)ResultStatus.AutoSettled)
+            .ToList();
     }
 
-    private static string SerializeToJson(List<GetRefundResultsItem> groupedSources)
+    private static string SerializeToJson(List<GetResultDetailsItem> groupedSources)
         => JsonSerializer.Serialize(groupedSources, new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -83,5 +77,4 @@ public class GetRefundResultsHandler
             })
             .ToList();
     }
-
 }

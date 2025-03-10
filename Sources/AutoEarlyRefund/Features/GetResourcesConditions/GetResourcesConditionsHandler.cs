@@ -15,6 +15,7 @@ public class GetResourcesConditionsHandler(IDynamicRepository repository) : IGet
     public async Task<List<SourcesConditions>> GetConditionsAsync(short matchType, List<SourcesConditionsItem> sourcesConditionsItems)
     {
         var request = sourcesConditionsItems
+            .Where(x => x.ResourceId == "38103")
             .Select(x => x.WithMatchType(matchType))
             .ToList();
 

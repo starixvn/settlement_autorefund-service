@@ -1,48 +1,31 @@
-﻿using System.Text.Json;
-using AutoEarlyRefund.Conditions;
-using AutoEarlyRefund.Contracts;
-using AutoEarlyRefund.Features.GetRefundMatchInfoSel;
-using AutoEarlyRefund.Features.GetRefundResults;
-using AutoEarlyRefund.Features.GetResourcesConditions;
-using AutoEarlyRefund.Features.GetResourcesInfo;
+﻿using AutoEarlyRefund.Contracts;
 using AutoEarlyRefund.Features.GetResourcesTrigger;
 using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
-using AutoEarlyRefund.Models;
+using AutoEarlyRefund.Features.RefundConsumerHandler;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
 namespace AutoEarlyRefund.Consumers;
 
 public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<ResultsRefundConfirmedSdt>,
-    IConsumer<ResultsRefundConfirmed>, IConsumer<MatchCalculated>, IConsumer<ResultsCalculated>
+    IConsumer<MatchCalculated>, IConsumer<ResultsCalculated>, IConsumer<ResultsRefundConfirmed>
 {
     private readonly ILogger<RefundConsumer> logger;
     private readonly GetResourcesTriggerHandler getResourcesTriggerHandler;
-    readonly GetResourcesConditionsHandler getResourcesConditionsHandler;
-    private readonly GetSrcResourcesHandler resourcesInfoHandler;
     private readonly IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler;
-    private readonly XmlConvertService xmlConvertService;
-    private readonly GetRefundMatchInfoHandler getRefundMatchInfoHandler;
-    private readonly GetRefundResultsHandler getRefundResultsHandler;
+    private readonly RefundConsumerHandler refundConsumerHandler;
 
     public RefundConsumer(
         ILogger<RefundConsumer> logger,
         GetResourcesTriggerHandler getResourcesTriggerHandler,
-        GetResourcesConditionsHandler getResourcesConditionsHandler,
-        GetSrcResourcesHandler resourcesInfoHandler,
         IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler,
         XmlConvertService xmlConvertService,
-        GetRefundMatchInfoHandler getRefundMatchInfoHandler,
-        GetRefundResultsHandler getRefundResultsHandler)
+        RefundConsumerHandler refundConsumerHandler)
     {
         this.logger = logger;
         this.getResourcesTriggerHandler = getResourcesTriggerHandler;
-        this.getResourcesConditionsHandler = getResourcesConditionsHandler;
-        this.resourcesInfoHandler = resourcesInfoHandler;
         this.insOrUpdAutoPayoutResultHandler = insOrUpdAutoPayoutResultHandler;
-        this.xmlConvertService = xmlConvertService;
-        this.getRefundMatchInfoHandler = getRefundMatchInfoHandler;
-        this.getRefundResultsHandler = getRefundResultsHandler;
+        this.refundConsumerHandler = refundConsumerHandler;
     }
 
     public async Task Consume(ConsumeContext<ResultsRefunded> context)
@@ -50,12 +33,17 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
         logger.LogInformation($"ResultsRefunded Received: {context.Message}");
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
-        context.Message.Action,
-        context.Message.ShortType,
-        context.Message.ChildMatchType,
-        string.Join(",", context.Message.Resources.Select(x => x.ResourceId)));
+            context.Message.Action,
+            context.Message.ShortType,
+            context.Message.ChildMatchType,
+            string.Join(",", context.Message.Resources.Select(x => x.ResourceId)));
 
-        await HandleConsumer(context.Message.MatchId, triggerResources);
+        var (isValid, match) = await refundConsumerHandler.Handle(context.Message.MatchId, triggerResources);
+
+        if (isValid)
+        {
+            await insOrUpdAutoPayoutResultHandler.Handle(match, 0);
+        }
 
         logger.LogInformation($"ResultsRefunded Done: {context.Message}");
     }
@@ -70,129 +58,40 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
             context.Message.ChildMatchType,
             string.Join(",", context.Message.Resources.Select(x => x.ResourceId)));
 
-        await HandleConsumer(context.Message.MatchId, triggerResources);
+        var (isValid, match) = await refundConsumerHandler.Handle(context.Message.MatchId, triggerResources);
+
+        if (isValid)
+        {
+            await insOrUpdAutoPayoutResultHandler.Handle(match, 0);
+        }
 
         logger.LogInformation($"ResultsRefundConfirmedSdt Done: {context.Message}");
-
     }
 
-    public async Task Consume(ConsumeContext<ResultsRefundConfirmed> context)
-    {
-        logger.LogInformation($"ResultsRefundConfirmed Received: {context.Message}");
-        var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
-            context.Message.Action,
-            context.Message.ShortType,
-            context.Message.ChildMatchType,
-            string.Join(",", context.Message.Resources.Select(x => x.ResourceId)));
-
-        await HandleConsumer(context.Message.MatchId, triggerResources);
-
-        logger.LogInformation($"ResultsRefundConfirmed Done: {context.Message}");
-
-    }
 
     public async Task Consume(ConsumeContext<MatchCalculated> context)
     {
         logger.LogInformation($"MatchCalculated Received: {context.Message}");
+
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
             context.Message.Action,
             context.Message.ShortType,
             context.Message.ChildMatchType,
             "00");
 
-        await HandleConsumer(context.Message.MatchId, triggerResources);
+        var (isValid, match) = await refundConsumerHandler.Handle(context.Message.MatchId, triggerResources);
 
-        logger.LogInformation($"MatchCalculated Done: {context.Message}");
-
-    }
-
-
-    private async Task HandleConsumer(int matchId, List<TargetResourceTrigger> triggerResources)
-    {
-        if (triggerResources.Count == 0) return;
-
-        var relatedMatchItems = await GetRelatedMatchItems(matchId, triggerResources);
-
-        if (relatedMatchItems.Count == 0) return;
-
-        var matchType = relatedMatchItems.First().MatchType;
-        var targetMatchId = relatedMatchItems.First().TargetMatchId;
-
-        var validSourcesConditions = await getRefundResultsHandler.Handle(targetMatchId, triggerResources);
-        var conditions = await getResourcesConditionsHandler.GetConditionsAsync(matchType, validSourcesConditions);
-        var sourceResources = await resourcesInfoHandler.HandleAsync(targetMatchId, conditions);
-
-        var validResults = ExtractValidResults(sourceResources);
-        if (!validResults.Any()) return;
-
-        var match = BuildMatch(targetMatchId, matchType, validResults);
-
-        await insOrUpdAutoPayoutResultHandler.Handle(match, AutoRefund.Core.ResultRefundStatus.Initial);
-    }
-
-
-
-
-    private IEnumerable<SourcesConditions> ProcessResourceGroup(IGrouping<string, SourcesConditions> resourceGroup)
-    {
-        foreach (var ruleGroup in resourceGroup.GroupBy(x => x.RuleId))
+        if (isValid)
         {
-            var spec = new AllSpecification<SourcesConditions>(
-                ruleGroup.Select(sc => SpecificationFactory.CreateSpecification(sc)).ToList());
-
-            if (ruleGroup.All(sc => spec.IsSatisfiedBy(sc)))
-            {
-                yield return ruleGroup.FirstOrDefault(x => x.SourceResourceId == resourceGroup.Key && x.Resource!.IsConfirmedRefundSdt)
-                             ?? ruleGroup.First();
-                yield break;
-            }
+            await insOrUpdAutoPayoutResultHandler.Handle(match, 0);
         }
-    }
 
-    private Match BuildMatch(int targetMatchId, short matchType, List<SourcesConditions> validResults)
-    {
-        return new Match
-        {
-            MatchId = targetMatchId,
-            ResultDetails = validResults.Select(x => new ResultDetail
-            {
-                ResourceId = x.ResourceId,
-                HomeValue = x.ResourceId.StartsWith("381") || x.ResourceId.StartsWith("382") ? "NT" : x.Resource!.CfmHomeValue,
-                AwayValue = x.Resource!.CfmAwayValue,
-                SourceId = x.RuleId.ToString(),
-                OtherInfo = JsonSerializer.Serialize(new { matchType, ruleId = x.RuleId })
-            }).ToList()
-        }.WithResourcesXml(xmlConvertService);
-    }
-
-    private async Task<List<RelatedMatchItem>> GetRelatedMatchItems(int matchId, List<TargetResourceTrigger> resources)
-    {
-        var getRelatedMatchItemRequest = resources.Select(x => new GetRelatedMatchItemRequest
-        {
-            MatchId = matchId,
-            ChildMatchType = x.ChildMatchType,
-            TargetChildMatchType = x.TargetResourceChildMatchType
-        }).DistinctBy(x => new
-        {
-            x.ChildMatchType,
-            x.TargetChildMatchType,
-            x.MatchId
-        }).ToList();
-
-        var relatedMatchItems = await getRefundMatchInfoHandler.HandleAsync(getRelatedMatchItemRequest);
-
-        return relatedMatchItems.DistinctBy(x => new
-        {
-            x.MatchType,
-            x.TargetMatchId,
-            x.TargetChildMatchType,
-            x.MatchId,
-        }).ToList();
+        logger.LogInformation($"ResultsRefunded Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<ResultsCalculated> context)
     {
-        logger.LogInformation($"ResultsRefundConfirmedSdt Received: {context.Message}");
+        logger.LogInformation($"ResultsCalculated Received: {context.Message}");
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
             context.Message.Action,
@@ -200,18 +99,34 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
             context.Message.ChildMatchType,
             string.Join(",", context.Message.Resources.Select(x => x.ResourceId)));
 
-        await HandleConsumer(context.Message.MatchId, triggerResources);
+        var (isValid, match) = await refundConsumerHandler.Handle(context.Message.MatchId, triggerResources);
 
-        logger.LogInformation($"ResultsRefundConfirmedSdt Done: {context.Message}");
+        if (isValid)
+        {
+            await insOrUpdAutoPayoutResultHandler.Handle(match, 0);
+        }
 
+        logger.LogInformation($"ResultsCalculated Done: {context.Message}");
     }
 
-    private List<SourcesConditions> ExtractValidResults(List<SourcesConditions> sourceResources)
+
+    public async Task Consume(ConsumeContext<ResultsRefundConfirmed> context)
     {
-        return sourceResources
-            .Where(x => x.Resource != null)
-            .GroupBy(x => x.ResourceId)
-            .SelectMany(group => ProcessResourceGroup(group))
-            .ToList();
+        logger.LogInformation($"ResultsRefundConfirmed Received: {context.Message}");
+
+        var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
+            context.Message.Action,
+            context.Message.ShortType,
+            context.Message.ChildMatchType,
+            string.Join(",", context.Message.Resources.Select(x => x.ResourceId)));
+
+        var (isValid, match) = await refundConsumerHandler.Handle(context.Message.MatchId, triggerResources);
+
+        if (isValid)
+        {
+            await insOrUpdAutoPayoutResultHandler.Handle(match, 0);
+        }
+
+        logger.LogInformation($"ResultsRefundConfirmed Done: {context.Message}");
     }
 }
