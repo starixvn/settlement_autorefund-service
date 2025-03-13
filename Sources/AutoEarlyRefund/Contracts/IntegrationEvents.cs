@@ -10,7 +10,8 @@ public record MatchCalculated(
     int? HalfTimeAwayScore,
     int? FinalHomeScore,
     int? FinalAwayScore,
-     string Action = "Cal"
+    string ActionName,
+    string Action = "Cal"
     );
 
 public record ResultsCalculated(
@@ -37,7 +38,15 @@ public record ResultsRefundConfirmed(
     short ShortType,
     short ChildMatchType,
     List<ResourceItem> Resources,
-    string Action = "CfnRefund"
+    string Action = "CfmRefund"
+    );
+
+public record NotTakenResultsConfirmed(
+    int MatchId,
+    short ShortType,
+    short ChildMatchType,
+    List<ResourceItem> Resources,
+    string Action = "CfmRefundAdminSite"
     );
 
 public record ResultsRefundConfirmedSdt(
@@ -45,10 +54,20 @@ public record ResultsRefundConfirmedSdt(
     short ShortType,
     short ChildMatchType,
     List<ResourceItem> Resources,
-    string Action = "CfnRefundSDT"
+    string Action = "CfmRefundSDT"
     )
 {
     public override string ToString()
        => JsonSerializer.Serialize(this);
 }
+
+
+public record MatchRefunded(
+    int MatchId,
+    int ParentId,
+    short ShortType,
+    short ChildMatchType,
+    string ActionName,
+    string Action = "Refund"
+    );
 

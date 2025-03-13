@@ -20,5 +20,5 @@ public class SourcesConditions
     public Resource? Resource { get; set; }
 
     public IEnumerable<string> SourceResourceIds => SourceResource.Split(',');
-    public override string ToString() => $"{ResourceId}-{RuleName}-{SourceMatchType}-{SourceChildMatchType}, Target: {SourceResourceId}";
+    public override string ToString() => $"{ResourceId}-{RuleName}-{SourceMatchType}-{SourceChildMatchType}-{SourceAction}, Target: {SourceResourceId}";
 }

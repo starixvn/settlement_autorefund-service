@@ -8,27 +8,11 @@ public interface ISpecification<in T>
 }
 
 
-public class AllSpecification<T> : ISpecification<T>
-{
-    private readonly List<ISpecification<T>> specifications;
-
-    public AllSpecification(params List<ISpecification<T>> specifications)
-    {
-        this.specifications = specifications;
-    }
-
-    public bool IsSatisfiedBy(T entity)
-    {
-        return specifications.All(spec => spec.IsSatisfiedBy(entity));
-    }
-}
-
-
 public class DefaultSpecification : ISpecification<SourcesConditions>
 {
     public bool IsSatisfiedBy(SourcesConditions entity)
     {
-        return true;
+        return false;
     }
 }
 
@@ -84,7 +68,7 @@ public class ParentMatchCalculatedWinLostSpecification : ISpecification<SourcesC
     }
 }
 
-public class RelatedMatchCalculatedWinLostSpecification : ISpecification<SourcesConditions>
+public class ExtraMatchCalculatedWinLostSpecification : ISpecification<SourcesConditions>
 {
     public bool IsSatisfiedBy(SourcesConditions entity)
     {
@@ -92,3 +76,13 @@ public class RelatedMatchCalculatedWinLostSpecification : ISpecification<Sources
             && !entity.Resource.HomeValue.Equals(entity.Resource.AwayValue);
     }
 }
+
+public class ExtraMatchRefundedSpecification : ISpecification<SourcesConditions>
+{
+    public bool IsSatisfiedBy(SourcesConditions entity)
+    {
+        return (entity.Resource?.SettlementStatusId == (short)SettleStatus.Refunded || entity.Resource?.SettlementStatusId == (short)SettleStatus.RefundedFt)
+            && entity.Resource?.SourceChildMatchType == 201;
+    }
+}
+

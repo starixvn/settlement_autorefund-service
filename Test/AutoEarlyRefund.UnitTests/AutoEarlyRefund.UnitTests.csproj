@@ -23,4 +23,10 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Conditions\" />
+    <Folder Include="Features\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>

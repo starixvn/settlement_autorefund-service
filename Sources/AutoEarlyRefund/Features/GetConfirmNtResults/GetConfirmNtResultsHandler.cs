@@ -38,7 +38,7 @@ public class GetConfirmNtResultsHandler
 
         foreach (var item in matches)
         {
-            await publishEndpoint.Publish(new ResultsRefundConfirmed(item.MatchId, item.SportType, item.ChildMatchType, item.ResourceItems.ToList()));
+            await publishEndpoint.Publish(new NotTakenResultsConfirmed(item.MatchId, item.SportType, item.ChildMatchType, item.ResourceItems.ToList()));
         }
     }
 }

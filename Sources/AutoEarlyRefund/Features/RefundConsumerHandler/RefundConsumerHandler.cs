@@ -56,6 +56,7 @@ public class RefundConsumerHandler
 
         var match = BuildMatch(targetMatchId, matchType, validResults);
 
+        //return (false, new Match());
         return (true, match);
     }
 
@@ -87,7 +88,7 @@ public class RefundConsumerHandler
     private List<SourcesConditions> ExtractValidResults(List<SourcesConditions> sourceResources)
     {
         return sourceResources
-            .Where(x => x.Resource != null)
+            //.Where(x => x.Resource != null)
             .GroupBy(x => x.ResourceId)
             .SelectMany(group => ProcessResourceGroup(group))
             .ToList();
@@ -97,6 +98,7 @@ public class RefundConsumerHandler
     {
         foreach (var ruleGroup in resourceGroup.GroupBy(x => x.RuleId))
         {
+            var specs = ruleGroup.Select(SpecificationFactory.CreateSpecification).ToList();
             var allValid = ruleGroup.All(sc => SpecificationFactory.CreateSpecification(sc).IsSatisfiedBy(sc));
 
             if (allValid)

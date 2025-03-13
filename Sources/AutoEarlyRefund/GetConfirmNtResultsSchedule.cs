@@ -29,7 +29,7 @@ public class GetConfirmNtResultsSchedule : BackgroundService
                 return;
             }
 
-            await confirmNtResultsHandler.Handle();
+            //await confirmNtResultsHandler.Handle();
         }
     }
 }

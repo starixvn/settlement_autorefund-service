@@ -4,6 +4,8 @@ public enum SettleStatus
 {
     Running,
     Refunded = 1,
+    RefundedHt = 2,
+    RefundedFt = 3,
     Calculated = 4,
 }
 
