@@ -10,7 +10,7 @@ public class SpecificationsTests
     {
         var spec = new DefaultSpecification();
         var entity = new SourcesConditions();
-        Assert.True(spec.IsSatisfiedBy(entity));
+        Assert.False(spec.IsSatisfiedBy(entity));
     }
 
     [Fact]

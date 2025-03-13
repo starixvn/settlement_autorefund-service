@@ -103,7 +103,7 @@ public class SpecificationFactoryTests
         // Arrange
         var condition = new SourcesConditions
         {
-            SourceAction = "CfnRefund",
+            SourceAction = "CfmRefundAdminSite",
             SourceMatchType = 1,
             SourceChildMatchType = 202,
             Conditions = "3"

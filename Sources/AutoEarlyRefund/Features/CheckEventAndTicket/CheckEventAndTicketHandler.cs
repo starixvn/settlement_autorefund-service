@@ -6,9 +6,9 @@ using Mapster;
 namespace AutoEarlyRefund.Features.CheckEventAndTicket;
 
 public class CheckEventAndTicketHandler(
-    IValidateHandler next,
     GeneralService generalService,
-    XmlConvertService xmlConvertService) : IValidateHandler
+    XmlConvertService xmlConvertService,
+    IValidateHandler? next = null) : IValidateHandler
 {
     public async Task<Result> HandleAsync(Match match)
     {

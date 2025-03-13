@@ -36,11 +36,17 @@ public class RefundConsumerHandler
 
     public async Task<(bool, Match)> Handle(int matchId, List<TargetResourceTrigger> triggerResources)
     {
-        if (triggerResources.Count == 0) return (false, new Match());
+        if (triggerResources.Count == 0)
+        {
+            return (false, new Match());
+        }
 
         var relatedMatchItems = await GetRelatedMatchItems(matchId, triggerResources);
 
-        if (relatedMatchItems.Count == 0) return (false, new Match());
+        if (relatedMatchItems.Count == 0)
+        {
+            return (false, new Match());
+        }
 
         var matchType = relatedMatchItems[0].MatchType;
         var targetMatchId = relatedMatchItems[0].TargetMatchId;
@@ -52,11 +58,13 @@ public class RefundConsumerHandler
         var sourceResources = await resourcesInfoHandler.HandleAsync(targetMatchId, conditions);
 
         var validResults = ExtractValidResults(sourceResources);
-        if (!validResults.Any()) return (false, new Match());
+        if (!validResults.Any())
+        {
+            return (false, new Match());
+        }
 
         var match = BuildMatch(targetMatchId, matchType, validResults);
 
-        //return (false, new Match());
         return (true, match);
     }
 

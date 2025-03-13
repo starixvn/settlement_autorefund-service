@@ -8,8 +8,13 @@ using Microsoft.Extensions.Logging;
 
 namespace AutoEarlyRefund.Consumers;
 
-public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<ResultsRefundConfirmedSdt>,
-    IConsumer<MatchCalculated>, IConsumer<ResultsCalculated>, IConsumer<ResultsRefundConfirmed>, IConsumer<MatchRefunded>, IConsumer<NotTakenResultsConfirmed>
+public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
+    IConsumer<ResultsRefundConfirmedSdt>,
+    IConsumer<MatchCalculated>,
+    IConsumer<ResultsCalculated>,
+    IConsumer<ResultsRefundConfirmed>,
+    IConsumer<MatchRefunded>,
+    IConsumer<NotTakenResultsConfirmed>
 {
     private readonly ILogger<RefundConsumer> logger;
     private readonly GetResourcesTriggerHandler getResourcesTriggerHandler;
@@ -55,7 +60,10 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>, IConsumer<Resul
 
         var hasValidResource = ConsumerHelper.TryGetValidResources(context.Message.Resources, out var validResources);
 
-        if (!hasValidResource) return;
+        if (!hasValidResource)
+        {
+            return;
+        }
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
             context.Message.Action,

@@ -21,7 +21,7 @@ public class GetConfirmNtResultsSchedule : BackgroundService
         var intervalTime = TimeSpan.FromMilliseconds(configuration.GetValue<int>("ServiceInterval"));
         using PeriodicTimer timer = new(intervalTime);
 
-        //while (await timer.WaitForNextTickAsync(stoppingToken))
+        while (await timer.WaitForNextTickAsync(stoppingToken))
         {
             var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
             if (isMaintenance)
@@ -29,7 +29,7 @@ public class GetConfirmNtResultsSchedule : BackgroundService
                 return;
             }
 
-            //await confirmNtResultsHandler.Handle();
+            await confirmNtResultsHandler.Handle();
         }
     }
 }

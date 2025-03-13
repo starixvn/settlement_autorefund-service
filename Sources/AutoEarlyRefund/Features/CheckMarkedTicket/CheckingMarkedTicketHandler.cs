@@ -33,7 +33,7 @@ public class CheckingMarkedTicketHandler : IValidateHandler, ICheckingMarkedTick
 
         var results = await Task.WhenAll(tasks.ToArray());
 
-        if (results.All(x => !x) && next != null)
+        if (results.ToList().TrueForAll(x => !x) && next != null)
         {
             return await next.HandleAsync(match);
         }

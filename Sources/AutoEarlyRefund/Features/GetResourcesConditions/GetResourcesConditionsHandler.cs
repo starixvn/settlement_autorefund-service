@@ -12,9 +12,9 @@ public interface IGetResourcesConditionsHandler
 
 public class GetResourcesConditionsHandler(IDynamicRepository repository) : IGetResourcesConditionsHandler
 {
-    public async Task<List<SourcesConditions>> GetConditionsAsync(short matchType, List<SourcesConditionsItem> sourcesConditionsItems)
+    public async Task<List<SourcesConditions>> GetConditionsAsync(short matchType, List<SourcesConditionsItem> targetResourceTriggers)
     {
-        var request = sourcesConditionsItems
+        var request = targetResourceTriggers
             .Select(x => x.WithMatchType(matchType))
             .ToList();
 

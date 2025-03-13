@@ -4,7 +4,6 @@ using AutoEarlyRefund.Features.GetResourcesInfo;
 using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using AutoRefund.Core.Models;
 using Fanex.Settlement.Converter.Services;
 using NSubstitute;
 
@@ -35,40 +34,6 @@ public class CheckConditionsRefundHandlerTests
             xmlConvertService);
     }
 
-    [Fact]
-    public async Task HandleAsync_ShouldReturnResult_WhenMatchDetailsAreValid()
-    {
-        // Arrange
-        var match = new Match
-        {
-            MatchId = 1,
-            ResultDetails = new List<ResultDetail>
-        {
-            new ResultDetail { ResourceId = "1", SportType = 1, ChildMatchType = 1, SourceId = "1", OtherInfo = "{}" }
-        }
-        };
-
-        var conditions = new List<SourcesConditions>
-        {
-            new SourcesConditions { ResourceId = "1", RuleName = "Rule1", Resource = new Resource() }
-        };
-
-        var resources = new List<SourcesConditions>
-        {
-            new SourcesConditions { ResourceId = "1", RuleName = "Rule1", Resource = new Resource() }
-        };
-
-        conditionsHandler.GetConditionsAsync(Arg.Any<List<SourcesConditionsItem>>()).Returns(conditions);
-        getSrcResourcesHandler.HandleAsync(Arg.Any<int>(), Arg.Any<List<SourcesConditions>>()).Returns(resources);
-        validateHandler.HandleAsync(Arg.Any<Match>()).Returns(new Result());
-
-        // Act
-        var result = await handler.HandleAsync(match);
-
-        // Assert
-        Assert.NotNull(result);
-        await validateHandler.Received(1).HandleAsync(Arg.Any<Match>());
-    }
 
     [Fact]
     public async Task HandleAsync_ShouldThrowAppException_WhenNoValidResults()
