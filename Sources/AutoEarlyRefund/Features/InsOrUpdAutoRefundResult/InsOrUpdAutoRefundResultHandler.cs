@@ -13,11 +13,13 @@ public class InsOrUpdAutoRefundResultHandler : IInsOrUpdAutoPayoutResultHandler
 
     public InsOrUpdAutoRefundResultHandler(IDynamicRepository repository)
     {
-        this.repository = repository;
+        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
     }
 
     public async Task Handle(Match match, int statusId)
     {
+        ArgumentNullException.ThrowIfNull(match);
+
         var criteria = new InsOrUpdAutoRefundResultCriteria
         {
             MatchId = match.MatchId,

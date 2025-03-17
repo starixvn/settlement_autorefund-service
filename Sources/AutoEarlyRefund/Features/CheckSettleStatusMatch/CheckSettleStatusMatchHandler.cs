@@ -31,17 +31,15 @@ public class CheckSettleStatusMatchHandler : IValidateHandler, ICheckSettleStatu
 
         await repository.ExecuteAsync(criteria);
 
-        var result = new Result
-        {
-            ErrCode = criteria.ErrCode,
-            ErrMsg = criteria.ErrMsg
-        };
-
-        if (result.IsSuccess && next is not null)
+        if (criteria.ErrCode == 0 && next is not null)
         {
             return await next.HandleAsync(match);
         }
 
-        return result;
+        return new Result
+        {
+            ErrCode = criteria.ErrCode,
+            ErrMsg = criteria.ErrMsg
+        };
     }
 }

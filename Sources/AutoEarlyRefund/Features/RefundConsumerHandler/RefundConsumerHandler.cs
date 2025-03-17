@@ -9,14 +9,24 @@ using AutoEarlyRefund.Models;
 
 namespace AutoEarlyRefund.Features.RefundConsumerHandler;
 
-public class RefundConsumerHandler
+public interface IRefundConsumerHandler
 {
-    readonly GetResourcesConditionsHandler getResourcesConditionsHandler;
+    Task<(bool Success, Match Match)> Handle(int matchId, List<TargetResourceTrigger> triggerResources);
+}
+
+public class RefundConsumerHandler : IRefundConsumerHandler
+{
+    private readonly GetResourcesConditionsHandler getResourcesConditionsHandler;
     private readonly GetSrcResourcesHandler resourcesInfoHandler;
     private readonly XmlConvertService xmlConvertService;
     private readonly GetRefundMatchInfoHandler getRefundMatchInfoHandler;
     private readonly GetResultDetailsHandler getRefundResultsHandler;
     private readonly GetAutoRefundResultsHandler getAutoRefundResultsHandler;
+
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 
     public RefundConsumerHandler(
         GetResourcesConditionsHandler getResourcesConditionsHandler,
@@ -26,90 +36,101 @@ public class RefundConsumerHandler
         GetResultDetailsHandler getRefundResultsHandler,
         GetAutoRefundResultsHandler getAutoRefundResultsHandler)
     {
-        this.getResourcesConditionsHandler = getResourcesConditionsHandler;
-        this.resourcesInfoHandler = resourcesInfoHandler;
-        this.xmlConvertService = xmlConvertService;
-        this.getRefundMatchInfoHandler = getRefundMatchInfoHandler;
-        this.getRefundResultsHandler = getRefundResultsHandler;
-        this.getAutoRefundResultsHandler = getAutoRefundResultsHandler;
+        this.getResourcesConditionsHandler = getResourcesConditionsHandler ?? throw new ArgumentNullException(nameof(getResourcesConditionsHandler));
+        this.resourcesInfoHandler = resourcesInfoHandler ?? throw new ArgumentNullException(nameof(resourcesInfoHandler));
+        this.xmlConvertService = xmlConvertService ?? throw new ArgumentNullException(nameof(xmlConvertService));
+        this.getRefundMatchInfoHandler = getRefundMatchInfoHandler ?? throw new ArgumentNullException(nameof(getRefundMatchInfoHandler));
+        this.getRefundResultsHandler = getRefundResultsHandler ?? throw new ArgumentNullException(nameof(getRefundResultsHandler));
+        this.getAutoRefundResultsHandler = getAutoRefundResultsHandler ?? throw new ArgumentNullException(nameof(getAutoRefundResultsHandler));
     }
 
-    public async Task<(bool, Match)> Handle(int matchId, List<TargetResourceTrigger> triggerResources)
+    public async Task<(bool Success, Match Match)> Handle(int matchId, List<TargetResourceTrigger> triggerResources)
     {
-        if (triggerResources.Count == 0)
+        ArgumentNullException.ThrowIfNull(triggerResources);
+        if (matchId <= 0) throw new ArgumentException("Match ID must be greater than 0", nameof(matchId));
+
+        if (!triggerResources.Any())
         {
-            return (false, new Match());
+            return (false, CreateEmptyMatch());
         }
 
         var relatedMatchItems = await GetRelatedMatchItems(matchId, triggerResources);
-
-        if (relatedMatchItems.Count == 0)
+        if (!relatedMatchItems.Any())
         {
-            return (false, new Match());
+            return (false, CreateEmptyMatch());
         }
 
-        var matchType = relatedMatchItems[0].MatchType;
-        var targetMatchId = relatedMatchItems[0].TargetMatchId;
-
-        var validSourcesConditions = await getRefundResultsHandler.Handle(targetMatchId, triggerResources);
-        var newValidSourcesConditions = await getAutoRefundResultsHandler.Handle(matchId, validSourcesConditions);
-
-        var conditions = await getResourcesConditionsHandler.GetConditionsAsync(matchType, newValidSourcesConditions);
-        var sourceResources = await resourcesInfoHandler.HandleAsync(targetMatchId, conditions);
-
-        var validResults = ExtractValidResults(sourceResources);
+        var matchInfo = relatedMatchItems[0];
+        var validResults = await ProcessMatchResults(matchId, matchInfo, triggerResources);
         if (!validResults.Any())
         {
-            return (false, new Match());
+            return (false, CreateEmptyMatch());
         }
 
-        var match = BuildMatch(targetMatchId, matchType, validResults);
-
+        var match = BuildMatch(matchInfo.TargetMatchId, matchInfo.MatchType, validResults);
         return (true, match);
     }
 
     private async Task<List<RelatedMatchItem>> GetRelatedMatchItems(int matchId, List<TargetResourceTrigger> resources)
     {
-        var getRelatedMatchItemRequest = resources.Select(x => new GetRelatedMatchItemRequest
-        {
-            MatchId = matchId,
-            ChildMatchType = x.ChildMatchType,
-            TargetChildMatchType = x.TargetResourceChildMatchType
-        }).DistinctBy(x => new
-        {
-            x.ChildMatchType,
-            x.TargetChildMatchType,
-            x.MatchId
-        }).ToList();
+        var requests = CreateRelatedMatchRequests(matchId, resources);
+        var relatedMatchItems = await getRefundMatchInfoHandler.HandleAsync(requests);
 
-        var relatedMatchItems = await getRefundMatchInfoHandler.HandleAsync(getRelatedMatchItemRequest);
+        return relatedMatchItems
+            .DistinctBy(x => new
+            {
+                x.MatchType,
+                x.TargetMatchId,
+                x.TargetChildMatchType,
+                x.MatchId,
+            })
+            .ToList();
+    }
 
-        return relatedMatchItems.DistinctBy(x => new
-        {
-            x.MatchType,
-            x.TargetMatchId,
-            x.TargetChildMatchType,
-            x.MatchId,
-        }).ToList();
+    private static List<GetRelatedMatchItemRequest> CreateRelatedMatchRequests(int matchId, List<TargetResourceTrigger> resources)
+    {
+        return resources
+            .Select(x => new GetRelatedMatchItemRequest
+            {
+                MatchId = matchId,
+                ChildMatchType = x.ChildMatchType,
+                TargetChildMatchType = x.TargetResourceChildMatchType
+            })
+            .DistinctBy(x => new
+            {
+                x.ChildMatchType,
+                x.TargetChildMatchType,
+                x.MatchId
+            })
+            .ToList();
+    }
+
+    private async Task<List<SourcesConditions>> ProcessMatchResults(
+        int matchId,
+        RelatedMatchItem matchInfo,
+        List<TargetResourceTrigger> triggerResources)
+    {
+        var validSourcesConditions = await getRefundResultsHandler.Handle(matchInfo.TargetMatchId, triggerResources);
+        var newValidSourcesConditions = await getAutoRefundResultsHandler.Handle(matchId, validSourcesConditions);
+        var conditions = await getResourcesConditionsHandler.GetConditionsAsync(matchInfo.MatchType, newValidSourcesConditions);
+        var sourceResources = await resourcesInfoHandler.HandleAsync(matchInfo.TargetMatchId, conditions);
+
+        return ExtractValidResults(sourceResources);
     }
 
     private List<SourcesConditions> ExtractValidResults(List<SourcesConditions> sourceResources)
     {
         return sourceResources
-            //.Where(x => x.Resource != null)
             .GroupBy(x => x.ResourceId)
             .SelectMany(group => ProcessResourceGroup(group))
             .ToList();
     }
 
-    private IEnumerable<SourcesConditions> ProcessResourceGroup(IGrouping<string, SourcesConditions> resourceGroup)
+    private static IEnumerable<SourcesConditions> ProcessResourceGroup(IGrouping<string, SourcesConditions> resourceGroup)
     {
         foreach (var ruleGroup in resourceGroup.GroupBy(x => x.RuleId))
         {
-            var specs = ruleGroup.Select(SpecificationFactory.CreateSpecification).ToList();
-            var allValid = ruleGroup.All(sc => SpecificationFactory.CreateSpecification(sc).IsSatisfiedBy(sc));
-
-            if (allValid)
+            if (AreAllSpecificationsSatisfied(ruleGroup))
             {
                 yield return GetPreferredResource(ruleGroup, resourceGroup.Key);
                 yield break;
@@ -117,23 +138,49 @@ public class RefundConsumerHandler
         }
     }
 
+    private static bool AreAllSpecificationsSatisfied(IEnumerable<SourcesConditions> ruleGroup)
+    {
+        return ruleGroup.All(sc => SpecificationFactory.CreateSpecification(sc).IsSatisfiedBy(sc));
+    }
+
     private Match BuildMatch(int targetMatchId, short matchType, List<SourcesConditions> validResults)
     {
         return new Match
         {
             MatchId = targetMatchId,
-            ResultDetails = validResults.Select(x => new ResultDetail
-            {
-                ResourceId = x.ResourceId,
-                HomeValue = x.ResourceId.StartsWith("381") || x.ResourceId.StartsWith("382") ? "NT" : x.Resource!.CfmHomeValue,
-                AwayValue = x.Resource!.CfmAwayValue,
-                SourceId = x.RuleId.ToString(),
-                OtherInfo = JsonSerializer.Serialize(new { matchType, ruleId = x.RuleId })
-            }).ToList()
+            ResultDetails = validResults.Select(x => CreateResultDetail(x, matchType)).ToList()
         }.WithResourcesXml(xmlConvertService);
     }
 
-    private SourcesConditions GetPreferredResource(IEnumerable<SourcesConditions> ruleGroup, string resourceKey)
+    private static ResultDetail CreateResultDetail(SourcesConditions condition, short matchType)
+    {
+        return new ResultDetail
+        {
+            ResourceId = condition.ResourceId,
+            HomeValue = DetermineHomeValue(condition),
+            AwayValue = condition.Resource!.CfmAwayValue,
+            SourceId = condition.RuleId.ToString(),
+            OtherInfo = CreateOtherInfo(matchType, condition.RuleId)
+        };
+    }
+
+    private static string DetermineHomeValue(SourcesConditions condition)
+    {
+        return condition.ResourceId.StartsWith("381") || condition.ResourceId.StartsWith("382")
+            ? "NT"
+            : condition.Resource!.CfmHomeValue;
+    }
+
+    private static string CreateOtherInfo(short matchType, int ruleId)
+    {
+        return JsonSerializer.Serialize(
+            new { matchType, ruleId },
+            SerializerOptions);
+    }
+
+    private static SourcesConditions GetPreferredResource(IEnumerable<SourcesConditions> ruleGroup, string resourceKey)
         => ruleGroup.FirstOrDefault(x => x.SourceResourceId == resourceKey && x.Resource?.IsConfirmedRefundSdt == true)
         ?? ruleGroup.First();
+
+    private static Match CreateEmptyMatch() => new();
 }

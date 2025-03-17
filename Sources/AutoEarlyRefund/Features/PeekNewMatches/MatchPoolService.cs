@@ -10,6 +10,8 @@ public class MatchPoolService(GetMatchesService fetchItemsHandler)
 
     public void Remove(Match match)
     {
+        ArgumentNullException.ThrowIfNull(match);
+
         lock (lockObject)
         {
             poolOfMatches.RemoveAll(m => m.MatchId == match.MatchId);

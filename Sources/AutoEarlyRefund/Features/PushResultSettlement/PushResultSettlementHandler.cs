@@ -1,4 +1,6 @@
 ﻿using AutoEarlyRefund.Models;
+using AutoRefund.Core.Models;
+using Microsoft.Extensions.Options;
 
 namespace AutoEarlyRefund.Features.PushResultSettlement;
 
@@ -7,11 +9,21 @@ public interface IPushResultSettlementHandler
     Task HandleAsync(Match match, CancellationToken cancellationToken);
 }
 
-public class PushResultSettlementHandler(IDynamicRepository repository, IOptions<AppSettingsKey> appSettingsKey)
-    : IPushResultSettlementHandler
+public class PushResultSettlementHandler : IPushResultSettlementHandler
 {
+    private readonly IDynamicRepository repository;
+    private readonly IOptions<AppSettingsKey> appSettingsKey;
+
+    public PushResultSettlementHandler(IDynamicRepository repository, IOptions<AppSettingsKey> appSettingsKey)
+    {
+        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        this.appSettingsKey = appSettingsKey ?? throw new ArgumentNullException(nameof(appSettingsKey));
+    }
+
     public async Task HandleAsync(Match match, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(match);
+
         var criteria = new PushResultSettlementCriteria
         {
             MatchId = match.MatchId,
@@ -20,13 +32,14 @@ public class PushResultSettlementHandler(IDynamicRepository repository, IOptions
             SelectedResources = match.ResourcesXml,
         };
 
-        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => PushResultSettlement(s, criteria, cancellationToken));
-        await Task.WhenAll(tasks.ToArray());
+        var servers = appSettingsKey.Value.SiteDbServer ?? new List<string>();
+        var tasks = servers.Select(s => PushResultSettlement(s, criteria, cancellationToken));
+        await Task.WhenAll(tasks);
     }
 
-    private async Task PushResultSettlement(string s, PushResultSettlementCriteria criteria, CancellationToken cancellationToken)
+    private async Task PushResultSettlement(string server, PushResultSettlementCriteria criteria, CancellationToken cancellationToken)
     {
-        criteria.DbServer = s;
-        await repository.ExecuteAsync(criteria, cancellationToken: cancellationToken);
+        criteria.DbServer = server;
+        await repository.ExecuteAsync(criteria, "", cancellationToken);
     }
 }

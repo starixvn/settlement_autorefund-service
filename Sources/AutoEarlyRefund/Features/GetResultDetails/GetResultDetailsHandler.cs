@@ -5,17 +5,36 @@ using AutoEarlyRefund.Models;
 
 namespace AutoEarlyRefund.Features.GetRefundResults;
 
-public class GetResultDetailsHandler(IDynamicRepository repository)
+public interface IGetResultDetailsHandler
 {
+    Task<List<SourcesConditionsItem>> Handle(int matchId, List<TargetResourceTrigger> targetResourceTriggers);
+}
+
+public class GetResultDetailsHandler : IGetResultDetailsHandler
+{
+    private readonly IDynamicRepository repository;
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
+    public GetResultDetailsHandler(IDynamicRepository repository)
+    {
+        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+    }
+
     public async Task<List<SourcesConditionsItem>> Handle(int matchId, List<TargetResourceTrigger> targetResourceTriggers)
     {
-        var sourcesConditions = GetSourcesConditionsItems(targetResourceTriggers);
+        ArgumentNullException.ThrowIfNull(targetResourceTriggers);
+        if (matchId <= 0) throw new ArgumentException("Match ID must be greater than 0", nameof(matchId));
 
+        var sourcesConditions = GetSourcesConditionsItems(targetResourceTriggers);
         var results = await GetResults(matchId, sourcesConditions);
 
-        var validSourcesConditions = sourcesConditions.Where(x => !results.Exists(r => r.ResourceId == x.ResourceId)).ToList();
-
-        return validSourcesConditions;
+        return sourcesConditions
+            .Where(x => !results.Exists(r => r.ResourceId == x.ResourceId))
+            .ToList();
     }
 
     private async Task<List<ResultDetail>> GetResults(int matchId, List<SourcesConditionsItem> sourcesConditions)
@@ -24,57 +43,66 @@ public class GetResultDetailsHandler(IDynamicRepository repository)
             .Select(x => new GetResultDetailsItem(matchId, x.SportType, x.ResourceId))
             .ToList();
 
-        var json = SerializeToJson(request);
-
         var criteria = new GetResultDetailsCriteria
         {
-            ResourceInfo = json
+            ResourceInfo = SerializeToJson(request)
         };
 
         var results = await repository.FetchAsync<ResultDetail>(criteria);
 
         return results
-            .Where(x => x.ResultStatusId == (int)ResultStatus.ManualSettled || x.ResultStatusId == (int)ResultStatus.AutoSettled)
+            .Where(x => IsSettled(x.ResultStatusId))
             .ToList();
     }
 
-    private static string SerializeToJson(List<GetResultDetailsItem> groupedSources)
-        => JsonSerializer.Serialize(groupedSources, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
+    private static bool IsSettled(int resultStatusId) =>
+        resultStatusId == (int)ResultStatus.ManualSettled ||
+        resultStatusId == (int)ResultStatus.AutoSettled;
 
-    private List<SourcesConditionsItem> GetSourcesConditionsItems(List<TargetResourceTrigger> targetResourceTriggers)
+    private static string SerializeToJson<T>(T value) =>
+        JsonSerializer.Serialize(value, SerializerOptions);
+
+    private static List<SourcesConditionsItem> GetSourcesConditionsItems(List<TargetResourceTrigger> triggers)
     {
-        return targetResourceTriggers
-            .SelectMany(x => x.TargetResourceIds.Select(r => new TargetResourceTrigger
-            {
-                Id = x.Id,
-                SportType = x.SportType,
-                Action = x.Action,
-                MatchType = x.MatchType,
-                ChildMatchType = x.ChildMatchType,
-                Conditions = x.Conditions,
-                TargetIsCrrMatch = x.TargetIsCrrMatch,
-                TargetIsCrrResource = x.TargetIsCrrResource,
-                TargetResourceChildMatchType = x.TargetResourceChildMatchType,
-                TargetResource = r
-
-            })).DistinctBy(x => new
+        return triggers
+            .SelectMany(trigger => trigger.TargetResourceIds.Select(resourceId =>
+                MapToTargetResourceTrigger(trigger, resourceId)))
+            .DistinctBy(x => new
             {
                 x.SportType,
                 x.MatchType,
                 x.TargetResourceChildMatchType,
                 x.TargetResource
             })
-            .Select(x => new SourcesConditionsItem
-            {
-                ResourceId = x.TargetResourceIds[0],
-                SportType = x.SportType,
-                ChildMatchType = (short)x.TargetResourceChildMatchType,
-                MatchType = x.MatchType,
-            })
+            .Select(MapToSourcesConditionsItem)
             .ToList();
+    }
+
+    private static TargetResourceTrigger MapToTargetResourceTrigger(TargetResourceTrigger source, string resourceId)
+    {
+        return new TargetResourceTrigger
+        {
+            Id = source.Id,
+            SportType = source.SportType,
+            Action = source.Action,
+            MatchType = source.MatchType,
+            ChildMatchType = source.ChildMatchType,
+            Conditions = source.Conditions,
+            TargetIsCrrMatch = source.TargetIsCrrMatch,
+            TargetIsCrrResource = source.TargetIsCrrResource,
+            TargetResourceChildMatchType = source.TargetResourceChildMatchType,
+            TargetResource = resourceId
+        };
+    }
+
+    private static SourcesConditionsItem MapToSourcesConditionsItem(TargetResourceTrigger trigger)
+    {
+        return new SourcesConditionsItem
+        {
+            ResourceId = trigger.TargetResourceIds[0],
+            SportType = trigger.SportType,
+            ChildMatchType = (short)trigger.TargetResourceChildMatchType,
+            MatchType = trigger.MatchType
+        };
     }
 }

@@ -9,50 +9,45 @@ public interface IGetSrcResourcesHandler
     Task<List<SourcesConditions>> HandleAsync(int matchId, List<SourcesConditions> sourcesConditions);
 }
 
-public class GetSrcResourcesHandler(IDynamicRepository repository) : IGetSrcResourcesHandler
+public class GetSrcResourcesHandler : IGetSrcResourcesHandler
 {
-    public async Task<List<SourcesConditions>> HandleAsync(int matchId, List<SourcesConditions> sourcesConditions)
+    private readonly IDynamicRepository repository;
+    private static readonly JsonSerializerOptions SerializerOptions = new()
     {
-        var groupedSources = GetDistinctGroupedSources(sourcesConditions, matchId);
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 
-        var json = SerializeToJson(groupedSources);
-
-        var resources = await repository.FetchAsync<Resource>(new GetSrcResourcesCriteria(json));
-
-        var newResources = MapSourcesWithResources(sourcesConditions, resources.ToList());
-
-        return newResources;
+    public GetSrcResourcesHandler(IDynamicRepository repository)
+    {
+        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
     }
 
-    private static List<SourcesConditions> MapSourcesWithResources(
+    public async Task<List<SourcesConditions>> HandleAsync(int matchId, List<SourcesConditions> sourcesConditions)
+    {
+        ArgumentNullException.ThrowIfNull(sourcesConditions);
+        if (matchId <= 0) throw new ArgumentException("Match ID must be greater than 0", nameof(matchId));
+
+        var groupedSources = GetDistinctGroupedSources(sourcesConditions, matchId);
+        var resources = await FetchResources(groupedSources);
+
+        return MapSourcesWithResources(sourcesConditions, resources);
+    }
+
+    private async Task<List<Resource>> FetchResources(List<ResourceInfoItemRequest> groupedSources)
+    {
+        var json = SerializeToJson(groupedSources);
+        var criteria = new GetSrcResourcesCriteria(json);
+        var resources = await repository.FetchAsync<Resource>(criteria);
+
+        return resources.ToList();
+    }
+
+    private static List<ResourceInfoItemRequest> GetDistinctGroupedSources(
         List<SourcesConditions> sourcesConditions,
-        List<Resource> resources)
-        => sourcesConditions.GroupJoin(
-            resources,
-            sc => new { sc.SourceResourceId, sc.SourceMatchType, sc.SourceChildMatchType },
-            s => new { SourceResourceId = s.SourceResource, s.SourceMatchType, s.SourceChildMatchType },
-            (sc, s) => new SourcesConditions
-            {
-                Id = sc.Id,
-                SportType = sc.SportType,
-                ResourceId = sc.ResourceId,
-                RuleId = sc.RuleId,
-                RuleName = sc.RuleName,
-                SourceAction = sc.SourceAction,
-                MatchType = sc.MatchType,
-                ChildMatchType = sc.ChildMatchType,
-                SourceMatchType = sc.SourceMatchType,
-                SourceChildMatchType = sc.SourceChildMatchType,
-                SourceResource = sc.SourceResource,
-                Conditions = sc.Conditions,
-                SourceResourceId = sc.SourceResourceId,
-
-                Resource = s.FirstOrDefault()
-            }).ToList();
-
-
-    private static List<ResourceInfoItemRequest> GetDistinctGroupedSources(List<SourcesConditions> sourcesConditions, int matchId)
-        => sourcesConditions
+        int matchId)
+    {
+        return sourcesConditions
             .Select(sc => new ResourceInfoItemRequest
             {
                 SportType = sc.SportType,
@@ -60,7 +55,6 @@ public class GetSrcResourcesHandler(IDynamicRepository repository) : IGetSrcReso
                 SourceChildMatchType = sc.SourceChildMatchType,
                 SourceResource = sc.SourceResource,
                 MatchId = matchId
-
             })
             .DistinctBy(x => new
             {
@@ -71,13 +65,57 @@ public class GetSrcResourcesHandler(IDynamicRepository repository) : IGetSrcReso
                 x.MatchId
             })
             .ToList();
+    }
 
+    private static List<SourcesConditions> MapSourcesWithResources(
+        List<SourcesConditions> sourcesConditions,
+        List<Resource> resources)
+    {
+        return sourcesConditions
+            .GroupJoin(
+                resources,
+                sc => CreateJoinKey(sc),
+                s => CreateResourceKey(s),
+                (sc, s) => CreateMappedCondition(sc, s.FirstOrDefault()))
+            .ToList();
+    }
 
-    private static string SerializeToJson(List<ResourceInfoItemRequest> groupedSources)
-        => JsonSerializer.Serialize(groupedSources, new JsonSerializerOptions
+    private static object CreateJoinKey(SourcesConditions sc) => new
+    {
+        sc.SourceResourceId,
+        sc.SourceMatchType,
+        sc.SourceChildMatchType
+    };
+
+    private static object CreateResourceKey(Resource s) => new
+    {
+        SourceResourceId = s.SourceResource,
+        s.SourceMatchType,
+        s.SourceChildMatchType
+    };
+
+    private static SourcesConditions CreateMappedCondition(SourcesConditions sc, Resource? resource)
+    {
+        return new SourcesConditions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
+            Id = sc.Id,
+            SportType = sc.SportType,
+            ResourceId = sc.ResourceId,
+            RuleId = sc.RuleId,
+            RuleName = sc.RuleName,
+            SourceAction = sc.SourceAction,
+            MatchType = sc.MatchType,
+            ChildMatchType = sc.ChildMatchType,
+            SourceMatchType = sc.SourceMatchType,
+            SourceChildMatchType = sc.SourceChildMatchType,
+            SourceResource = sc.SourceResource,
+            Conditions = sc.Conditions,
+            SourceResourceId = sc.SourceResourceId,
+            Resource = resource
+        };
+    }
+
+    private static string SerializeToJson<T>(T value) =>
+        JsonSerializer.Serialize(value, SerializerOptions);
 }
 

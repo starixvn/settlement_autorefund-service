@@ -16,22 +16,18 @@ public class GetAutoRefundResultsHandler
 
     public async Task<List<SourcesConditionsItem>> Handle(int matchId, List<SourcesConditionsItem> sourcesConditions)
     {
-        var request = sourcesConditions.Select(x => new GetAutoRefundResultsItem(matchId, x.ResourceId)).ToList();
-
-        var json = SerializeToJson(request);
-
+        var requestItems = sourcesConditions.Select(x => new GetAutoRefundResultsItem(matchId, x.ResourceId)).ToList();
         var criteria = new GetAutoRefundResultsCriteria
         {
-            ResourceInfo = json
+            ResourceInfo = SerializeToJson(requestItems)
         };
 
         var autoRefundResults = await repository.FetchAsync<ResultDetail>(criteria);
-        var autoRefundResultIds = autoRefundResults.Select(x => x.ResourceId);
+        var autoRefundResultIds = new HashSet<string>(autoRefundResults.Select(x => x.ResourceId));
 
         return sourcesConditions
             .Where(x => !autoRefundResultIds.Contains(x.ResourceId))
             .ToList();
-
     }
 
     private static string SerializeToJson(List<GetAutoRefundResultsItem> request)
