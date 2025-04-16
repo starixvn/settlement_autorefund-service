@@ -15,7 +15,7 @@ public class GetResourcesTriggerHandler(IDynamicRepository repository) : IGetRes
     {
         var results = await repository.FetchAsync<TargetResourceTrigger>(criteria);
 
-        return results.ToList();
+        return [.. results];
     }
 
     public async Task<List<TargetResourceTrigger>> GetTargetResourceTriggersAsync(

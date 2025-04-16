@@ -16,12 +16,12 @@ public interface IRefundConsumerHandler
 
 public class RefundConsumerHandler : IRefundConsumerHandler
 {
-    private readonly GetResourcesConditionsHandler getResourcesConditionsHandler;
-    private readonly GetSrcResourcesHandler resourcesInfoHandler;
+    private readonly IGetResourcesConditionsHandler getResourcesConditionsHandler;
+    private readonly IGetSrcResourcesHandler resourcesInfoHandler;
     private readonly XmlConvertService xmlConvertService;
-    private readonly GetRefundMatchInfoHandler getRefundMatchInfoHandler;
-    private readonly GetResultDetailsHandler getRefundResultsHandler;
-    private readonly GetAutoRefundResultsHandler getAutoRefundResultsHandler;
+    private readonly IGetRefundMatchInfoHandler getRefundMatchInfoHandler;
+    private readonly IGetResultDetailsHandler getRefundResultsHandler;
+    private readonly IGetAutoRefundResultsHandler getAutoRefundResultsHandler;
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -29,12 +29,12 @@ public class RefundConsumerHandler : IRefundConsumerHandler
     };
 
     public RefundConsumerHandler(
-        GetResourcesConditionsHandler getResourcesConditionsHandler,
-        GetSrcResourcesHandler resourcesInfoHandler,
+        IGetResourcesConditionsHandler getResourcesConditionsHandler,
+        IGetSrcResourcesHandler resourcesInfoHandler,
         XmlConvertService xmlConvertService,
-        GetRefundMatchInfoHandler getRefundMatchInfoHandler,
-        GetResultDetailsHandler getRefundResultsHandler,
-        GetAutoRefundResultsHandler getAutoRefundResultsHandler)
+        IGetRefundMatchInfoHandler getRefundMatchInfoHandler,
+        IGetResultDetailsHandler getRefundResultsHandler,
+        IGetAutoRefundResultsHandler getAutoRefundResultsHandler)
     {
         this.getResourcesConditionsHandler = getResourcesConditionsHandler ?? throw new ArgumentNullException(nameof(getResourcesConditionsHandler));
         this.resourcesInfoHandler = resourcesInfoHandler ?? throw new ArgumentNullException(nameof(resourcesInfoHandler));
@@ -46,25 +46,22 @@ public class RefundConsumerHandler : IRefundConsumerHandler
 
     public async Task<(bool Success, Match Match)> Handle(int matchId, List<TargetResourceTrigger> triggerResources)
     {
-        ArgumentNullException.ThrowIfNull(triggerResources);
-        if (matchId <= 0) throw new ArgumentException("Match ID must be greater than 0", nameof(matchId));
-
-        if (!triggerResources.Any())
+        if (triggerResources.Count == 0)
         {
-            return (false, CreateEmptyMatch());
+            return (false, new());
         }
 
         var relatedMatchItems = await GetRelatedMatchItems(matchId, triggerResources);
-        if (!relatedMatchItems.Any())
+        if (relatedMatchItems.Count == 0)
         {
-            return (false, CreateEmptyMatch());
+            return (false, new());
         }
 
         var matchInfo = relatedMatchItems[0];
         var validResults = await ProcessMatchResults(matchId, matchInfo, triggerResources);
-        if (!validResults.Any())
+        if (validResults.Count == 0)
         {
-            return (false, CreateEmptyMatch());
+            return (false, new());
         }
 
         var match = BuildMatch(matchInfo.TargetMatchId, matchInfo.MatchType, validResults);
@@ -76,20 +73,19 @@ public class RefundConsumerHandler : IRefundConsumerHandler
         var requests = CreateRelatedMatchRequests(matchId, resources);
         var relatedMatchItems = await getRefundMatchInfoHandler.HandleAsync(requests);
 
-        return relatedMatchItems
+        return [.. relatedMatchItems
             .DistinctBy(x => new
             {
                 x.MatchType,
                 x.TargetMatchId,
                 x.TargetChildMatchType,
                 x.MatchId,
-            })
-            .ToList();
+            })];
     }
 
     private static List<GetRelatedMatchItemRequest> CreateRelatedMatchRequests(int matchId, List<TargetResourceTrigger> resources)
     {
-        return resources
+        return [.. resources
             .Select(x => new GetRelatedMatchItemRequest
             {
                 MatchId = matchId,
@@ -101,8 +97,7 @@ public class RefundConsumerHandler : IRefundConsumerHandler
                 x.ChildMatchType,
                 x.TargetChildMatchType,
                 x.MatchId
-            })
-            .ToList();
+            })];
     }
 
     private async Task<List<SourcesConditions>> ProcessMatchResults(
@@ -118,23 +113,21 @@ public class RefundConsumerHandler : IRefundConsumerHandler
         return ExtractValidResults(sourceResources);
     }
 
-    private List<SourcesConditions> ExtractValidResults(List<SourcesConditions> sourceResources)
+    private static List<SourcesConditions> ExtractValidResults(List<SourcesConditions> sourceResources)
     {
-        return sourceResources
+        return [.. sourceResources
             .GroupBy(x => x.ResourceId)
-            .SelectMany(group => ProcessResourceGroup(group))
-            .ToList();
+            .SelectMany(group => ProcessResourceGroup(group))];
     }
 
     private static IEnumerable<SourcesConditions> ProcessResourceGroup(IGrouping<string, SourcesConditions> resourceGroup)
     {
-        foreach (var ruleGroup in resourceGroup.GroupBy(x => x.RuleId))
+        foreach (var ruleGroup in from ruleGroup in resourceGroup.GroupBy(x => x.RuleId)
+                                  where AreAllSpecificationsSatisfied(ruleGroup)
+                                  select ruleGroup)
         {
-            if (AreAllSpecificationsSatisfied(ruleGroup))
-            {
-                yield return GetPreferredResource(ruleGroup, resourceGroup.Key);
-                yield break;
-            }
+            yield return GetPreferredResource(ruleGroup, resourceGroup.Key);
+            yield break;
         }
     }
 
@@ -181,6 +174,4 @@ public class RefundConsumerHandler : IRefundConsumerHandler
     private static SourcesConditions GetPreferredResource(IEnumerable<SourcesConditions> ruleGroup, string resourceKey)
         => ruleGroup.FirstOrDefault(x => x.SourceResourceId == resourceKey && x.Resource?.IsConfirmedRefundSdt == true)
         ?? ruleGroup.First();
-
-    private static Match CreateEmptyMatch() => new();
 }

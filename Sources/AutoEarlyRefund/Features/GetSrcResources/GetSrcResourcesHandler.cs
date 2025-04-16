@@ -25,9 +25,6 @@ public class GetSrcResourcesHandler : IGetSrcResourcesHandler
 
     public async Task<List<SourcesConditions>> HandleAsync(int matchId, List<SourcesConditions> sourcesConditions)
     {
-        ArgumentNullException.ThrowIfNull(sourcesConditions);
-        if (matchId <= 0) throw new ArgumentException("Match ID must be greater than 0", nameof(matchId));
-
         var groupedSources = GetDistinctGroupedSources(sourcesConditions, matchId);
         var resources = await FetchResources(groupedSources);
 
@@ -47,7 +44,7 @@ public class GetSrcResourcesHandler : IGetSrcResourcesHandler
         List<SourcesConditions> sourcesConditions,
         int matchId)
     {
-        return sourcesConditions
+        return [.. sourcesConditions
             .Select(sc => new ResourceInfoItemRequest
             {
                 SportType = sc.SportType,
@@ -63,21 +60,19 @@ public class GetSrcResourcesHandler : IGetSrcResourcesHandler
                 x.SourceResource,
                 x.SportType,
                 x.MatchId
-            })
-            .ToList();
+            })];
     }
 
     private static List<SourcesConditions> MapSourcesWithResources(
         List<SourcesConditions> sourcesConditions,
         List<Resource> resources)
     {
-        return sourcesConditions
+        return [.. sourcesConditions
             .GroupJoin(
                 resources,
                 sc => CreateJoinKey(sc),
                 s => CreateResourceKey(s),
-                (sc, s) => CreateMappedCondition(sc, s.FirstOrDefault()))
-            .ToList();
+                (sc, s) => CreateMappedCondition(sc, s.FirstOrDefault()))];
     }
 
     private static object CreateJoinKey(SourcesConditions sc) => new

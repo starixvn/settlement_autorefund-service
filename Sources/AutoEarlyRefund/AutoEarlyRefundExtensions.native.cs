@@ -42,10 +42,10 @@ public static class AutoEarlyRefundExtensions
             .AddSingleton<IGetSrcResourcesHandler, GetSrcResourcesHandler>()
             .AddSingleton<IGetRefundMatchInfoHandler, GetRefundMatchInfoHandler>()
             .AddSingleton<CheckConditionsRefundHandler>()
-            .AddSingleton<GetResultDetailsHandler>()
+            .AddSingleton<IGetResultDetailsHandler, GetResultDetailsHandler>()
             .AddSingleton<GetConfirmNtResultsHandler>()
-            .AddSingleton<GetAutoRefundResultsHandler>()
-            .AddSingleton<RefundConsumerHandler>()
+            .AddSingleton<IGetAutoRefundResultsHandler, GetAutoRefundResultsHandler>()
+            .AddSingleton<IRefundConsumerHandler, RefundConsumerHandler>()
             .AddMapster();
 
         return services;

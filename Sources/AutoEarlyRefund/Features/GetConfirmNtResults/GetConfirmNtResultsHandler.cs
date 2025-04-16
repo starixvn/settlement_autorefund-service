@@ -4,17 +4,8 @@ using MassTransit;
 
 namespace AutoEarlyRefund.Features.GetConfirmNtResults;
 
-public class GetConfirmNtResultsHandler
+public class GetConfirmNtResultsHandler(IDynamicRepository repository, IPublishEndpoint publishEndpoint)
 {
-    private readonly IDynamicRepository repository;
-    private readonly IPublishEndpoint publishEndpoint;
-
-    public GetConfirmNtResultsHandler(IDynamicRepository repository, IPublishEndpoint publishEndpoint)
-    {
-        this.repository = repository;
-        this.publishEndpoint = publishEndpoint;
-    }
-
     public async Task Handle()
     {
         var criteria = new GetConfirmNtResultsCriteria();
@@ -32,13 +23,13 @@ public class GetConfirmNtResultsHandler
             LeagueId = x.Key.LeagueId,
             ChildMatchType = x.Key.ChildMatchType,
             SportType = x.Key.SportType,
-            ResultDetails = x.ToList()
+            ResultDetails = [.. x]
         }).ToList();
 
 
         foreach (var item in matches)
         {
-            await publishEndpoint.Publish(new NotTakenResultsConfirmed(item.MatchId, item.SportType, item.ChildMatchType, item.ResourceItems.ToList()));
+            await publishEndpoint.Publish(new NotTakenResultsConfirmed(item.MatchId, item.SportType, item.ChildMatchType, [.. item.ResourceItems]));
         }
     }
 }

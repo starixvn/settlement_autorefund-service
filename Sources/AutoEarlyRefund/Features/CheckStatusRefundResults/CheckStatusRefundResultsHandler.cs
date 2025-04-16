@@ -4,22 +4,11 @@ using AutoEarlyRefund.Services;
 
 namespace AutoEarlyRefund.Features.CheckStatusRefundResults
 {
-    public class CheckStatusRefundResultsHandler : IValidateHandler
+    public class CheckStatusRefundResultsHandler(
+        IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResult,
+        XmlConvertService xmlConvertService,
+        IValidateHandler? next = null) : IValidateHandler
     {
-        private readonly IValidateHandler? next;
-        private readonly XmlConvertService xmlConvertService;
-        private readonly IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResult;
-
-        public CheckStatusRefundResultsHandler(
-            IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResult,
-            XmlConvertService xmlConvertService,
-            IValidateHandler? next = null)
-        {
-            this.xmlConvertService = xmlConvertService;
-            this.next = next;
-            this.insOrUpdAutoPayoutResult = insOrUpdAutoPayoutResult;
-        }
-
         public async Task<Result> HandleAsync(Match match)
         {
             var settledResults = match.ResultDetails.Where(x => x.ResultStatusId == (int)SettleStatus.Calculated || x.ResultStatusId == (int)ResultStatus.AutoSettled);
@@ -49,7 +38,7 @@ namespace AutoEarlyRefund.Features.CheckStatusRefundResults
                 LeagueId = match.LeagueId,
                 SportType = match.SportType,
                 ChildMatchType = match.ChildMatchType,
-                ResultDetails = invalidResults.Select(x => x.WithRemark("ERROR!: This result have been settled incorrectly already.")).ToList()
+                ResultDetails = [.. invalidResults.Select(x => x.WithRemark("ERROR!: This result have been settled incorrectly already."))]
             }.WithResourcesXml(xmlConvertService);
 
             await insOrUpdAutoPayoutResult.Handle(failedMatch, AutoRefund.Core.ResultRefundStatus.Failed);

@@ -1,4 +1,7 @@
-﻿namespace AutoEarlyRefund.Features.GetResourcesConditions;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace AutoEarlyRefund.Features.GetResourcesConditions;
 
 public class SourcesConditionsItem
 {
@@ -15,6 +18,9 @@ public class SourcesConditionsItem
         return this;
     }
 
-    public override string ToString()
-        => $"ResourceId: {ResourceId}, SportType: {SportType}, ChildMatchType: {ChildMatchType}, MatchType: {MatchType}, RuleId: {RuleId}";
+    public override string ToString() => JsonSerializer.Serialize(this, new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    });
 }

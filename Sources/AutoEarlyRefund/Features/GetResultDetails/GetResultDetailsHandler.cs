@@ -26,9 +26,6 @@ public class GetResultDetailsHandler : IGetResultDetailsHandler
 
     public async Task<List<SourcesConditionsItem>> Handle(int matchId, List<TargetResourceTrigger> targetResourceTriggers)
     {
-        ArgumentNullException.ThrowIfNull(targetResourceTriggers);
-        if (matchId <= 0) throw new ArgumentException("Match ID must be greater than 0", nameof(matchId));
-
         var sourcesConditions = GetSourcesConditionsItems(targetResourceTriggers);
         var results = await GetResults(matchId, sourcesConditions);
 
@@ -50,9 +47,7 @@ public class GetResultDetailsHandler : IGetResultDetailsHandler
 
         var results = await repository.FetchAsync<ResultDetail>(criteria);
 
-        return results
-            .Where(x => IsSettled(x.ResultStatusId))
-            .ToList();
+        return [.. results.Where(x => IsSettled(x.ResultStatusId))];
     }
 
     private static bool IsSettled(int resultStatusId) =>
@@ -64,7 +59,7 @@ public class GetResultDetailsHandler : IGetResultDetailsHandler
 
     private static List<SourcesConditionsItem> GetSourcesConditionsItems(List<TargetResourceTrigger> triggers)
     {
-        return triggers
+        return [.. triggers
             .SelectMany(trigger => trigger.TargetResourceIds.Select(resourceId =>
                 MapToTargetResourceTrigger(trigger, resourceId)))
             .DistinctBy(x => new
@@ -74,8 +69,7 @@ public class GetResultDetailsHandler : IGetResultDetailsHandler
                 x.TargetResourceChildMatchType,
                 x.TargetResource
             })
-            .Select(MapToSourcesConditionsItem)
-            .ToList();
+            .Select(MapToSourcesConditionsItem)];
     }
 
     private static TargetResourceTrigger MapToTargetResourceTrigger(TargetResourceTrigger source, string resourceId)

@@ -35,7 +35,7 @@ public class GetResourcesConditionsHandler(IDynamicRepository repository) : IGet
 
         var results = await repository.FetchAsync<SourcesConditions>(new GetResourcesConditionsCriteria(json));
 
-        return results.SelectMany(x => x.SourceResourceIds.Select(sr => new SourcesConditions
+        return [.. results.SelectMany(x => x.SourceResourceIds.Select(sr => new SourcesConditions
         {
             Id = x.Id,
             SportType = x.SportType,
@@ -50,6 +50,6 @@ public class GetResourcesConditionsHandler(IDynamicRepository repository) : IGet
             SourceResource = x.SourceResource,
             SourceResourceId = sr,
             Conditions = x.Conditions,
-        })).ToList();
+        }))];
     }
 }

@@ -26,6 +26,7 @@ public class InsOrUpdAutoRefundResultHandler : IInsOrUpdAutoPayoutResultHandler
             StatusId = statusId,
             SelectedResources = match.ResourcesXml
         };
+
         await repository.ExecuteAsync(criteria);
     }
 }

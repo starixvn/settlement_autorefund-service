@@ -17,16 +17,16 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
     IConsumer<NotTakenResultsConfirmed>
 {
     private readonly ILogger<RefundConsumer> logger;
-    private readonly GetResourcesTriggerHandler getResourcesTriggerHandler;
+    private readonly IGetResourcesTriggerHandler getResourcesTriggerHandler;
     private readonly IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler;
-    private readonly RefundConsumerHandler refundConsumerHandler;
+    private readonly IRefundConsumerHandler refundConsumerHandler;
 
     public RefundConsumer(
         ILogger<RefundConsumer> logger,
-        GetResourcesTriggerHandler getResourcesTriggerHandler,
+        IGetResourcesTriggerHandler getResourcesTriggerHandler,
         IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler,
         XmlConvertService xmlConvertService,
-        RefundConsumerHandler refundConsumerHandler)
+        IRefundConsumerHandler refundConsumerHandler)
     {
         this.logger = logger;
         this.getResourcesTriggerHandler = getResourcesTriggerHandler;

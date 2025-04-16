@@ -5,7 +5,12 @@ using AutoEarlyRefund.Models;
 
 namespace AutoEarlyRefund.Features.GetAutoRefundResults;
 
-public class GetAutoRefundResultsHandler
+public interface IGetAutoRefundResultsHandler
+{
+    Task<List<SourcesConditionsItem>> Handle(int matchId, List<SourcesConditionsItem> sourcesConditions);
+}
+
+public class GetAutoRefundResultsHandler : IGetAutoRefundResultsHandler
 {
     private readonly IDynamicRepository repository;
 
@@ -25,9 +30,7 @@ public class GetAutoRefundResultsHandler
         var autoRefundResults = await repository.FetchAsync<ResultDetail>(criteria);
         var autoRefundResultIds = new HashSet<string>(autoRefundResults.Select(x => x.ResourceId));
 
-        return sourcesConditions
-            .Where(x => !autoRefundResultIds.Contains(x.ResourceId))
-            .ToList();
+        return [.. sourcesConditions.Where(x => !autoRefundResultIds.Contains(x.ResourceId))];
     }
 
     private static string SerializeToJson(List<GetAutoRefundResultsItem> request)

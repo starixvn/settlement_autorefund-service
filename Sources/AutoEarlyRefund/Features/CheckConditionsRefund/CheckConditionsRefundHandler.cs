@@ -33,9 +33,7 @@ public class CheckConditionsRefundHandler(
         var validResults = GetValidResults(resources);
 
 
-        match.ResultDetails = match.ResultDetails
-            .Where(x => validResults.Exists(v => v.ResourceId == x.ResourceId))
-            .ToList();
+        match.ResultDetails = [.. match.ResultDetails.Where(x => validResults.Exists(v => v.ResourceId == x.ResourceId))];
 
         await HandleInvalidResults(match, validResults);
 
@@ -50,7 +48,7 @@ public class CheckConditionsRefundHandler(
     }
 
     private static List<SourcesConditions> GetValidResults(List<SourcesConditions> resources)
-        => resources
+        => [.. resources
         .Where(x => x.Resource is not null)
         .GroupBy(x => x.ResourceId)
         .SelectMany(group =>
@@ -58,15 +56,13 @@ public class CheckConditionsRefundHandler(
                 .Where(ruleGroup => ruleGroup.All(sc =>
                     SpecificationFactory.CreateSpecification(sc).IsSatisfiedBy(sc)))
                 .Select(ruleGroup => ruleGroup.First())
-                .Take(1))
-        .ToList();
+                .Take(1))];
 
 
     private async Task HandleInvalidResults(Match match, List<SourcesConditions> validResults)
     {
         var invalidResults = match.ResultDetails
-            .Where(x => validResults.TrueForAll(v => v.ResourceId != x.ResourceId))
-            .ToList();
+            .Where(x => validResults.TrueForAll(v => v.ResourceId != x.ResourceId)).ToList();
 
         if (invalidResults.Count == 0)
         {
@@ -79,7 +75,7 @@ public class CheckConditionsRefundHandler(
             LeagueId = match.LeagueId,
             SportType = match.SportType,
             ChildMatchType = match.ChildMatchType,
-            ResultDetails = invalidResults.Select(x => new ResultDetail
+            ResultDetails = [.. invalidResults.Select(x => new ResultDetail
             {
                 ResourceId = x.ResourceId,
                 HomeValue = x.HomeValue,
@@ -87,7 +83,7 @@ public class CheckConditionsRefundHandler(
                 Remark = "ERROR:This result did incorrect rule refund condition",
                 SourceId = x.SourceId,
                 OtherInfo = x.OtherInfo,
-            }).ToList()
+            })]
         }.WithResourcesXml(xmlConvertService);
 
         await insOrUpdAutoPayoutResult.Handle(failedMatch, AutoRefund.Core.ResultRefundStatus.Failed);
