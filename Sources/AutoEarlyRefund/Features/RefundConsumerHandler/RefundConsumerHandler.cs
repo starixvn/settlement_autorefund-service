@@ -122,17 +122,26 @@ public class RefundConsumerHandler : IRefundConsumerHandler
 
     private static IEnumerable<SourcesConditions> ProcessResourceGroup(IGrouping<string, SourcesConditions> resourceGroup)
     {
-        foreach (var ruleGroup in from ruleGroup in resourceGroup.GroupBy(x => x.RuleId)
-                                  where AreAllSpecificationsSatisfied(ruleGroup)
-                                  select ruleGroup)
+        //foreach (var ruleGroup in from ruleGroup in resourceGroup.GroupBy(x => x.RuleId)
+        //                          where AreAllSpecificationsSatisfied(ruleGroup)
+        //                          select ruleGroup)
+        //{
+        //    yield return GetPreferredResource(ruleGroup, resourceGroup.Key);
+        //    yield break;
+        //}
+        foreach (var ruleGroup in resourceGroup.GroupBy(x => x.RuleId))
         {
-            yield return GetPreferredResource(ruleGroup, resourceGroup.Key);
-            yield break;
+            if (AreAllSpecificationsSatisfied(ruleGroup))
+            {
+                yield return GetPreferredResource(ruleGroup, resourceGroup.Key);
+                yield break;
+            }
         }
     }
 
     private static bool AreAllSpecificationsSatisfied(IEnumerable<SourcesConditions> ruleGroup)
     {
+        var specs = ruleGroup.Select(sc => SpecificationFactory.CreateSpecification(sc));
         return ruleGroup.All(sc => SpecificationFactory.CreateSpecification(sc).IsSatisfiedBy(sc));
     }
 

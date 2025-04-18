@@ -59,6 +59,7 @@ public class GetResultDetailsHandler : IGetResultDetailsHandler
 
     private static List<SourcesConditionsItem> GetSourcesConditionsItems(List<TargetResourceTrigger> triggers)
     {
+
         return [.. triggers
             .SelectMany(trigger => trigger.TargetResourceIds.Select(resourceId =>
                 MapToTargetResourceTrigger(trigger, resourceId)))
