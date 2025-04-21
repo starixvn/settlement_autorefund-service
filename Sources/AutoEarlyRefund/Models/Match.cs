@@ -17,7 +17,8 @@ public class Match
                 AwayValue = x.AwayValue,
                 Remark = x.Remark,
                 SourceId = x.SourceId,
-                OtherInfo = x.OtherInfo
+                OtherInfo = x.OtherInfo,
+                IsSettleDetermined = x.Conditions?.IsRefundSdt ?? false
             });
 
     public Match WithResourcesXml(XmlConvertService xmlConvertService, bool hasOtherInfo = true)

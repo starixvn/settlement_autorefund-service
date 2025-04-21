@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ONEbook.UM.DependencyInjection;
-//using AutoRefundService = Fanex.AutoRefund.Service.AutoRefund;
 
 var builder = WebApplication.CreateBuilder(args);
 

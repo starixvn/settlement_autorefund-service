@@ -162,7 +162,7 @@ public class RefundConsumerHandler : IRefundConsumerHandler
             HomeValue = DetermineHomeValue(condition),
             AwayValue = condition.Resource!.CfmAwayValue,
             SourceId = condition.RuleId.ToString(),
-            OtherInfo = CreateOtherInfo(matchType, condition.RuleId)
+            OtherInfo = CreateOtherInfo(matchType, condition.RuleId, condition.Resource.IsConfirmedRefundSdt)
         };
     }
 
@@ -173,10 +173,10 @@ public class RefundConsumerHandler : IRefundConsumerHandler
             : condition.Resource!.CfmHomeValue;
     }
 
-    private static string CreateOtherInfo(short matchType, int ruleId)
+    private static string CreateOtherInfo(short matchType, int ruleId, bool isRefundSdt)
     {
         return JsonSerializer.Serialize(
-            new { matchType, ruleId },
+            new { matchType, ruleId, isRefundSdt },
             SerializerOptions);
     }
 

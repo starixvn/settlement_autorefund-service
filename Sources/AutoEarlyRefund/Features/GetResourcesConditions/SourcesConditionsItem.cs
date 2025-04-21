@@ -10,6 +10,7 @@ public class SourcesConditionsItem
     public short ChildMatchType { get; set; }
     public short MatchType { get; set; }
     public short RuleId { get; set; }
+    public bool IsRefundSdt { get; set; }
 
 
     public SourcesConditionsItem WithMatchType(short matchType)

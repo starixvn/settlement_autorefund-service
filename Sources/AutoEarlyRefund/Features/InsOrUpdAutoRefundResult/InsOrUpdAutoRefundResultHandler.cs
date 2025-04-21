@@ -18,7 +18,6 @@ public class InsOrUpdAutoRefundResultHandler : IInsOrUpdAutoPayoutResultHandler
 
     public async Task Handle(Match match, int statusId)
     {
-        ArgumentNullException.ThrowIfNull(match);
 
         var criteria = new InsOrUpdAutoRefundResultCriteria
         {
