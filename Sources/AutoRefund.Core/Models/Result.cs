@@ -1,4 +1,6 @@
-﻿namespace AutoRefund.Core.Models;
+﻿using System.Text.Json;
+
+namespace AutoRefund.Core.Models;
 
 public class Result
 {
@@ -13,4 +15,7 @@ public class Result
     public string ErrMsg { get; set; }
 
     public bool IsSuccess => ErrCode == 0;
+
+
+    public override string ToString() => JsonSerializer.Serialize(this);
 }

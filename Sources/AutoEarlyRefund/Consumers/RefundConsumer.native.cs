@@ -37,6 +37,7 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
     public async Task Consume(ConsumeContext<ResultsRefunded> context)
     {
         logger.LogInformation($"ResultsRefunded Received: {context.Message}");
+        Fanex.Logging.LogService.Info($"ResultsRefunded Received: {context.Message}");
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
             context.Message.Action,
@@ -52,10 +53,12 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
         }
 
         logger.LogInformation($"ResultsRefunded Done: {context.Message}");
+        Fanex.Logging.LogService.Info($"ResultsRefunded Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<ResultsRefundConfirmedSdt> context)
     {
+        Fanex.Logging.LogService.Info($"ResultsRefundConfirmedSdt Received: {context.Message}");
         logger.LogInformation($"ResultsRefundConfirmedSdt Received: {context.Message}");
 
         var hasValidResource = ConsumerHelper.TryGetValidResources(context.Message.Resources, out var validResources);
@@ -79,11 +82,13 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
         }
 
         logger.LogInformation($"ResultsRefundConfirmedSdt Done: {context.Message}");
+        Fanex.Logging.LogService.Info($"ResultsRefundConfirmedSdt Done: {context.Message}");
     }
 
 
     public async Task Consume(ConsumeContext<MatchCalculated> context)
     {
+        Fanex.Logging.LogService.Info($"MatchCalculated Received: {context.Message}");
         logger.LogInformation($"""MatchCalculated Received: {context.Message}""");
 
         if (!ConsumerHelper.IsExtraMatchCalculated(context.Message) && !ConsumerHelper.IsPenMatchCalculated(context.Message))
@@ -105,12 +110,14 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
         }
 
         logger.LogInformation($"MatchCalculated Done: {context.Message}");
+        Fanex.Logging.LogService.Info($"MatchCalculated Done: {context.Message}");
     }
 
 
 
     public async Task Consume(ConsumeContext<ResultsCalculated> context)
     {
+        Fanex.Logging.LogService.Info($"ResultsCalculated Received: {context.Message}");
         logger.LogInformation($"ResultsCalculated Received: {context.Message}");
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
@@ -127,11 +134,13 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
         }
 
         logger.LogInformation($"ResultsCalculated Done: {context.Message}");
+        Fanex.Logging.LogService.Info($"ResultsCalculated Done: {context.Message}");
     }
 
 
     public async Task Consume(ConsumeContext<ResultsRefundConfirmed> context)
     {
+        Fanex.Logging.LogService.Info($"ResultsRefundConfirmed Received: {context.Message}");
         logger.LogInformation($"ResultsRefundConfirmed Received: {context.Message}");
 
         var hasValidResource = ConsumerHelper.TryGetValidResources(context.Message.Resources, out var validResources);
@@ -152,10 +161,12 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
         }
 
         logger.LogInformation($"ResultsRefundConfirmed Done: {context.Message}");
+        Fanex.Logging.LogService.Info($"ResultsRefundConfirmed Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<MatchRefunded> context)
     {
+        Fanex.Logging.LogService.Info($"MatchRefunded Received: {context.Message}");
         logger.LogInformation($"MatchRefunded Received: {context.Message}");
 
         if (!ConsumerHelper.IsExtraMatchRefunded(context.Message))
@@ -177,10 +188,12 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
         }
 
         logger.LogInformation($"MatchRefunded Done: {context.Message}");
+        Fanex.Logging.LogService.Info($"MatchRefunded Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<NotTakenResultsConfirmed> context)
     {
+        Fanex.Logging.LogService.Info($"NotTakenResultsConfirmed Received: {context.Message}");
         logger.LogInformation($"NotTakenResultsConfirmed Received: {context.Message}");
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
@@ -197,5 +210,6 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
         }
 
         logger.LogInformation($"NotTakenResultsConfirmed Done: {context.Message}");
+        Fanex.Logging.LogService.Info($"NotTakenResultsConfirmed Done: {context.Message}");
     }
 }

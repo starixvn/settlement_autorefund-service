@@ -1,4 +1,6 @@
-﻿namespace AutoEarlyRefund.Models;
+﻿using System.Text.Json;
+
+namespace AutoEarlyRefund.Models;
 
 public class Match
 {
@@ -25,11 +27,11 @@ public class Match
     {
         var resources = new Resources<ResourceItem>
         {
-            ResourceItems = ResourceItems.Select(x =>
+            ResourceItems = [.. ResourceItems.Select(x =>
             {
                 x.OtherInfo = hasOtherInfo ? x.OtherInfo : string.Empty;
                 return x;
-            }).ToList()
+            })]
         };
 
         var xml = xmlConvertService.Serialize(resources);
@@ -49,4 +51,6 @@ public class Match
     {
         return MatchId ^ ChildMatchType;
     }
+
+    public override string ToString() => JsonSerializer.Serialize(this);
 }

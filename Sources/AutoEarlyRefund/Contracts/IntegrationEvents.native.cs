@@ -12,14 +12,22 @@ public record MatchCalculated(
     int? FinalAwayScore,
     string ActionName,
     string Action = "Cal"
-    );
+    )
+{
+    public override string ToString()
+        => JsonSerializer.Serialize(this);
+}
 
 public record ResultsCalculated(
     int MatchId,
     short ShortType,
     short ChildMatchType,
     List<ResourceItem> Resources,
-    string Action = "Cal");
+    string Action = "Cal")
+{
+    public override string ToString()
+        => JsonSerializer.Serialize(this);
+}
 
 public record ResultsRefunded(
     int MatchId,
@@ -39,7 +47,11 @@ public record ResultsRefundConfirmed(
     short ChildMatchType,
     List<ResourceItem> Resources,
     string Action = "CfmRefund"
-    );
+    )
+{
+    public override string ToString()
+        => JsonSerializer.Serialize(this);
+}
 
 public record NotTakenResultsConfirmed(
     int MatchId,
@@ -47,7 +59,11 @@ public record NotTakenResultsConfirmed(
     short ChildMatchType,
     List<ResourceItem> Resources,
     string Action = "CfmRefundAdminSite"
-    );
+    )
+{
+    public override string ToString()
+        => JsonSerializer.Serialize(this);
+}
 
 public record ResultsRefundConfirmedSdt(
     int MatchId,
@@ -69,5 +85,9 @@ public record MatchRefunded(
     short ChildMatchType,
     string ActionName,
     string Action = "Refund"
-    );
+    )
+{
+    public override string ToString()
+        => JsonSerializer.Serialize(this);
+}
 

@@ -24,7 +24,7 @@ public class ResultDetail
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         });
 
-    public override string ToString() => $"{ResourceId}({HomeValue}-{AwayValue})";
+    public override string ToString() => JsonSerializer.Serialize(this);
 
     public override bool Equals(object? obj) => obj is ResultDetail detail && MatchId == detail.MatchId && ResourceId == detail.ResourceId;
     public override int GetHashCode() => HashCode.Combine(MatchId, ResourceId);

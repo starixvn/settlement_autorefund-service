@@ -1,28 +1,34 @@
 ﻿using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
+using Fanex.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace AutoEarlyRefund.Features.CheckMarkedTicket;
 
-public interface ICheckingMarkedTicketHandler
-{
-    Task<Result> HandleAsync(Match match);
-}
 
-public class CheckingMarkedTicketHandler : IValidateHandler, ICheckingMarkedTicketHandler
+public class CheckingMarkedTicketHandler : IValidateHandler
 {
     private readonly IDynamicRepository repository;
     private readonly IOptions<AppSettingsKey> appSettingsKey;
     private readonly IValidateHandler next;
-
-    public CheckingMarkedTicketHandler(IValidateHandler next, IDynamicRepository repository, IOptions<AppSettingsKey> appSettingsKey)
+    private readonly ILogger<CheckingMarkedTicketHandler> logger;
+    public CheckingMarkedTicketHandler(
+        IValidateHandler next,
+        IDynamicRepository repository,
+        IOptions<AppSettingsKey> appSettingsKey,
+        ILogger<CheckingMarkedTicketHandler> logger)
     {
         this.repository = repository;
         this.appSettingsKey = appSettingsKey;
         this.next = next;
+        this.logger = logger;
     }
 
     public async Task<Result> HandleAsync(Match match)
     {
+        Logger.Log.Info($"CheckingMarkedTicketHandler: {match}");
+        logger.LogInformation($"CheckingMarkedTicketHandler: {match}");
+
         var criteria = new CheckingMarkedTicketCriteria
         {
             MatchId = match.MatchId,
@@ -32,6 +38,10 @@ public class CheckingMarkedTicketHandler : IValidateHandler, ICheckingMarkedTick
         var tasks = appSettingsKey.Value.SiteDbServer.Select(s => CheckMarkedTicket(s, criteria));
 
         var results = await Task.WhenAll(tasks.ToArray());
+
+        Logger.Log.Info($"CheckingMarkedTicketHandler: {match} {string.Join(",", results)}");
+        logger.LogInformation($"CheckingMarkedTicketHandler: {match} {string.Join(",", results)}");
+
 
         if (results.ToList().TrueForAll(x => !x) && next != null)
         {

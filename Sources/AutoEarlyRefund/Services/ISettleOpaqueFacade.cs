@@ -5,6 +5,7 @@ using AutoEarlyRefund.Features.PushResultSettlement;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 
 namespace AutoEarlyRefund.Services;
 
@@ -20,16 +21,21 @@ public class SettleOpaqueFacadeImp(
     IWriteLogService writeLogService,
     IValidateHandler validateHandler,
     MatchPoolService matchPoolService,
-    IPublishEndpoint publishEndpoint) : ISettleOpaqueFacade
+    IPublishEndpoint publishEndpoint,
+    ILogger<SettleOpaqueFacadeImp> logger) : ISettleOpaqueFacade
 {
 
     public async Task Settle(Match match)
     {
+        Fanex.Logging.LogService.Info($"Process Settle {match.MatchId} {match}");
+        logger.LogInformation($"Process Settle {match.MatchId} {match}");
         try
         {
             var result = await validateHandler.HandleAsync(match);
             if (!result.IsSuccess)
             {
+                Fanex.Logging.LogService.Warn($"SettleOpaqueFacade: {match} {result}");
+                logger.LogWarning($"SettleOpaqueFacade: {match} {result}");
                 match.ResultDetails.ForEach(x => x.Remark = result.ErrMsg);
                 await insOrUpdAutoPayoutResultHandler.Handle(match, AutoRefund.Core.ResultRefundStatus.Failed);
                 return;
