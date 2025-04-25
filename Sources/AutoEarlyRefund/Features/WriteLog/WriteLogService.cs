@@ -41,7 +41,7 @@ public class WriteLogService(IDynamicRepository repository) : IWriteLogService
         {
             MatchId = match.MatchId,
             Remark = errorMessage,
-            //ActionId = ActionId.EarlyType
+            ActionId = 81022
         });
     }
 }

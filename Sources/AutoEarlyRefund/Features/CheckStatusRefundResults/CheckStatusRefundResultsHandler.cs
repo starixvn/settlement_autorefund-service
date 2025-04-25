@@ -1,4 +1,5 @@
 ﻿using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
 using Fanex.Logging;
@@ -10,6 +11,7 @@ namespace AutoEarlyRefund.Features.CheckStatusRefundResults
         IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResult,
         XmlConvertService xmlConvertService,
         ILogger<CheckStatusRefundResultsHandler> logger,
+        IWriteLogService writeLogService,
         IValidateHandler? next = null) : IValidateHandler
     {
         public async Task<Result> HandleAsync(Match match)
@@ -34,6 +36,8 @@ namespace AutoEarlyRefund.Features.CheckStatusRefundResults
             Logger.Log.Info($"CheckStatusRefundResultsHandler: {match} {string.Join(",", invalidResults)}");
             logger.LogInformation($"CheckStatusRefundResultsHandler: {match} {string.Join(",", invalidResults)}");
 
+            var errorMessage = "ERROR: This result have been settled incorrectly already";
+
             if (invalidResults.Count == 0)
             {
                 return;
@@ -45,10 +49,12 @@ namespace AutoEarlyRefund.Features.CheckStatusRefundResults
                 LeagueId = match.LeagueId,
                 SportType = match.SportType,
                 ChildMatchType = match.ChildMatchType,
-                ResultDetails = [.. invalidResults.Select(x => x.WithRemark("ERROR!: This result have been settled incorrectly already."))]
+                ResultDetails = [.. invalidResults.Select(x => x.WithRemark(errorMessage))]
             }.WithResourcesXml(xmlConvertService);
 
             await insOrUpdAutoPayoutResult.Handle(failedMatch, AutoRefund.Core.ResultRefundStatus.Failed);
+
+            await writeLogService.WriteLogErrorSettle(failedMatch, errorMessage);
         }
     }
 }

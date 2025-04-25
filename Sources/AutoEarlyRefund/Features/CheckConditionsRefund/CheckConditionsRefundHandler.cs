@@ -2,6 +2,7 @@
 using AutoEarlyRefund.Features.GetResourcesConditions;
 using AutoEarlyRefund.Features.GetResourcesInfo;
 using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
 using Fanex.Logging;
@@ -15,7 +16,8 @@ public class CheckConditionsRefundHandler(
     IGetSrcResourcesHandler getResourcesInfoHandler,
     IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResult,
     ILogger<CheckConditionsRefundHandler> logger,
-    XmlConvertService xmlConvertService)
+    XmlConvertService xmlConvertService,
+    IWriteLogService writeLogService)
     : IValidateHandler
 {
     public async Task<Result> HandleAsync(Match match)
@@ -75,6 +77,8 @@ public class CheckConditionsRefundHandler(
             return;
         }
 
+        var errorMessage = "ERROR:This result did incorrect rule refund condition";
+
         var failedMatch = new Match
         {
             MatchId = match.MatchId,
@@ -86,12 +90,13 @@ public class CheckConditionsRefundHandler(
                 ResourceId = x.ResourceId,
                 HomeValue = x.HomeValue,
                 AwayValue = x.AwayValue,
-                Remark = "ERROR:This result did incorrect rule refund condition",
+                Remark = errorMessage,
                 SourceId = x.SourceId,
                 OtherInfo = x.OtherInfo,
             })]
         }.WithResourcesXml(xmlConvertService);
 
         await insOrUpdAutoPayoutResult.Handle(failedMatch, AutoRefund.Core.ResultRefundStatus.Failed);
+        await writeLogService.WriteLogErrorSettle(failedMatch, errorMessage);
     }
 }

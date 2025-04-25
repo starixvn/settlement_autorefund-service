@@ -1,5 +1,6 @@
 using AutoEarlyRefund.Features.CheckStatusRefundResults;
 using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
 using AutoRefund.Core;
@@ -17,6 +18,7 @@ public class CheckStatusRefundResultsHandlerTests
     private readonly IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResult;
     private readonly CheckStatusRefundResultsHandler handler;
     private readonly ILogger<CheckStatusRefundResultsHandler> logger;
+    private readonly IWriteLogService writeLogService;
 
     public CheckStatusRefundResultsHandlerTests()
     {
@@ -24,11 +26,13 @@ public class CheckStatusRefundResultsHandlerTests
         xmlConvertService = Substitute.For<XmlConvertService>();
         insOrUpdAutoPayoutResult = Substitute.For<IInsOrUpdAutoPayoutResultHandler>();
         logger = Substitute.For<ILogger<CheckStatusRefundResultsHandler>>();
+        writeLogService = Substitute.For<IWriteLogService>();
 
         handler = new CheckStatusRefundResultsHandler(
             insOrUpdAutoPayoutResult,
             xmlConvertService,
             logger,
+            writeLogService,
             nextHandler
             );
     }

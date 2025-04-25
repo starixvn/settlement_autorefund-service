@@ -84,6 +84,7 @@ public class SettleOpaqueFacadeImp(
         var newMatch = match.WithResourcesXml(xmlConvertService, false);
 
         await insOrUpdAutoPayoutResultHandler.Handle(newMatch, AutoRefund.Core.ResultRefundStatus.Failed);
+        await writeLogService.WriteLogErrorSettle(newMatch, errorMsg);
     }
 
 
