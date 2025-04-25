@@ -54,7 +54,7 @@ namespace AutoEarlyRefund.Features.CheckStatusRefundResults
 
             await insOrUpdAutoPayoutResult.Handle(failedMatch, AutoRefund.Core.ResultRefundStatus.Failed);
 
-            await writeLogService.WriteLogErrorSettle(failedMatch, errorMessage);
+            await writeLogService.WriteLogErrorSettle(failedMatch, errorMessage + ": " + string.Join(", ", invalidResults.Select(x => x.ResourceId)));
         }
     }
 }

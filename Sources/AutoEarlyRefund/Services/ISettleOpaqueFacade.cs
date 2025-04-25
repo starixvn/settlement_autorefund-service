@@ -40,22 +40,23 @@ public class SettleOpaqueFacadeImp(
                 await HandleErrorValidMatch(match, result.ErrMsg);
                 return;
             }
-            await writeLogService.WriteLogPreSettlement(match);
-            await writeLogService.WriteLogSettle(match);
+            var newMatch = match.WithResourcesXml(xmlConvertService);
+            await writeLogService.WriteLogPreSettlement(newMatch);
+            await writeLogService.WriteLogSettle(newMatch);
 
-            await insOrUpdAutoPayoutResultHandler.Handle(match, AutoRefund.Core.ResultRefundStatus.Running);
+            await insOrUpdAutoPayoutResultHandler.Handle(newMatch, AutoRefund.Core.ResultRefundStatus.Running);
 
-            await UpdateMatch(match);
+            await UpdateMatch(newMatch);
 
-            await pushResultSettlementHandler.HandleAsync(match, CancellationToken.None);
+            await pushResultSettlementHandler.HandleAsync(newMatch, CancellationToken.None);
 
-            await insOrUpdAutoPayoutResultHandler.Handle(match, AutoRefund.Core.ResultRefundStatus.Completed);
+            await insOrUpdAutoPayoutResultHandler.Handle(newMatch, AutoRefund.Core.ResultRefundStatus.Completed);
 
             await publishEndpoint.Publish(new ResultsRefunded(
-                match.MatchId,
-                match.SportType,
-                match.ChildMatchType,
-                match.ResultDetails.Select(x => new ResourceItem
+                newMatch.MatchId,
+                newMatch.SportType,
+                newMatch.ChildMatchType,
+                newMatch.ResultDetails.Select(x => new ResourceItem
                 {
                     ResourceId = x.ResourceId,
                     HomeValue = x.HomeValue,
@@ -84,7 +85,7 @@ public class SettleOpaqueFacadeImp(
         var newMatch = match.WithResourcesXml(xmlConvertService, false);
 
         await insOrUpdAutoPayoutResultHandler.Handle(newMatch, AutoRefund.Core.ResultRefundStatus.Failed);
-        await writeLogService.WriteLogErrorSettle(newMatch, errorMsg);
+        await writeLogService.WriteLogErrorSettle(newMatch, errorMsg + ": " + string.Join(",", newMatch.ResultDetails.Select(x => x.ResourceId)));
     }
 
 

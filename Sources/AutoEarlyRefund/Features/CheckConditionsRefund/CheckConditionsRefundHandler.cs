@@ -36,10 +36,11 @@ public class CheckConditionsRefundHandler(
         var resources = await getResourcesInfoHandler.HandleAsync([match.MatchId], conditions);
 
         var validResults = GetValidResults(resources);
+        var validResultsIds = validResults.Select(x => x.ResourceId).ToList();
 
-        await HandleInvalidResults(match, validResults);
+        await HandleInvalidResults(match, validResultsIds);
 
-        match.ResultDetails = [.. match.ResultDetails.Where(x => validResults.Exists(v => v.ResourceId == x.ResourceId))];
+        match.ResultDetails = [.. match.ResultDetails.Where(x => validResultsIds.Contains(x.ResourceId))];
 
         if (match.ResultDetails.Count == 0)
         {
@@ -63,9 +64,9 @@ public class CheckConditionsRefundHandler(
                 .Take(1))];
 
 
-    private async Task HandleInvalidResults(Match match, List<SourcesConditions> validResults)
+    private async Task HandleInvalidResults(Match match, List<string> validResultsIds)
     {
-        var validResultsIds = validResults.Select(x => x.ResourceId).ToList();
+
         var invalidResults = match.ResultDetails
             .Where(x => validResultsIds.Count == 0 || validResultsIds.Contains(x.ResourceId)).ToList();
 
@@ -97,6 +98,6 @@ public class CheckConditionsRefundHandler(
         }.WithResourcesXml(xmlConvertService);
 
         await insOrUpdAutoPayoutResult.Handle(failedMatch, AutoRefund.Core.ResultRefundStatus.Failed);
-        await writeLogService.WriteLogErrorSettle(failedMatch, errorMessage);
+        await writeLogService.WriteLogErrorSettle(failedMatch, errorMessage + ": " + string.Join(",", invalidResults.Select(x => x.ResourceId)));
     }
 }
