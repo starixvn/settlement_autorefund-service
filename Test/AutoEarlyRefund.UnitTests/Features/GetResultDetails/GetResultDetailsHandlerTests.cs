@@ -1,9 +1,7 @@
 using AutoEarlyRefund.Features.GetRefundResults;
-using AutoEarlyRefund.Features.GetResourcesConditions;
 using AutoEarlyRefund.Models;
 using Fanex.Data.Repository;
 using NSubstitute;
-using Xunit;
 
 namespace AutoEarlyRefund.UnitTests.Features.GetResultDetails;
 
@@ -45,7 +43,7 @@ public class GetResultDetailsHandlerTests
             .Returns(results);
 
         // Act
-        var result = await handler.Handle(matchId, triggers);
+        var result = await handler.Handle([matchId], triggers);
 
         // Assert
         Assert.Single(result);
@@ -77,7 +75,7 @@ public class GetResultDetailsHandlerTests
             .Returns(results);
 
         // Act
-        var result = await handler.Handle(matchId, triggers);
+        var result = await handler.Handle([matchId], triggers);
 
         // Assert
         Assert.Empty(result);
@@ -93,7 +91,7 @@ public class GetResultDetailsHandlerTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            handler.Handle(matchId, triggers));
+            handler.Handle([matchId], triggers));
     }
 
     [Fact]
@@ -101,7 +99,7 @@ public class GetResultDetailsHandlerTests
     {
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            handler.Handle(1, null!));
+            handler.Handle([1], null!));
     }
 
     [Fact]
@@ -129,7 +127,7 @@ public class GetResultDetailsHandlerTests
         };
 
         // Act
-        await handler.Handle(matchId, triggers);
+        await handler.Handle([matchId], triggers);
 
         // Assert
         await repository.Received(1).FetchAsync<ResultDetail>(

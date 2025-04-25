@@ -5,6 +5,7 @@ using AutoEarlyRefund.Services;
 using AutoRefund.Core;
 using AutoRefund.Core.Models;
 using Fanex.Settlement.Converter.Services;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace AutoEarlyRefund.UnitTests.Features.CheckStatusRefundResults;
@@ -15,17 +16,21 @@ public class CheckStatusRefundResultsHandlerTests
     private readonly XmlConvertService xmlConvertService;
     private readonly IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResult;
     private readonly CheckStatusRefundResultsHandler handler;
+    private readonly ILogger<CheckStatusRefundResultsHandler> logger;
 
     public CheckStatusRefundResultsHandlerTests()
     {
         nextHandler = Substitute.For<IValidateHandler>();
         xmlConvertService = Substitute.For<XmlConvertService>();
         insOrUpdAutoPayoutResult = Substitute.For<IInsOrUpdAutoPayoutResultHandler>();
+        logger = Substitute.For<ILogger<CheckStatusRefundResultsHandler>>();
 
         handler = new CheckStatusRefundResultsHandler(
             insOrUpdAutoPayoutResult,
             xmlConvertService,
-            nextHandler);
+            logger,
+            nextHandler
+            );
     }
 
     [Fact]

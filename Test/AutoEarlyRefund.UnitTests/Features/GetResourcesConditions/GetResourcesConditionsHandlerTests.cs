@@ -39,7 +39,7 @@ public class GetResourcesConditionsHandlerTests
             .Returns(expectedConditions);
 
         // Act
-        var result = await handler.GetConditionsAsync(matchType, items);
+        var result = await handler.GetConditionsAsync([matchType], items);
 
         // Assert
         Assert.NotNull(result);

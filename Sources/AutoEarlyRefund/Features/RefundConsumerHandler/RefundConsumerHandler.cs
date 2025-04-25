@@ -71,6 +71,7 @@ public class RefundConsumerHandler : IRefundConsumerHandler
         catch (Exception ex)
         {
             Fanex.Logging.Logger.Log.Error(ex.Message, ex);
+            return (false, new());
         }
     }
 

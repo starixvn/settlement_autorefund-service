@@ -2,7 +2,6 @@ using AutoEarlyRefund.Features.GetResourcesInfo;
 using AutoEarlyRefund.Models;
 using Fanex.Data.Repository;
 using NSubstitute;
-using Xunit;
 
 namespace AutoEarlyRefund.UnitTests.Features.GetSrcResources;
 
@@ -50,7 +49,7 @@ public class GetSrcResourcesHandlerTests
             .Returns(resources);
 
         // Act
-        var result = await handler.HandleAsync(matchId, sourcesConditions);
+        var result = await handler.HandleAsync([matchId], sourcesConditions);
 
         // Assert
         Assert.Single(result);
@@ -79,7 +78,7 @@ public class GetSrcResourcesHandlerTests
             .Returns(new List<Resource>());
 
         // Act
-        var result = await handler.HandleAsync(matchId, sourcesConditions);
+        var result = await handler.HandleAsync([matchId], sourcesConditions);
 
         // Assert
         Assert.Single(result);
@@ -96,7 +95,7 @@ public class GetSrcResourcesHandlerTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            handler.HandleAsync(matchId, sourcesConditions));
+            handler.HandleAsync([matchId], sourcesConditions));
     }
 
     [Fact]
@@ -104,7 +103,7 @@ public class GetSrcResourcesHandlerTests
     {
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            handler.HandleAsync(1, null!));
+            handler.HandleAsync([1], null!));
     }
 
     [Fact]
@@ -132,7 +131,7 @@ public class GetSrcResourcesHandlerTests
         };
 
         // Act
-        await handler.HandleAsync(matchId, sourcesConditions);
+        await handler.HandleAsync([matchId], sourcesConditions);
 
         // Assert
         await repository.Received(1).FetchAsync<Resource>(
