@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-
 namespace AutoEarlyRefund.Models;
 
 public class Match
@@ -52,5 +51,8 @@ public class Match
         return MatchId ^ ChildMatchType;
     }
 
-    public override string ToString() => JsonSerializer.Serialize(this);
+    public override string ToString() => JsonSerializer.Serialize(this, new JsonSerializerOptions
+    {
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    });
 }

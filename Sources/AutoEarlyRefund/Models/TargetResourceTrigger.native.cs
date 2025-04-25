@@ -13,6 +13,8 @@ public class TargetResourceTrigger
     public int TargetResourceChildMatchType { get; set; }
     public string TargetResource { get; set; } = string.Empty;
 
+    public bool IsValid { get; set; }
+
     public string[] TargetResourceIds => !string.IsNullOrEmpty(TargetResource)
             ? TargetResource.Split(',')
             : [];

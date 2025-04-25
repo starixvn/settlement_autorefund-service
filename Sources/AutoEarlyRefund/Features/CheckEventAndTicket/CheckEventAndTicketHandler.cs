@@ -11,6 +11,7 @@ public class CheckEventAndTicketHandler(
     GeneralService generalService,
     XmlConvertService xmlConvertService,
     ILogger<CheckEventAndTicketHandler> logger,
+    IOptions<AppSettingsKey> appSettingsKey,
     IValidateHandler? next = null) : IValidateHandler
 {
     public async Task<Result> HandleAsync(Match match)
@@ -39,13 +40,25 @@ public class CheckEventAndTicketHandler(
             };
         }
 
-        var resultMsg = await generalService.ExecuteAsync(request.Adapt<ValidateRefundTicketCriteria>());
-
-        var result = new Result
+        var result = new Result();
+        for (var i = 0; i < appSettingsKey.Value.RetryCount; i++)
         {
-            ErrCode = resultMsg.ErrorCode,
-            ErrMsg = resultMsg.ErrorMessage
-        };
+            var resultMsg = await generalService.ExecuteAsync(request.Adapt<ValidateRefundTicketCriteria>());
+
+            if (resultMsg.ErrorCode == 1_001_003 && i < appSettingsKey.Value.RetryCount - 1)
+            {
+                await Task.Delay(appSettingsKey.Value.RetryInterval);
+                continue;
+            }
+
+            if (resultMsg.ErrorCode == 0)
+            {
+                break;
+            }
+
+            result.ErrCode = resultMsg.ErrorCode;
+            result.ErrMsg = resultMsg.ErrorMessage;
+        }
 
         Logger.Log.Info($"ValidateRefundTicketCriteria: {match} {result}");
         logger.LogInformation($"ValidateRefundTicketCriteria: {match} {result}");

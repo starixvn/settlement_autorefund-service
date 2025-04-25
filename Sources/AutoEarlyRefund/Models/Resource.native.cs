@@ -22,6 +22,9 @@ public class Resource
     public bool IsConfirmedRefundSdt => (ResultSetting & (1 << 2)) != 0;
     public bool IsConfirmedRefund => (ResultSetting & (1 << 1)) != 0;
 
-    public override string ToString()
-        => JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+  
+    public override string ToString() => JsonSerializer.Serialize(this, new JsonSerializerOptions
+    {
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    });
 }

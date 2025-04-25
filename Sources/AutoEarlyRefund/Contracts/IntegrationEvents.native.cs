@@ -10,7 +10,6 @@ public record MatchCalculated(
     int? HalfTimeAwayScore,
     int? FinalHomeScore,
     int? FinalAwayScore,
-    string ActionName,
     string Action = "Cal"
     )
 {

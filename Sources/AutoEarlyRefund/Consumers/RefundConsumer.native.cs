@@ -3,6 +3,8 @@ using AutoEarlyRefund.Features.GetResourcesTrigger;
 using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
 using AutoEarlyRefund.Features.RefundConsumerHandler;
 using AutoEarlyRefund.Helpers;
+using AutoEarlyRefund.Models;
+using AutoEarlyRefund.TriggerConditions;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
@@ -91,18 +93,16 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
         Fanex.Logging.LogService.Info($"MatchCalculated Received: {context.Message}");
         logger.LogInformation($"""MatchCalculated Received: {context.Message}""");
 
-        if (!ConsumerHelper.IsExtraMatchCalculated(context.Message) && !ConsumerHelper.IsPenMatchCalculated(context.Message))
-        {
-            return;
-        }
-
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
             context.Message.Action,
             context.Message.ShortType,
             context.Message.ChildMatchType,
             "00");
 
-        var (isValid, match) = await refundConsumerHandler.Handle(context.Message.MatchId, triggerResources);
+        // TODO
+        var validTriggerResources = TryGetValidTargetResourceTrigger(triggerResources, context.Message);
+
+        var (isValid, match) = await refundConsumerHandler.Handle(context.Message.MatchId, validTriggerResources);
 
         if (isValid)
         {
@@ -169,11 +169,6 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
         Fanex.Logging.LogService.Info($"MatchRefunded Received: {context.Message}");
         logger.LogInformation($"MatchRefunded Received: {context.Message}");
 
-        if (!ConsumerHelper.IsExtraMatchRefunded(context.Message))
-        {
-            return;
-        }
-
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
             context.Message.Action,
             context.Message.ShortType,
@@ -211,5 +206,19 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
 
         logger.LogInformation($"NotTakenResultsConfirmed Done: {context.Message}");
         Fanex.Logging.LogService.Info($"NotTakenResultsConfirmed Done: {context.Message}");
+    }
+
+    private List<TargetResourceTrigger> TryGetValidTargetResourceTrigger(
+        List<TargetResourceTrigger> resourceTriggers,
+        MatchCalculated matchCalculated)
+    {
+        var rules = new Dictionary<string, ITriggerConditionRule>
+        {
+            { "1", new WinLoseCondition() },
+            { "", new DefaultCondition() }
+        };
+
+        return [.. resourceTriggers
+            .Where(trigger => !rules.TryGetValue(trigger.Conditions, out _) || rules.TryGetValue(trigger.Conditions, out var rule) && rule.IsValid(matchCalculated.FinalHomeScore ?? 0, matchCalculated.FinalAwayScore ?? 0, trigger))];
     }
 }

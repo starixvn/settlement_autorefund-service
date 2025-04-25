@@ -6,7 +6,7 @@ namespace AutoEarlyRefund.Features.GetResourcesInfo;
 
 public interface IGetSrcResourcesHandler
 {
-    Task<List<SourcesConditions>> HandleAsync(int matchId, List<SourcesConditions> sourcesConditions);
+    Task<List<SourcesConditions>> HandleAsync(List<int> matchIds, List<SourcesConditions> sourcesConditions);
 }
 
 public class GetSrcResourcesHandler : IGetSrcResourcesHandler
@@ -23,9 +23,9 @@ public class GetSrcResourcesHandler : IGetSrcResourcesHandler
         this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
     }
 
-    public async Task<List<SourcesConditions>> HandleAsync(int matchId, List<SourcesConditions> sourcesConditions)
+    public async Task<List<SourcesConditions>> HandleAsync(List<int> matchIds, List<SourcesConditions> sourcesConditions)
     {
-        var groupedSources = GetDistinctGroupedSources(sourcesConditions, matchId);
+        var groupedSources = GetDistinctGroupedSources(sourcesConditions, matchIds);
         var resources = await FetchResources(groupedSources);
 
         return MapSourcesWithResources(sourcesConditions, resources);
@@ -42,25 +42,27 @@ public class GetSrcResourcesHandler : IGetSrcResourcesHandler
 
     private static List<ResourceInfoItemRequest> GetDistinctGroupedSources(
         List<SourcesConditions> sourcesConditions,
-        int matchId)
+        List<int> matchIds)
     {
-        return [.. sourcesConditions
-            .Select(sc => new ResourceInfoItemRequest
-            {
-                SportType = sc.SportType,
-                SourceMatchType = sc.SourceMatchType,
-                SourceChildMatchType = sc.SourceChildMatchType,
-                SourceResource = sc.SourceResource,
-                MatchId = matchId
-            })
-            .DistinctBy(x => new
-            {
-                x.SourceMatchType,
-                x.SourceChildMatchType,
-                x.SourceResource,
-                x.SportType,
-                x.MatchId
-            })];
+
+        return [.. matchIds.SelectMany(matchId =>
+            sourcesConditions
+                .Select(sc => new ResourceInfoItemRequest
+                {
+                    SportType = sc.SportType,
+                    SourceMatchType = sc.SourceMatchType,
+                    SourceChildMatchType = sc.SourceChildMatchType,
+                    SourceResource = sc.SourceResource,
+                    MatchId = matchId
+                }))
+             .DistinctBy(x => new
+             {
+                 x.SourceMatchType,
+                 x.SourceChildMatchType,
+                 x.SourceResource,
+                 x.SportType,
+                 x.MatchId
+             })];
     }
 
     private static List<SourcesConditions> MapSourcesWithResources(

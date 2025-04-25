@@ -46,26 +46,32 @@ public class RefundConsumerHandler : IRefundConsumerHandler
 
     public async Task<(bool Success, Match Match)> Handle(int matchId, List<TargetResourceTrigger> triggerResources)
     {
-        if (triggerResources.Count == 0)
+        try
         {
-            return (false, new());
-        }
+            if (triggerResources.Count == 0)
+            {
+                return (false, new());
+            }
 
-        var relatedMatchItems = await GetRelatedMatchItems(matchId, triggerResources);
-        if (relatedMatchItems.Count == 0)
+            var relatedMatchItems = await GetRelatedMatchItems(matchId, triggerResources);
+            if (relatedMatchItems.Count == 0)
+            {
+                return (false, new());
+            }
+
+            var validResults = await ProcessMatchResults(relatedMatchItems, triggerResources);
+            if (validResults.Count == 0)
+            {
+                return (false, new());
+            }
+
+            var match = BuildMatch(relatedMatchItems[0]!.TargetMatchId, relatedMatchItems[0]!.MatchType, validResults);
+            return (true, match);
+        }
+        catch (Exception ex)
         {
-            return (false, new());
+            Fanex.Logging.Logger.Log.Error(ex.Message, ex);
         }
-
-        var matchInfo = relatedMatchItems[0];
-        var validResults = await ProcessMatchResults(matchId, matchInfo, triggerResources);
-        if (validResults.Count == 0)
-        {
-            return (false, new());
-        }
-
-        var match = BuildMatch(matchInfo.TargetMatchId, matchInfo.MatchType, validResults);
-        return (true, match);
     }
 
     private async Task<List<RelatedMatchItem>> GetRelatedMatchItems(int matchId, List<TargetResourceTrigger> resources)
@@ -76,10 +82,10 @@ public class RefundConsumerHandler : IRefundConsumerHandler
         return [.. relatedMatchItems
             .DistinctBy(x => new
             {
-                x.MatchType,
+                //x.MatchType,
                 x.TargetMatchId,
                 x.TargetChildMatchType,
-                x.MatchId,
+                //x.MatchId,
             })];
     }
 
@@ -101,20 +107,24 @@ public class RefundConsumerHandler : IRefundConsumerHandler
     }
 
     private async Task<List<SourcesConditions>> ProcessMatchResults(
-        int matchId,
-        RelatedMatchItem matchInfo,
+        List<RelatedMatchItem> relatedMatchItems,
         List<TargetResourceTrigger> triggerResources)
     {
-        var validSourcesConditions = await getRefundResultsHandler.Handle(matchInfo.TargetMatchId, triggerResources);
-        var newValidSourcesConditions = await getAutoRefundResultsHandler.Handle(matchId, validSourcesConditions);
-        var conditions = await getResourcesConditionsHandler.GetConditionsAsync(matchInfo.MatchType, newValidSourcesConditions);
-        var sourceResources = await resourcesInfoHandler.HandleAsync(matchInfo.TargetMatchId, conditions);
+        var matchIds = relatedMatchItems.Select(x => x.TargetMatchId).ToList();
+        var matchTypes = relatedMatchItems.Select(x => x.MatchType).ToList();
+
+        var validSourcesConditions = await getRefundResultsHandler.Handle(matchIds, triggerResources);
+        var newValidSourcesConditions = await getAutoRefundResultsHandler.Handle(matchIds, validSourcesConditions);
+        var conditions = await getResourcesConditionsHandler.GetConditionsAsync(matchTypes, newValidSourcesConditions);
+        var sourceResources = await resourcesInfoHandler.HandleAsync(matchIds, conditions);
 
         return ExtractValidResults(sourceResources);
+        //return [];
     }
 
     private static List<SourcesConditions> ExtractValidResults(List<SourcesConditions> sourceResources)
     {
+        Fanex.Logging.Logger.Log.Info($"ExtractValidResults: {string.Join(",", sourceResources.Select(x => x.ToString()))}");
         return [.. sourceResources
             .GroupBy(x => x.ResourceId)
             .SelectMany(group => ProcessResourceGroup(group))];

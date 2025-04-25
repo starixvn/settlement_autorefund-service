@@ -31,7 +31,7 @@ public class CheckConditionsRefundHandler(
 
         var conditions = await conditionsHandler.GetConditionsAsync(request);
 
-        var resources = await getResourcesInfoHandler.HandleAsync(match.MatchId, conditions);
+        var resources = await getResourcesInfoHandler.HandleAsync([match.MatchId], conditions);
 
         var validResults = GetValidResults(resources);
 

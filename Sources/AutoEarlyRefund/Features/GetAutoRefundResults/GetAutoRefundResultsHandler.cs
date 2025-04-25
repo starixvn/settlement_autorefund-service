@@ -7,7 +7,7 @@ namespace AutoEarlyRefund.Features.GetAutoRefundResults;
 
 public interface IGetAutoRefundResultsHandler
 {
-    Task<List<SourcesConditionsItem>> Handle(int matchId, List<SourcesConditionsItem> sourcesConditions);
+    Task<List<SourcesConditionsItem>> Handle(List<int> matchIds, List<SourcesConditionsItem> sourcesConditions);
 }
 
 public class GetAutoRefundResultsHandler : IGetAutoRefundResultsHandler
@@ -19,15 +19,20 @@ public class GetAutoRefundResultsHandler : IGetAutoRefundResultsHandler
         this.repository = repository;
     }
 
-    public async Task<List<SourcesConditionsItem>> Handle(int matchId, List<SourcesConditionsItem> sourcesConditions)
+    public async Task<List<SourcesConditionsItem>> Handle(List<int> matchIds, List<SourcesConditionsItem> sourcesConditions)
     {
-        var requestItems = sourcesConditions.Select(x => new GetAutoRefundResultsItem(matchId, x.ResourceId)).ToList();
+        var requestItems = matchIds.SelectMany(matchId => sourcesConditions
+                .Select(sourceCondition => new GetAutoRefundResultsItem(matchId, sourceCondition.ResourceId)))
+            .ToList();
+
         var criteria = new GetAutoRefundResultsCriteria
         {
             ResourceInfo = SerializeToJson(requestItems)
         };
 
         var autoRefundResults = await repository.FetchAsync<ResultDetail>(criteria);
+
+        Fanex.Logging.LogService.Info($"GetAutoRefundResultsHandler: {string.Join(",", autoRefundResults.Select(x => x.ToString()))}");
         var autoRefundResultIds = new HashSet<string>(autoRefundResults.Select(x => x.ResourceId));
 
         return [.. sourcesConditions.Where(x => !autoRefundResultIds.Contains(x.ResourceId))];

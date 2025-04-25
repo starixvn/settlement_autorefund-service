@@ -19,12 +19,18 @@ public class ResultDetail
     public int SettlementStatusId { get; set; }
 
     public SourcesConditionsItem? Conditions
-        => JsonSerializer.Deserialize<SourcesConditionsItem>(OtherInfo, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        => string.IsNullOrWhiteSpace(OtherInfo)
+            ? null
+            : JsonSerializer.Deserialize<SourcesConditionsItem>(OtherInfo, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            });
 
-    public override string ToString() => JsonSerializer.Serialize(this);
+    public override string ToString() => JsonSerializer.Serialize(this, new JsonSerializerOptions
+    {
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    });
 
     public override bool Equals(object? obj) => obj is ResultDetail detail && MatchId == detail.MatchId && ResourceId == detail.ResourceId;
     public override int GetHashCode() => HashCode.Combine(MatchId, ResourceId);

@@ -22,7 +22,8 @@ public class SettleOpaqueFacadeImp(
     IValidateHandler validateHandler,
     MatchPoolService matchPoolService,
     IPublishEndpoint publishEndpoint,
-    ILogger<SettleOpaqueFacadeImp> logger) : ISettleOpaqueFacade
+    ILogger<SettleOpaqueFacadeImp> logger,
+    XmlConvertService xmlConvertService) : ISettleOpaqueFacade
 {
 
     public async Task Settle(Match match)
@@ -36,8 +37,7 @@ public class SettleOpaqueFacadeImp(
             {
                 Fanex.Logging.LogService.Warn($"SettleOpaqueFacade: {match} {result}");
                 logger.LogWarning($"SettleOpaqueFacade: {match} {result}");
-                match.ResultDetails.ForEach(x => x.Remark = result.ErrMsg);
-                await insOrUpdAutoPayoutResultHandler.Handle(match, AutoRefund.Core.ResultRefundStatus.Failed);
+                await HandleErrorValidMatch(match, result.ErrMsg);
                 return;
             }
             await writeLogService.WriteLogPreSettlement(match);
@@ -75,6 +75,15 @@ public class SettleOpaqueFacadeImp(
         {
             matchPoolService.Remove(match);
         }
+    }
+
+    private async Task HandleErrorValidMatch(Match match, string errorMsg)
+    {
+        match.ResultDetails.ForEach(x => x.Remark = errorMsg);
+
+        var newMatch = match.WithResourcesXml(xmlConvertService, false);
+
+        await insOrUpdAutoPayoutResultHandler.Handle(newMatch, AutoRefund.Core.ResultRefundStatus.Failed);
     }
 
 

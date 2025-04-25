@@ -7,15 +7,16 @@ namespace AutoEarlyRefund.Features.GetResourcesConditions;
 public interface IGetResourcesConditionsHandler
 {
     Task<List<SourcesConditions>> GetConditionsAsync(List<SourcesConditionsItem> sourcesConditionsItems);
-    Task<List<SourcesConditions>> GetConditionsAsync(short matchType, List<SourcesConditionsItem> targetResourceTriggers);
+    Task<List<SourcesConditions>> GetConditionsAsync(List<short> matchTypes, List<SourcesConditionsItem> targetResourceTriggers);
 }
 
 public class GetResourcesConditionsHandler(IDynamicRepository repository) : IGetResourcesConditionsHandler
 {
-    public async Task<List<SourcesConditions>> GetConditionsAsync(short matchType, List<SourcesConditionsItem> targetResourceTriggers)
+    public async Task<List<SourcesConditions>> GetConditionsAsync(List<short> matchTypes, List<SourcesConditionsItem> targetResourceTriggers)
     {
-        var request = targetResourceTriggers
-            .Select(x => x.WithMatchType(matchType))
+        var request = matchTypes.SelectMany(matchType =>
+            targetResourceTriggers
+                .Select(x => x.WithMatchType(matchType)))
             .ToList();
 
         var conditions = await GetConditionsAsync(request);

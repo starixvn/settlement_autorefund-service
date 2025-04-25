@@ -1,4 +1,6 @@
-﻿namespace AutoEarlyRefund.Models;
+﻿using System.Text.Json;
+
+namespace AutoEarlyRefund.Models;
 
 public class SourcesConditions
 {
@@ -20,5 +22,11 @@ public class SourcesConditions
     public Resource? Resource { get; set; }
 
     public IEnumerable<string> SourceResourceIds => SourceResource.Split(',');
-    public override string ToString() => $"{ResourceId}-{RuleName}-{SourceMatchType}-{SourceChildMatchType}-{SourceAction}, Target: {SourceResourceId}";
+
+
+    public override string ToString()
+        => JsonSerializer.Serialize(this, new JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
 }

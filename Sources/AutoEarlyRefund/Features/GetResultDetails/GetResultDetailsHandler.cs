@@ -7,7 +7,7 @@ namespace AutoEarlyRefund.Features.GetRefundResults;
 
 public interface IGetResultDetailsHandler
 {
-    Task<List<SourcesConditionsItem>> Handle(int matchId, List<TargetResourceTrigger> targetResourceTriggers);
+    Task<List<SourcesConditionsItem>> Handle(List<int> matchIds, List<TargetResourceTrigger> targetResourceTriggers);
 }
 
 public class GetResultDetailsHandler : IGetResultDetailsHandler
@@ -24,20 +24,21 @@ public class GetResultDetailsHandler : IGetResultDetailsHandler
         this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
     }
 
-    public async Task<List<SourcesConditionsItem>> Handle(int matchId, List<TargetResourceTrigger> targetResourceTriggers)
+    public async Task<List<SourcesConditionsItem>> Handle(List<int> matchIds, List<TargetResourceTrigger> targetResourceTriggers)
     {
         var sourcesConditions = GetSourcesConditionsItems(targetResourceTriggers);
-        var results = await GetResults(matchId, sourcesConditions);
+        var results = await GetResults(matchIds, sourcesConditions);
 
         return sourcesConditions
             .Where(x => !results.Exists(r => r.ResourceId == x.ResourceId))
             .ToList();
     }
 
-    private async Task<List<ResultDetail>> GetResults(int matchId, List<SourcesConditionsItem> sourcesConditions)
+    private async Task<List<ResultDetail>> GetResults(List<int> matchIds, List<SourcesConditionsItem> sourcesConditions)
     {
-        var request = sourcesConditions
-            .Select(x => new GetResultDetailsItem(matchId, x.SportType, x.ResourceId))
+        var request = matchIds
+            .SelectMany(matchId => sourcesConditions
+            .Select(sourceCondition => new GetResultDetailsItem(matchId, sourceCondition.SportType, sourceCondition.ResourceId)))
             .ToList();
 
         var criteria = new GetResultDetailsCriteria
@@ -70,7 +71,9 @@ public class GetResultDetailsHandler : IGetResultDetailsHandler
                 x.TargetResourceChildMatchType,
                 x.TargetResource
             })
-            .Select(MapToSourcesConditionsItem)];
+            .Select(MapToSourcesConditionsItem)
+            //.Where(x => x.ResourceId == "38101")
+        ];
     }
 
     private static TargetResourceTrigger MapToTargetResourceTrigger(TargetResourceTrigger source, string resourceId)

@@ -25,6 +25,9 @@ public class AutoEarlyRefundWorker(
 
             var matches = await matchPoolService.PeekNewMatch();
 
+            //var tasks = Task.WhenAll(matches.Select(x => settleOpaqueFacade.Settle(x)));
+            //await tasks;
+
             matches.ForEach(x => Task.Run(() => settleOpaqueFacade.Settle(x)));
         }
     }
