@@ -15,12 +15,16 @@ namespace AutoEarlyRefund.Features.CheckStatusRefundResults
     {
         public async Task<Result> HandleAsync(Match match)
         {
+            await Fanex.Logging.Logger.Log.WarnAsync($"Before CheckStatusRefundResultsHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
+
             var settledResults = match.ResultDetails
                 .Where(x => x.ResultStatusId == (int)ResultStatus.ManualSettled || x.ResultStatusId == (int)ResultStatus.AutoSettled);
 
             match.ResultDetails = [.. match.ResultDetails.Except(settledResults)];
 
             await HandleInvalidResults(match, [.. settledResults]);
+
+            await Fanex.Logging.Logger.Log.WarnAsync($"After CheckStatusRefundResultsHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
 
             if (match.ResultDetails.Count == 0)
             {

@@ -21,6 +21,7 @@ public class CheckConditionsRefundHandler(
 {
     public async Task<Result> HandleAsync(Match match)
     {
+        await Fanex.Logging.Logger.Log.WarnAsync($"Before CheckConditionsRefundHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
         var request = match.ResultDetails.Select(x => new SourcesConditionsItem
         {
             ResourceId = x.ResourceId,
@@ -40,10 +41,9 @@ public class CheckConditionsRefundHandler(
         await HandleInvalidResults(match, validResultsIds);
 
         match.ResultDetails = [.. match.ResultDetails.Where(x => validResultsIds.Contains(x.ResourceId))];
-        logger.LogInformation($"After CheckConditionsRefundHandler: {match.ResultDetails.Count}");
-        logger.LogInformation($"After validResultsIds CheckConditionsRefundHandler: {validResultsIds.Count}");
 
 
+        await Fanex.Logging.Logger.Log.WarnAsync($"After CheckConditionsRefundHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
         if (match.ResultDetails.Count == 0)
         {
             throw new AppException();
@@ -68,12 +68,8 @@ public class CheckConditionsRefundHandler(
 
     private async Task HandleInvalidResults(Match match, List<string> validResultsIds)
     {
-
         var invalidResults = match.ResultDetails
             .Where(x => validResultsIds.Count == 0 || !validResultsIds.Contains(x.ResourceId)).ToList();
-
-        //Logger.Log.Info($"HandleInvalidResults: {match} {string.Join(",", invalidResults)}");
-        logger.LogInformation($"HandleInvalidResults: {match} {match.ResultDetails.Count} {invalidResults.Count}");
 
         if (invalidResults.Count == 0)
         {

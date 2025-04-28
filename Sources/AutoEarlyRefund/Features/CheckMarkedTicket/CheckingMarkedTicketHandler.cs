@@ -25,8 +25,7 @@ public class CheckingMarkedTicketHandler : IValidateHandler
 
     public async Task<Result> HandleAsync(Match match)
     {
-        //Logger.Log.Info($"CheckingMarkedTicketHandler: {match}");
-        //logger.LogInformation($"CheckingMarkedTicketHandler: {match}");
+        await Fanex.Logging.Logger.Log.WarnAsync($"Before CheckingMarkedTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
 
         var criteria = new CheckingMarkedTicketCriteria
         {
@@ -38,9 +37,8 @@ public class CheckingMarkedTicketHandler : IValidateHandler
 
         var results = await Task.WhenAll(tasks.ToArray());
 
-        //Logger.Log.Info($"CheckingMarkedTicketHandler: {match} {string.Join(",", results)}");
-        //logger.LogInformation($"CheckingMarkedTicketHandler: {match} {string.Join(",", results)}");
 
+        await Fanex.Logging.Logger.Log.WarnAsync($"After CheckingMarkedTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
 
         if (results.ToList().TrueForAll(x => !x) && next != null)
         {

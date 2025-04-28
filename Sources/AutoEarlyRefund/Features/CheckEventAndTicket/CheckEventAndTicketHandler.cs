@@ -8,6 +8,7 @@ namespace AutoEarlyRefund.Features.CheckEventAndTicket;
 
 public class CheckEventAndTicketHandler(
     GeneralService generalService,
+    IDynamicRepository repository,
     XmlConvertService xmlConvertService,
     ILogger<CheckEventAndTicketHandler> logger,
     IOptions<AppSettingsKey> appSettingsKey,
@@ -15,6 +16,7 @@ public class CheckEventAndTicketHandler(
 {
     public async Task<Result> HandleAsync(Match match)
     {
+        await Fanex.Logging.Logger.Log.WarnAsync($"Before CheckEventAndTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
         var newMatch = match.WithResourcesXml(xmlConvertService, false);
         var request = new EventTicketRequest
         {
@@ -27,8 +29,6 @@ public class CheckEventAndTicketHandler(
         };
 
         var eventResult = await generalService.ExecuteSingle(request.Adapt<ValidateEventCriteria>());
-        //Logger.Log.Info($"CheckEventHandler: {match} {eventResult.ErrorCode} {eventResult.ErrorMessage}");
-        //logger.LogInformation($"CheckEventHandler: {match} {eventResult.ErrorCode} {eventResult.ErrorMessage}");
 
         if (eventResult.ErrorCode != 0)
         {
@@ -42,28 +42,44 @@ public class CheckEventAndTicketHandler(
         var result = new Result();
         for (var i = 0; i < appSettingsKey.Value.RetryCount; i++)
         {
-            var resultMsg = await generalService.ExecuteAsync(request.Adapt<ValidateRefundTicketCriteria>());
+            var tasks = appSettingsKey.Value.SiteDbServer.Select(s => CheckValidateRefundTicket(s, request.Adapt<ValidateRefundTicketCriteria>()));
+            var results = await Task.WhenAll(tasks.ToArray());
 
-            if (resultMsg.ErrorCode == 1_001_003 && i < appSettingsKey.Value.RetryCount - 1)
-            {
-                await Task.Delay(appSettingsKey.Value.RetryInterval);
-                continue;
-            }
+            var inValidResult = results.FirstOrDefault(x => x.ErrCode != 0);
 
-            if (resultMsg.ErrorCode == 0)
+            if (inValidResult == null)
             {
                 break;
             }
 
-            result.ErrCode = resultMsg.ErrorCode;
-            result.ErrMsg = resultMsg.ErrorMessage;
+            if (inValidResult.ErrCode == 1_001_003 && i < appSettingsKey.Value.RetryCount - 1)
+            {
+                await Fanex.Logging.Logger.Log.WarnAsync("After CheckEventAndTicketHandler ErrorCode InQueue");
+                await Task.Delay(appSettingsKey.Value.RetryInterval);
+                continue;
+            }
+
+            result.ErrCode = inValidResult.ErrCode;
+            result.ErrMsg = inValidResult.ErrMsg;
+            break;
         }
 
-        //Logger.Log.Info($"ValidateRefundTicketCriteria: {match} {result}");
-        //logger.LogInformation($"ValidateRefundTicketCriteria: {match} {result}");
+        await Fanex.Logging.Logger.Log.WarnAsync($"After CheckEventAndTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
 
         return result.IsSuccess && next is not null
             ? await next.HandleAsync(match)
             : result;
+    }
+
+    private async Task<Result> CheckValidateRefundTicket(string s, ValidateRefundTicketCriteria criteria)
+    {
+        criteria.DbServer = s;
+        await repository.ExecuteAsync(criteria);
+
+        return new Result
+        {
+            ErrCode = criteria.ErrCode,
+            ErrMsg = criteria.ErrMsg
+        };
     }
 }
