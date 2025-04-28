@@ -1,6 +1,5 @@
 ﻿using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using Fanex.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace AutoEarlyRefund.Features.CheckMarkedTicket;
@@ -26,8 +25,8 @@ public class CheckingMarkedTicketHandler : IValidateHandler
 
     public async Task<Result> HandleAsync(Match match)
     {
-        Logger.Log.Info($"CheckingMarkedTicketHandler: {match}");
-        logger.LogInformation($"CheckingMarkedTicketHandler: {match}");
+        //Logger.Log.Info($"CheckingMarkedTicketHandler: {match}");
+        //logger.LogInformation($"CheckingMarkedTicketHandler: {match}");
 
         var criteria = new CheckingMarkedTicketCriteria
         {
@@ -39,8 +38,8 @@ public class CheckingMarkedTicketHandler : IValidateHandler
 
         var results = await Task.WhenAll(tasks.ToArray());
 
-        Logger.Log.Info($"CheckingMarkedTicketHandler: {match} {string.Join(",", results)}");
-        logger.LogInformation($"CheckingMarkedTicketHandler: {match} {string.Join(",", results)}");
+        //Logger.Log.Info($"CheckingMarkedTicketHandler: {match} {string.Join(",", results)}");
+        //logger.LogInformation($"CheckingMarkedTicketHandler: {match} {string.Join(",", results)}");
 
 
         if (results.ToList().TrueForAll(x => !x) && next != null)

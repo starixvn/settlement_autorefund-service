@@ -1,6 +1,5 @@
 ﻿using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using Fanex.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace AutoEarlyRefund.Features.CheckSettleStatusMatch;
@@ -42,8 +41,8 @@ public class CheckSettleStatusMatchHandler : IValidateHandler, ICheckSettleStatu
             ErrMsg = criteria.ErrMsg
         };
 
-        Logger.Log.Info($"CheckSettleStatusMatchHandler: {match} {result}");
-        logger.LogInformation($"CheckSettleStatusMatchHandler: {match} {result}");
+        //Logger.Log.Info($"CheckSettleStatusMatchHandler: {match} {result}");
+        //logger.LogInformation($"CheckSettleStatusMatchHandler: {match} {result}");
 
         if (result.ErrCode == 0 && next is not null)
         {

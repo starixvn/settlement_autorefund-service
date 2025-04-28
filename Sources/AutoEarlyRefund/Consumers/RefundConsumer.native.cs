@@ -93,10 +93,12 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
         Fanex.Logging.LogService.Info($"MatchCalculated Received: {context.Message}");
         logger.LogInformation($"""MatchCalculated Received: {context.Message}""");
 
+        var newMatchCalculated = context.Message with { Action = GetAction(context.Message.ActionName) };
+
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
-            context.Message.Action,
-            context.Message.ShortType,
-            context.Message.ChildMatchType,
+            newMatchCalculated.Action,
+            newMatchCalculated.ShortType,
+            newMatchCalculated.ChildMatchType,
             "00");
 
         // TODO
@@ -169,10 +171,11 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
         Fanex.Logging.LogService.Info($"MatchRefunded Received: {context.Message}");
         logger.LogInformation($"MatchRefunded Received: {context.Message}");
 
+        var newMatchRefunded = context.Message with { Action = GetAction(context.Message.ActionName) };
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
-            context.Message.Action,
-            context.Message.ShortType,
-            context.Message.ChildMatchType,
+            newMatchRefunded.Action,
+           newMatchRefunded.ShortType,
+            newMatchRefunded.ChildMatchType,
             "00");
 
         var (isValid, match) = await refundConsumerHandler.Handle(context.Message.MatchId, triggerResources);
@@ -220,5 +223,20 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
 
         return [.. resourceTriggers
             .Where(trigger => !rules.TryGetValue(trigger.Conditions, out _) || rules.TryGetValue(trigger.Conditions, out var rule) && rule.IsValid(matchCalculated.FinalHomeScore ?? 0, matchCalculated.FinalAwayScore ?? 0, trigger))];
+    }
+
+    private static string GetAction(string actionName)
+    {
+        if (actionName == "REFUND-FT" || actionName == "REFUND")
+        {
+            return "Refund";
+        }
+
+        if (actionName == "CAL" || actionName == "CAL-FT")
+        {
+            return "Cal";
+        }
+
+        return actionName;
     }
 }

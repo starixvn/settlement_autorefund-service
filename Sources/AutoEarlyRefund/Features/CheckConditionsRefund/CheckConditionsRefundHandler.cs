@@ -5,7 +5,6 @@ using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using Fanex.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace AutoEarlyRefund.Features.CheckConditionsRefund;
@@ -41,6 +40,9 @@ public class CheckConditionsRefundHandler(
         await HandleInvalidResults(match, validResultsIds);
 
         match.ResultDetails = [.. match.ResultDetails.Where(x => validResultsIds.Contains(x.ResourceId))];
+        logger.LogInformation($"After CheckConditionsRefundHandler: {match.ResultDetails.Count}");
+        logger.LogInformation($"After validResultsIds CheckConditionsRefundHandler: {validResultsIds.Count}");
+
 
         if (match.ResultDetails.Count == 0)
         {
@@ -68,10 +70,10 @@ public class CheckConditionsRefundHandler(
     {
 
         var invalidResults = match.ResultDetails
-            .Where(x => validResultsIds.Count == 0 || validResultsIds.Contains(x.ResourceId)).ToList();
+            .Where(x => validResultsIds.Count == 0 || !validResultsIds.Contains(x.ResourceId)).ToList();
 
-        Logger.Log.Info($"CheckConditionsRefundHandler: {match} {string.Join(",", invalidResults)}");
-        logger.LogInformation($"CheckConditionsRefundHandler: {match} {string.Join(",", invalidResults)}");
+        //Logger.Log.Info($"HandleInvalidResults: {match} {string.Join(",", invalidResults)}");
+        logger.LogInformation($"HandleInvalidResults: {match} {match.ResultDetails.Count} {invalidResults.Count}");
 
         if (invalidResults.Count == 0)
         {

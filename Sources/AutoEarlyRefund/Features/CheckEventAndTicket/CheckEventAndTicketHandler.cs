@@ -1,6 +1,5 @@
 ﻿using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using Fanex.Logging;
 using Fanex.Settlement.ScaleOut.Criteria.Normal;
 using Mapster;
 using Microsoft.Extensions.Logging;
@@ -28,8 +27,8 @@ public class CheckEventAndTicketHandler(
         };
 
         var eventResult = await generalService.ExecuteSingle(request.Adapt<ValidateEventCriteria>());
-        Logger.Log.Info($"CheckEventHandler: {match} {eventResult.ErrorCode} {eventResult.ErrorMessage}");
-        logger.LogInformation($"CheckEventHandler: {match} {eventResult.ErrorCode} {eventResult.ErrorMessage}");
+        //Logger.Log.Info($"CheckEventHandler: {match} {eventResult.ErrorCode} {eventResult.ErrorMessage}");
+        //logger.LogInformation($"CheckEventHandler: {match} {eventResult.ErrorCode} {eventResult.ErrorMessage}");
 
         if (eventResult.ErrorCode != 0)
         {
@@ -60,8 +59,8 @@ public class CheckEventAndTicketHandler(
             result.ErrMsg = resultMsg.ErrorMessage;
         }
 
-        Logger.Log.Info($"ValidateRefundTicketCriteria: {match} {result}");
-        logger.LogInformation($"ValidateRefundTicketCriteria: {match} {result}");
+        //Logger.Log.Info($"ValidateRefundTicketCriteria: {match} {result}");
+        //logger.LogInformation($"ValidateRefundTicketCriteria: {match} {result}");
 
         return result.IsSuccess && next is not null
             ? await next.HandleAsync(match)

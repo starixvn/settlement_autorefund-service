@@ -2,7 +2,6 @@
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using Fanex.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace AutoEarlyRefund.Features.CheckStatusRefundResults
@@ -33,8 +32,8 @@ namespace AutoEarlyRefund.Features.CheckStatusRefundResults
 
         private async Task HandleInvalidResults(Match match, List<ResultDetail> invalidResults)
         {
-            Logger.Log.Info($"CheckStatusRefundResultsHandler: {match} {string.Join(",", invalidResults)}");
-            logger.LogInformation($"CheckStatusRefundResultsHandler: {match} {string.Join(",", invalidResults)}");
+            //Logger.Log.Info($"CheckStatusRefundResultsHandler: {match} {string.Join(",", invalidResults)}");
+            //logger.LogInformation($"CheckStatusRefundResultsHandler: {match} {string.Join(",", invalidResults)}");
 
             var errorMessage = "ERROR: This result have been settled incorrectly already";
 

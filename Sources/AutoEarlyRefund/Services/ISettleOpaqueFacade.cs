@@ -28,8 +28,8 @@ public class SettleOpaqueFacadeImp(
 
     public async Task Settle(Match match)
     {
-        Fanex.Logging.LogService.Info($"Process Settle {match.MatchId} {match}");
-        logger.LogInformation($"Process Settle {match.MatchId} {match}");
+        Fanex.Logging.LogService.Info($"Process Settle {match.MatchId} {match.ResultDetails.Count}");
+        logger.LogInformation($"Process Settle {match.MatchId} {match.ResultDetails.Count}");
         try
         {
             var result = await validateHandler.HandleAsync(match);
@@ -41,6 +41,8 @@ public class SettleOpaqueFacadeImp(
                 return;
             }
             var newMatch = match.WithResourcesXml(xmlConvertService);
+            logger.LogInformation($"Done Settle {newMatch.MatchId} {newMatch.ResultDetails.Count} {newMatch.ResultDetails.Count}");
+
             await writeLogService.WriteLogPreSettlement(newMatch);
             await writeLogService.WriteLogSettle(newMatch);
 
@@ -66,6 +68,8 @@ public class SettleOpaqueFacadeImp(
         catch (AppException ex)
         {
             Fanex.Logging.LogService.Warn(ex.Message, ex);
+            logger.LogInformation($"AppException {match.MatchId} {match.ResultDetails.Count}");
+
         }
         catch (Exception ex)
         {
