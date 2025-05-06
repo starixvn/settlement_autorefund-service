@@ -1,4 +1,6 @@
-﻿namespace AutoEarlyRefund.Helpers;
+﻿using ResourceItem = Fanex.Settlement.MessageBridge.RefundEvents.ResourceItem;
+
+namespace AutoEarlyRefund.Helpers;
 
 public static class ConsumerHelper
 {

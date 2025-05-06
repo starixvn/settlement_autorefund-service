@@ -11,7 +11,7 @@ namespace AutoEarlyRefund.Features.RefundConsumerHandler;
 
 public interface IRefundConsumerHandler
 {
-    Task<(bool Success, Match Match)> Handle(int matchId, List<TargetResourceTrigger> triggerResources);
+    Task<(bool Success, List<Match> Matches)> Handle(int matchId, List<TargetResourceTrigger> triggerResources);
 }
 
 public class RefundConsumerHandler : IRefundConsumerHandler
@@ -36,15 +36,15 @@ public class RefundConsumerHandler : IRefundConsumerHandler
         IGetResultDetailsHandler getRefundResultsHandler,
         IGetAutoRefundResultsHandler getAutoRefundResultsHandler)
     {
-        this.getResourcesConditionsHandler = getResourcesConditionsHandler ?? throw new ArgumentNullException(nameof(getResourcesConditionsHandler));
-        this.resourcesInfoHandler = resourcesInfoHandler ?? throw new ArgumentNullException(nameof(resourcesInfoHandler));
-        this.xmlConvertService = xmlConvertService ?? throw new ArgumentNullException(nameof(xmlConvertService));
-        this.getRefundMatchInfoHandler = getRefundMatchInfoHandler ?? throw new ArgumentNullException(nameof(getRefundMatchInfoHandler));
-        this.getRefundResultsHandler = getRefundResultsHandler ?? throw new ArgumentNullException(nameof(getRefundResultsHandler));
-        this.getAutoRefundResultsHandler = getAutoRefundResultsHandler ?? throw new ArgumentNullException(nameof(getAutoRefundResultsHandler));
+        this.getResourcesConditionsHandler = getResourcesConditionsHandler;
+        this.resourcesInfoHandler = resourcesInfoHandler;
+        this.xmlConvertService = xmlConvertService;
+        this.getRefundMatchInfoHandler = getRefundMatchInfoHandler;
+        this.getRefundResultsHandler = getRefundResultsHandler;
+        this.getAutoRefundResultsHandler = getAutoRefundResultsHandler;
     }
 
-    public async Task<(bool Success, Match Match)> Handle(int matchId, List<TargetResourceTrigger> triggerResources)
+    public async Task<(bool Success, List<Match> Matches)> Handle(int matchId, List<TargetResourceTrigger> triggerResources)
     {
         try
         {
@@ -54,6 +54,8 @@ public class RefundConsumerHandler : IRefundConsumerHandler
             }
 
             var relatedMatchItems = await GetRelatedMatchItems(matchId, triggerResources);
+            Fanex.Logging.Logger.Log.Info($"GetRelatedMatchItems: {string.Join(",", relatedMatchItems.Select(x => x))}");
+
             if (relatedMatchItems.Count == 0)
             {
                 return (false, new());
@@ -65,8 +67,8 @@ public class RefundConsumerHandler : IRefundConsumerHandler
                 return (false, new());
             }
 
-            var match = BuildMatch(relatedMatchItems[0]!.TargetMatchId, relatedMatchItems[0]!.MatchType, validResults);
-            return (true, match);
+            var matches = relatedMatchItems.Select(x => BuildMatch(x.TargetMatchId, x.MatchType, validResults)).ToList();
+            return (true, matches);
         }
         catch (Exception ex)
         {
@@ -83,10 +85,8 @@ public class RefundConsumerHandler : IRefundConsumerHandler
         return [.. relatedMatchItems
             .DistinctBy(x => new
             {
-                //x.MatchType,
                 x.TargetMatchId,
                 x.TargetChildMatchType,
-                //x.MatchId,
             })];
     }
 
@@ -120,12 +120,10 @@ public class RefundConsumerHandler : IRefundConsumerHandler
         var sourceResources = await resourcesInfoHandler.HandleAsync(matchIds, conditions);
 
         return ExtractValidResults(sourceResources);
-        //return [];
     }
 
     private static List<SourcesConditions> ExtractValidResults(List<SourcesConditions> sourceResources)
     {
-        Fanex.Logging.Logger.Log.Info($"ExtractValidResults: {string.Join(",", sourceResources.Select(x => x.ToString()))}");
         return [.. sourceResources
             .GroupBy(x => x.ResourceId)
             .SelectMany(group => ProcessResourceGroup(group))];
@@ -133,13 +131,7 @@ public class RefundConsumerHandler : IRefundConsumerHandler
 
     private static IEnumerable<SourcesConditions> ProcessResourceGroup(IGrouping<string, SourcesConditions> resourceGroup)
     {
-        //foreach (var ruleGroup in from ruleGroup in resourceGroup.GroupBy(x => x.RuleId)
-        //                          where AreAllSpecificationsSatisfied(ruleGroup)
-        //                          select ruleGroup)
-        //{
-        //    yield return GetPreferredResource(ruleGroup, resourceGroup.Key);
-        //    yield break;
-        //}
+
         foreach (var ruleGroup in resourceGroup.GroupBy(x => x.RuleId))
         {
             if (AreAllSpecificationsSatisfied(ruleGroup))
@@ -152,7 +144,6 @@ public class RefundConsumerHandler : IRefundConsumerHandler
 
     private static bool AreAllSpecificationsSatisfied(IEnumerable<SourcesConditions> ruleGroup)
     {
-        var specs = ruleGroup.Select(sc => SpecificationFactory.CreateSpecification(sc));
         return ruleGroup.All(sc => SpecificationFactory.CreateSpecification(sc).IsSatisfiedBy(sc));
     }
 

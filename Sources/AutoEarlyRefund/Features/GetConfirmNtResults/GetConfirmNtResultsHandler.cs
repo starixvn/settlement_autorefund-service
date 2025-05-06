@@ -1,6 +1,9 @@
-﻿using AutoEarlyRefund.Contracts;
+﻿
 using AutoEarlyRefund.Models;
+using Fanex.Settlement.MessageBridge.RefundEvents;
 using MassTransit;
+
+using ResourceItem = Fanex.Settlement.MessageBridge.RefundEvents.ResourceItem;
 
 namespace AutoEarlyRefund.Features.GetConfirmNtResults;
 
@@ -29,7 +32,20 @@ public class GetConfirmNtResultsHandler(IDynamicRepository repository, IPublishE
 
         foreach (var item in matches)
         {
-            await publishEndpoint.Publish(new NotTakenResultsConfirmed(item.MatchId, item.SportType, item.ChildMatchType, [.. item.ResourceItems]));
+            await publishEndpoint.Publish(
+                new NotTakenResultsConfirmed(
+                    item.MatchId,
+                    item.SportType,
+                    item.ChildMatchType,
+                    [.. item.ResultDetails.Select(x => new ResourceItem
+                    {
+                        ResourceId = x.ResourceId,
+                        HomeValue = x.HomeValue,
+                        AwayValue = x.AwayValue,
+                        OtherInfo = x.OtherInfo,
+                    })
+                    ])
+                );
         }
     }
 }

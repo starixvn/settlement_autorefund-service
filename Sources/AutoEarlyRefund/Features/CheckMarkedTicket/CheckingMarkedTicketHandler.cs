@@ -1,6 +1,5 @@
 ﻿using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using Microsoft.Extensions.Logging;
 
 namespace AutoEarlyRefund.Features.CheckMarkedTicket;
 
@@ -10,17 +9,14 @@ public class CheckingMarkedTicketHandler : IValidateHandler
     private readonly IDynamicRepository repository;
     private readonly IOptions<AppSettingsKey> appSettingsKey;
     private readonly IValidateHandler next;
-    private readonly ILogger<CheckingMarkedTicketHandler> logger;
     public CheckingMarkedTicketHandler(
         IValidateHandler next,
         IDynamicRepository repository,
-        IOptions<AppSettingsKey> appSettingsKey,
-        ILogger<CheckingMarkedTicketHandler> logger)
+        IOptions<AppSettingsKey> appSettingsKey)
     {
         this.repository = repository;
         this.appSettingsKey = appSettingsKey;
         this.next = next;
-        this.logger = logger;
     }
 
     public async Task<Result> HandleAsync(Match match)

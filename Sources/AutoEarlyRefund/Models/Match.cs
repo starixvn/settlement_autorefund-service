@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-namespace AutoEarlyRefund.Models;
+using AutoEarlyRefund.Models;
 
 public class Match
 {

@@ -1,5 +1,5 @@
 using AutoEarlyRefund.Helpers;
-using AutoRefund.Core.Models;
+using Fanex.Settlement.MessageBridge.RefundEvents;
 
 namespace AutoEarlyRefund.Tests.Helpers
 {

@@ -36,9 +36,6 @@ namespace AutoEarlyRefund.Features.CheckStatusRefundResults
 
         private async Task HandleInvalidResults(Match match, List<ResultDetail> invalidResults)
         {
-            //Logger.Log.Info($"CheckStatusRefundResultsHandler: {match} {string.Join(",", invalidResults)}");
-            //logger.LogInformation($"CheckStatusRefundResultsHandler: {match} {string.Join(",", invalidResults)}");
-
             var errorMessage = "ERROR: This result have been settled incorrectly already";
 
             if (invalidResults.Count == 0)

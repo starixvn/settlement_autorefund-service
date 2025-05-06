@@ -1,11 +1,11 @@
-﻿using AutoEarlyRefund.Contracts;
-using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+﻿using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
 using AutoEarlyRefund.Features.PeekNewMatches;
 using AutoEarlyRefund.Features.PushResultSettlement;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
+using Fanex.Settlement.MessageBridge.RefundEvents;
 using MassTransit;
-using Microsoft.Extensions.Logging;
+using ResourceItem = Fanex.Settlement.MessageBridge.RefundEvents.ResourceItem;
 
 namespace AutoEarlyRefund.Services;
 
@@ -22,26 +22,24 @@ public class SettleOpaqueFacadeImp(
     IValidateHandler validateHandler,
     MatchPoolService matchPoolService,
     IPublishEndpoint publishEndpoint,
-    ILogger<SettleOpaqueFacadeImp> logger,
     XmlConvertService xmlConvertService) : ISettleOpaqueFacade
 {
 
     public async Task Settle(Match match)
     {
         Fanex.Logging.LogService.Info($"Process Settle {match.MatchId} {match.ResultDetails.Count}");
-        logger.LogInformation($"Process Settle {match.MatchId} {match.ResultDetails.Count}");
         try
         {
             var result = await validateHandler.HandleAsync(match);
             if (!result.IsSuccess)
             {
-                Fanex.Logging.LogService.Warn($"SettleOpaqueFacade: {match} {result}");
-                logger.LogWarning($"SettleOpaqueFacade: {match} {result}");
                 await HandleErrorValidMatch(match, result.ErrMsg);
                 return;
             }
             var newMatch = match.WithResourcesXml(xmlConvertService);
-            logger.LogInformation($"Done Settle {newMatch.MatchId} {newMatch.ResultDetails.Count} {newMatch.ResultDetails.Count}");
+
+            Fanex.Logging.LogService.Info($"newMatch Process Settle {match.MatchId} {match.ResultDetails.Count}");
+
 
             await writeLogService.WriteLogPreSettlement(newMatch);
             await writeLogService.WriteLogSettle(newMatch);
@@ -58,17 +56,16 @@ public class SettleOpaqueFacadeImp(
                 newMatch.MatchId,
                 newMatch.SportType,
                 newMatch.ChildMatchType,
-                newMatch.ResultDetails.Select(x => new ResourceItem
+                [.. newMatch.ResultDetails.Select(x => new ResourceItem
                 {
                     ResourceId = x.ResourceId,
                     HomeValue = x.HomeValue,
                     AwayValue = x.AwayValue,
-                }).ToList()), new CancellationTokenSource(TimeSpan.FromSeconds(2)).Token);
+                })]), new CancellationTokenSource(TimeSpan.FromSeconds(2)).Token);
         }
         catch (AppException ex)
         {
             Fanex.Logging.LogService.Warn(ex.Message, ex);
-            logger.LogInformation($"AppException {match.MatchId} {match.ResultDetails.Count}");
 
         }
         catch (Exception ex)

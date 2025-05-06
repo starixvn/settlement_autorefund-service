@@ -6,6 +6,7 @@ namespace AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
 public interface IInsOrUpdAutoPayoutResultHandler
 {
     Task Handle(Match match, int statusId);
+    Task Handle(List<Match> matches, int statusId);
 }
 
 public class InsOrUpdAutoRefundResultHandler : IInsOrUpdAutoPayoutResultHandler
@@ -30,5 +31,13 @@ public class InsOrUpdAutoRefundResultHandler : IInsOrUpdAutoPayoutResultHandler
         };
 
         await repository.ExecuteAsync(criteria);
+    }
+
+    public async Task Handle(List<Match> matches, int statusId)
+    {
+        foreach (var item in matches)
+        {
+            await Handle(item, statusId);
+        }
     }
 }

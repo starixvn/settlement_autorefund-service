@@ -5,7 +5,6 @@ using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using Microsoft.Extensions.Logging;
 
 namespace AutoEarlyRefund.Features.CheckConditionsRefund;
 
@@ -14,7 +13,6 @@ public class CheckConditionsRefundHandler(
     IGetResourcesConditionsHandler conditionsHandler,
     IGetSrcResourcesHandler getResourcesInfoHandler,
     IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResult,
-    ILogger<CheckConditionsRefundHandler> logger,
     XmlConvertService xmlConvertService,
     IWriteLogService writeLogService)
     : IValidateHandler
@@ -22,6 +20,7 @@ public class CheckConditionsRefundHandler(
     public async Task<Result> HandleAsync(Match match)
     {
         await Fanex.Logging.Logger.Log.WarnAsync($"Before CheckConditionsRefundHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
+
         var request = match.ResultDetails.Select(x => new SourcesConditionsItem
         {
             ResourceId = x.ResourceId,

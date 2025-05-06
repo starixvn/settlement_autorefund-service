@@ -10,15 +10,8 @@ public interface IGetAutoRefundResultsHandler
     Task<List<SourcesConditionsItem>> Handle(List<int> matchIds, List<SourcesConditionsItem> sourcesConditions);
 }
 
-public class GetAutoRefundResultsHandler : IGetAutoRefundResultsHandler
+public class GetAutoRefundResultsHandler(IDynamicRepository repository) : IGetAutoRefundResultsHandler
 {
-    private readonly IDynamicRepository repository;
-
-    public GetAutoRefundResultsHandler(IDynamicRepository repository)
-    {
-        this.repository = repository;
-    }
-
     public async Task<List<SourcesConditionsItem>> Handle(List<int> matchIds, List<SourcesConditionsItem> sourcesConditions)
     {
         var requestItems = matchIds.SelectMany(matchId => sourcesConditions

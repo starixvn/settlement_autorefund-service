@@ -3,7 +3,6 @@ using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
 using AutoRefund.Core.Models;
 using Fanex.Data.Repository;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 
@@ -15,14 +14,12 @@ public class CheckingMarkedTicketHandlerTests
     private readonly IDynamicRepository repository;
     private readonly IOptions<AppSettingsKey> appSettingsKey;
     private readonly CheckingMarkedTicketHandler handler;
-    private readonly ILogger<CheckingMarkedTicketHandler> logger;
 
     public CheckingMarkedTicketHandlerTests()
     {
         nextHandler = Substitute.For<IValidateHandler>();
         repository = Substitute.For<IDynamicRepository>();
         appSettingsKey = Substitute.For<IOptions<AppSettingsKey>>();
-        logger = Substitute.For<ILogger<CheckingMarkedTicketHandler>>();
 
         appSettingsKey.Value.Returns(new AppSettingsKey
         {
@@ -32,8 +29,8 @@ public class CheckingMarkedTicketHandlerTests
         handler = new CheckingMarkedTicketHandler(
             nextHandler,
             repository,
-            appSettingsKey,
-            logger);
+            appSettingsKey
+            );
     }
 
     [Fact]

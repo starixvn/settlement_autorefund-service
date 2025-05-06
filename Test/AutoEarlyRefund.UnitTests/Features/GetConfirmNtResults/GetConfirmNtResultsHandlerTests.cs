@@ -1,11 +1,10 @@
-using AutoEarlyRefund.Contracts;
 using AutoEarlyRefund.Features.GetConfirmNtResults;
 using AutoEarlyRefund.Models;
 using Fanex.Data.Repository;
+using Fanex.Settlement.MessageBridge.RefundEvents;
 using MassTransit;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using Xunit;
 
 namespace AutoEarlyRefund.UnitTests.Features.GetConfirmNtResults;
 

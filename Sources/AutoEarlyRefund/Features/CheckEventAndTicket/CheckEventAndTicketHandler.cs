@@ -2,7 +2,6 @@
 using AutoEarlyRefund.Services;
 using Fanex.Settlement.ScaleOut.Criteria.Normal;
 using Mapster;
-using Microsoft.Extensions.Logging;
 
 namespace AutoEarlyRefund.Features.CheckEventAndTicket;
 
@@ -10,7 +9,6 @@ public class CheckEventAndTicketHandler(
     GeneralService generalService,
     IDynamicRepository repository,
     XmlConvertService xmlConvertService,
-    ILogger<CheckEventAndTicketHandler> logger,
     IOptions<AppSettingsKey> appSettingsKey,
     IValidateHandler? next = null) : IValidateHandler
 {
@@ -61,6 +59,7 @@ public class CheckEventAndTicketHandler(
 
             result.ErrCode = inValidResult.ErrCode;
             result.ErrMsg = inValidResult.ErrMsg;
+
             break;
         }
 
