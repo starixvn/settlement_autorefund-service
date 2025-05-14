@@ -1,4 +1,5 @@
-﻿using AutoRefund.Constants;
+﻿using AutoRefund.Core;
+using AutoRefund.Core.Models;
 using AutoRefund.Criteria;
 using AutoRefund.Models;
 using Fanex.Settlement.ScaleOut.Request;
@@ -33,7 +34,7 @@ public class RefundMatchServiceImp(
 
             await Execute(match.MatchId);
 
-            await matchService.UpdateStatus(match, MatchStatus.Completed);
+            await matchService.UpdateStatus(match, ResultRefundStatus.Completed);
         }
 
         return result;
@@ -60,7 +61,7 @@ public class RefundMatchServiceImp(
             new() { ResourceId = ResourceId.Final, HomeValue = string.Empty, AwayValue = string.Empty }
         };
 
-        var selectedResources = xmlConvertService.Serialize(new Resources
+        var selectedResources = xmlConvertService.Serialize(new Resources<ResourceItem>
         {
             ResourceItems = resources
         });

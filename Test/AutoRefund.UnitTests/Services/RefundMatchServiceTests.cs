@@ -1,4 +1,5 @@
-﻿using AutoRefund.Criteria;
+﻿using AutoRefund.Core.Models;
+using AutoRefund.Criteria;
 using AutoRefund.Models;
 using AutoRefund.Services;
 using Fanex.Data.Repository;

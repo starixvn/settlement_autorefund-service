@@ -1,0 +1,10 @@
+﻿global using AutoRefund.Core.Models;
+global using Fanex.Caching;
+global using Fanex.Data;
+global using Fanex.Data.Repository;
+global using Fanex.Settlement.Converter.Services;
+global using Fanex.Settlement.ScaleOut.Request;
+global using Fanex.Settlement.ScaleOut.Services;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Options;

@@ -2,7 +2,8 @@
 
 namespace AutoRefund.Services;
 
-using Constants;
+using AutoRefund.Core.Models;
+using Core;
 using Criteria;
 using Models;
 
@@ -72,7 +73,7 @@ public class MatchServiceImp(
     {
         var criteria = new UpdateStatusCriteria
         {
-            StatusId = MatchStatus.Failed
+            StatusId = ResultRefundStatus.Failed
         };
         await repository.ExecuteAsync(criteria);
     }

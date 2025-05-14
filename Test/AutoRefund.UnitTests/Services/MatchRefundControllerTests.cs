@@ -1,4 +1,5 @@
-﻿using AutoRefund.Exceptions;
+﻿using AutoRefund.Core.Models;
+using AutoRefund.Exceptions;
 using AutoRefund.Models;
 using AutoRefund.Services;
 using Microsoft.Extensions.Options;

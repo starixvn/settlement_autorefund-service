@@ -8,7 +8,7 @@ using LogService = Fanex.Logging.LogService;
 
 namespace Fanex.AutoRefund.Service;
 
-public class AutoRefund(
+public class AutoRefundService(
     IAutoRefundController autoRefundController,
     IConfiguration configuration,
     IMatchService matchService,
