@@ -1,57 +1,31 @@
 ﻿using AutoEarlyRefund;
-using AutoEarlyRefund.Consumers;
 using AutoRefund.Core.Models;
 using Fanex.AutoRefund.Service;
 using Fanex.Data.SqlServer;
 using Fanex.Logging.Sentry.RavenClient;
-using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ONEbook.UM.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
+builder.Services.Configure<AppSettingsKey>(configuration);
 
-builder.Services.AddMassTransit(x =>
-{
-    x.SetKebabCaseEndpointNameFormatter();
-    x.AddConsumer<RefundConsumer>();
+builder.Services.AddMassTransit(configuration);
 
+builder.Services.AddOneBookUmForService(configuration);
 
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.UseMessageRetry(r =>
-        {
-            r.Handle<RabbitMqConnectionException>();
-            r.Interval(5, TimeSpan.FromSeconds(10));
-        });
+builder.Services.AddFanexLogSentry(configuration);
 
-        cfg.Host(builder.Configuration["RabbitMQ:Host"], builder.Configuration["RabbitMQ:VirtualHost"], h =>
-        {
-            h.Username(builder.Configuration.GetValue("RabbitMQ:Username", "guest"));
-            h.Password(builder.Configuration.GetValue("RabbitMQ:Password", "guest"));
-        });
+builder.Services.AddFanexSql(configuration);
 
-        cfg.ConfigureEndpoints(context);
-    });
+builder.Services.AddConfigRedisCache(configuration);
 
-});
-
-builder.Services.Configure<AppSettingsKey>(builder.Configuration);
-
-builder.Services.AddOneBookUm(builder.Configuration);
-
-builder.Services.AddFanexLogSentry(builder.Configuration);
-
-builder.Services.AddFanexSql(builder.Configuration);
-
-builder.Services.AddConfigRedisCache(builder.Configuration);
+builder.Services.InitializeServices(configuration);
 
 builder.Services.AddAutoMapper();
-
-builder.Services.InitializeServices(builder.Configuration);
 
 builder.Services.AddAutoEarlyRefund();
 
