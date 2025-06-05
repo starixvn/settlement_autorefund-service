@@ -17,7 +17,7 @@ public class GetConfirmNtResultsSchedule(
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
             var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
-            if (isMaintenance)
+            if (isMaintenance) //
             {
                 continue;
             }
