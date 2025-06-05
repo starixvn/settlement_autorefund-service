@@ -3,19 +3,12 @@ using ONEbook.UM.Services;
 
 namespace AutoEarlyRefund;
 
-public class GetConfirmNtResultsSchedule : BackgroundService
+public class GetConfirmNtResultsSchedule(
+    IConfiguration configuration,
+    IMaintenanceService maintenanceService,
+    GetConfirmNtResultsHandler confirmNtResultsHandler)
+    : BackgroundService
 {
-    private readonly IConfiguration configuration;
-    private readonly IMaintenanceService maintenanceService;
-    private readonly GetConfirmNtResultsHandler confirmNtResultsHandler;
-
-    public GetConfirmNtResultsSchedule(IConfiguration configuration, IMaintenanceService maintenanceService, GetConfirmNtResultsHandler confirmNtResultsHandler)
-    {
-        this.configuration = configuration;
-        this.maintenanceService = maintenanceService;
-        this.confirmNtResultsHandler = confirmNtResultsHandler;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var intervalTime = TimeSpan.FromMilliseconds(configuration.GetValue<int>("ServiceInterval"));
@@ -26,7 +19,7 @@ public class GetConfirmNtResultsSchedule : BackgroundService
             var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
             if (isMaintenance)
             {
-                return;
+                continue;
             }
 
             await confirmNtResultsHandler.Handle();

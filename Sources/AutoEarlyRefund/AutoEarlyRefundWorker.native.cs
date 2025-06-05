@@ -20,15 +20,12 @@ public class AutoEarlyRefundWorker(
             var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
             if (isMaintenance)
             {
-                return;
+                continue;
             }
 
             var matches = await matchPoolService.PeekNewMatch();
 
-            //var tasks = Task.WhenAll(matches.Select(x => settleOpaqueFacade.Settle(x)));
-            //await tasks;
-
-            matches.ForEach(x => Task.Run(() => settleOpaqueFacade.Settle(x)));
+            matches.ForEach(x => Task.Run(() => settleOpaqueFacade.Settle(x), stoppingToken));
         }
     }
 }
