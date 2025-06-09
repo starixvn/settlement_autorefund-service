@@ -1,4 +1,4 @@
-using AutoEarlyRefund.Features.GetRefundResults;
+using AutoEarlyRefund.Features.GetResultDetails;
 using AutoEarlyRefund.Models;
 using Fanex.Data.Repository;
 using NSubstitute;
@@ -81,19 +81,6 @@ public class GetResultDetailsHandlerTests
         Assert.Empty(result);
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    public async Task Handle_WithInvalidMatchId_ShouldThrowArgumentException(int matchId)
-    {
-        // Arrange
-        var triggers = new List<TargetResourceTrigger>();
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            handler.Handle([matchId], triggers));
-    }
-
     [Fact]
     public async Task Handle_WithNullTriggers_ShouldThrowArgumentNullException()
     {
@@ -103,18 +90,10 @@ public class GetResultDetailsHandlerTests
     }
 
     [Fact]
-    public void Constructor_WithNullRepository_ShouldThrowArgumentNullException()
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new GetResultDetailsHandler(null!));
-    }
-
-    [Fact]
     public async Task Handle_ShouldUseCorrectCriteriaAndJsonSerialization()
     {
         // Arrange
-        var matchId = 1;
+        const int matchId = 1;
         var triggers = new List<TargetResourceTrigger>
         {
             new()

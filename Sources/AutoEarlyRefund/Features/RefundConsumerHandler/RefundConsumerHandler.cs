@@ -1,11 +1,12 @@
-﻿using System.Text.Json;
-using AutoEarlyRefund.Conditions;
+﻿using AutoEarlyRefund.Conditions;
 using AutoEarlyRefund.Features.GetAutoRefundResults;
 using AutoEarlyRefund.Features.GetRefundMatchInfoSel;
-using AutoEarlyRefund.Features.GetRefundResults;
 using AutoEarlyRefund.Features.GetResourcesConditions;
-using AutoEarlyRefund.Features.GetResourcesInfo;
+using AutoEarlyRefund.Features.GetResultDetails;
+using AutoEarlyRefund.Features.GetSrcResources;
 using AutoEarlyRefund.Models;
+using Fanex.Logging;
+using System.Text.Json;
 
 namespace AutoEarlyRefund.Features.RefundConsumerHandler;
 
@@ -14,35 +15,19 @@ public interface IRefundConsumerHandler
     Task<(bool Success, List<Match> Matches)> Handle(int matchId, List<TargetResourceTrigger> triggerResources);
 }
 
-public class RefundConsumerHandler : IRefundConsumerHandler
+public class RefundConsumerHandler(
+    IGetResourcesConditionsHandler getResourcesConditionsHandler,
+    IGetSrcResourcesHandler resourcesInfoHandler,
+    XmlConvertService xmlConvertService,
+    IGetRefundMatchInfoHandler getRefundMatchInfoHandler,
+    IGetResultDetailsHandler getRefundResultsHandler,
+    IGetAutoRefundResultsHandler getAutoRefundResultsHandler)
+    : IRefundConsumerHandler
 {
-    private readonly IGetResourcesConditionsHandler getResourcesConditionsHandler;
-    private readonly IGetSrcResourcesHandler resourcesInfoHandler;
-    private readonly XmlConvertService xmlConvertService;
-    private readonly IGetRefundMatchInfoHandler getRefundMatchInfoHandler;
-    private readonly IGetResultDetailsHandler getRefundResultsHandler;
-    private readonly IGetAutoRefundResultsHandler getAutoRefundResultsHandler;
-
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
-
-    public RefundConsumerHandler(
-        IGetResourcesConditionsHandler getResourcesConditionsHandler,
-        IGetSrcResourcesHandler resourcesInfoHandler,
-        XmlConvertService xmlConvertService,
-        IGetRefundMatchInfoHandler getRefundMatchInfoHandler,
-        IGetResultDetailsHandler getRefundResultsHandler,
-        IGetAutoRefundResultsHandler getAutoRefundResultsHandler)
-    {
-        this.getResourcesConditionsHandler = getResourcesConditionsHandler;
-        this.resourcesInfoHandler = resourcesInfoHandler;
-        this.xmlConvertService = xmlConvertService;
-        this.getRefundMatchInfoHandler = getRefundMatchInfoHandler;
-        this.getRefundResultsHandler = getRefundResultsHandler;
-        this.getAutoRefundResultsHandler = getAutoRefundResultsHandler;
-    }
 
     public async Task<(bool Success, List<Match> Matches)> Handle(int matchId, List<TargetResourceTrigger> triggerResources)
     {
@@ -50,21 +35,21 @@ public class RefundConsumerHandler : IRefundConsumerHandler
         {
             if (triggerResources.Count == 0)
             {
-                return (false, new());
+                return (false, []);
             }
 
             var relatedMatchItems = await GetRelatedMatchItems(matchId, triggerResources);
-            Fanex.Logging.Logger.Log.Info($"GetRelatedMatchItems: {string.Join(",", relatedMatchItems.Select(x => x))}");
+            await LogService.InfoAsync($"GetRelatedMatchItems: {string.Join(",", relatedMatchItems.Select(x => x))}");
 
             if (relatedMatchItems.Count == 0)
             {
-                return (false, new());
+                return (false, []);
             }
 
             var validResults = await ProcessMatchResults(relatedMatchItems, triggerResources);
             if (validResults.Count == 0)
             {
-                return (false, new());
+                return (false, []);
             }
 
             var matches = relatedMatchItems.Select(x => BuildMatch(x.TargetMatchId, x.MatchType, validResults)).ToList();
@@ -72,8 +57,8 @@ public class RefundConsumerHandler : IRefundConsumerHandler
         }
         catch (Exception ex)
         {
-            Fanex.Logging.Logger.Log.Error(ex.Message, ex);
-            return (false, new());
+            await LogService.ErrorAsync(ex.Message, ex);
+            return (false, []);
         }
     }
 
@@ -126,19 +111,18 @@ public class RefundConsumerHandler : IRefundConsumerHandler
     {
         return [.. sourceResources
             .GroupBy(x => x.ResourceId)
-            .SelectMany(group => ProcessResourceGroup(group))];
+            .SelectMany(ProcessResourceGroup)];
     }
 
     private static IEnumerable<SourcesConditions> ProcessResourceGroup(IGrouping<string, SourcesConditions> resourceGroup)
     {
+        var validGroup = resourceGroup
+            .GroupBy(x => x.RuleId)
+            .FirstOrDefault(AreAllSpecificationsSatisfied);
 
-        foreach (var ruleGroup in resourceGroup.GroupBy(x => x.RuleId))
+        if (validGroup != null)
         {
-            if (AreAllSpecificationsSatisfied(ruleGroup))
-            {
-                yield return GetPreferredResource(ruleGroup, resourceGroup.Key);
-                yield break;
-            }
+            yield return GetPreferredResource(validGroup, resourceGroup.Key);
         }
     }
 

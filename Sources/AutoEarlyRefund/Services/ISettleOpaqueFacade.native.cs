@@ -1,7 +1,9 @@
-﻿using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+﻿using AutoEarlyRefund.Features.InsOrUpdAutoRefundResult;
 using AutoEarlyRefund.Features.PeekNewMatches;
 using AutoEarlyRefund.Features.PushResultSettlement;
 using AutoEarlyRefund.Features.WriteLog;
+using AutoEarlyRefund.Models;
+using Fanex.Logging;
 using Fanex.Settlement.MessageBridge.RefundEvents;
 using MassTransit;
 using ResourceItem = Fanex.Settlement.MessageBridge.RefundEvents.ResourceItem;
@@ -23,10 +25,9 @@ public class SettleOpaqueFacadeImp(
     IPublishEndpoint publishEndpoint,
     XmlConvertService xmlConvertService) : ISettleOpaqueFacade
 {
-
     public async Task Settle(Match match)
     {
-        Fanex.Logging.LogService.Info($"Process Settle {match.MatchId} {match.ResultDetails.Count}");
+        await LogService.InfoAsync($"Process Settle {match.MatchId} {match.ResultDetails.Count}");
         try
         {
             var result = await validateHandler.HandleAsync(match);
@@ -37,8 +38,7 @@ public class SettleOpaqueFacadeImp(
             }
             var newMatch = match.WithResourcesXml(xmlConvertService);
 
-            Fanex.Logging.LogService.Info($"newMatch Process Settle {match.MatchId} {match.ResultDetails.Count}");
-
+            await LogService.InfoAsync($"newMatch Process Settle {match.MatchId} {match.ResultDetails.Count}");
 
             await writeLogService.WriteLogPreSettlement(newMatch);
             await writeLogService.WriteLogSettle(newMatch);
@@ -64,12 +64,11 @@ public class SettleOpaqueFacadeImp(
         }
         catch (AppException ex)
         {
-            Fanex.Logging.LogService.Warn(ex.Message, ex);
-
+            await LogService.ErrorAsync(ex.Message, ex);
         }
         catch (Exception ex)
         {
-            Fanex.Logging.LogService.Error(ex.Message, ex);
+            await LogService.ErrorAsync(ex.Message, ex);
             throw;
         }
         finally
@@ -87,7 +86,6 @@ public class SettleOpaqueFacadeImp(
         await insOrUpdAutoPayoutResultHandler.Handle(newMatch, AutoRefund.Core.ResultRefundStatus.Failed);
         await writeLogService.WriteLogErrorSettle(newMatch, errorMsg + ": " + string.Join(",", newMatch.ResultDetails.Select(x => x.ResourceId)));
     }
-
 
     private async Task UpdateMatch(Match match)
     {

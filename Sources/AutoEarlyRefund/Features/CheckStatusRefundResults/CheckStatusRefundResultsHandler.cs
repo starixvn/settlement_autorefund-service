@@ -1,30 +1,29 @@
-﻿using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+﻿using AutoEarlyRefund.Features.InsOrUpdAutoRefundResult;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using Microsoft.Extensions.Logging;
+using Fanex.Logging;
 
 namespace AutoEarlyRefund.Features.CheckStatusRefundResults
 {
     public class CheckStatusRefundResultsHandler(
         IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResult,
         XmlConvertService xmlConvertService,
-        ILogger<CheckStatusRefundResultsHandler> logger,
         IWriteLogService writeLogService,
-        IValidateHandler? next = null) : IValidateHandler
+        IValidateHandler next = null) : IValidateHandler
     {
         public async Task<Result> HandleAsync(Match match)
         {
-            await Fanex.Logging.Logger.Log.InfoAsync($"Before CheckStatusRefundResultsHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
+            await LogService.InfoAsync($"Before CheckStatusRefundResultsHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
 
             var settledResults = match.ResultDetails
-                .Where(x => x.ResultStatusId == (int)ResultStatus.ManualSettled || x.ResultStatusId == (int)ResultStatus.AutoSettled);
+                .Where(x => x.ResultStatusId is (int)ResultStatus.ManualSettled or (int)ResultStatus.AutoSettled);
 
             match.ResultDetails = [.. match.ResultDetails.Except(settledResults)];
 
             await HandleInvalidResults(match, [.. settledResults]);
 
-            await Fanex.Logging.Logger.Log.InfoAsync($"After CheckStatusRefundResultsHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
+            await LogService.InfoAsync($"After CheckStatusRefundResultsHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
 
             if (match.ResultDetails.Count == 0)
             {
@@ -36,7 +35,7 @@ namespace AutoEarlyRefund.Features.CheckStatusRefundResults
 
         private async Task HandleInvalidResults(Match match, List<ResultDetail> invalidResults)
         {
-            var errorMessage = "ERROR: This result have been settled incorrectly already";
+            const string errorMessage = "ERROR: This result have been settled incorrectly already";
 
             if (invalidResults.Count == 0)
             {

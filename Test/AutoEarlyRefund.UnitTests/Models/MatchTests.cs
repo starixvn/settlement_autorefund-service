@@ -13,8 +13,8 @@ public class MatchTests
         // Arrange
         var resultDetails = new List<ResultDetail>
         {
-            new ResultDetail { ResourceId = "1", HomeValue = "Home1", AwayValue = "Away1", Remark = "Remark1", SourceId = "Source1", OtherInfo = "Info1" },
-            new ResultDetail { ResourceId = "2", HomeValue = "Home2", AwayValue = "Away2", Remark = "Remark2", SourceId = "Source2", OtherInfo = "Info2" }
+            new ResultDetail { ResourceId = "1", HomeValue = "Home1", AwayValue = "Away1", Remark = "Remark1", SourceId = "Source1" },
+            new ResultDetail { ResourceId = "2", HomeValue = "Home2", AwayValue = "Away2", Remark = "Remark2", SourceId = "Source2" }
         };
 
         var match = new Match { ResultDetails = resultDetails };
@@ -29,14 +29,12 @@ public class MatchTests
         Assert.Equal("Away1", resourceItems[0].AwayValue);
         Assert.Equal("Remark1", resourceItems[0].Remark);
         Assert.Equal("Source1", resourceItems[0].SourceId);
-        Assert.Equal("Info1", resourceItems[0].OtherInfo);
 
         Assert.Equal("2", resourceItems[1].ResourceId);
         Assert.Equal("Home2", resourceItems[1].HomeValue);
         Assert.Equal("Away2", resourceItems[1].AwayValue);
         Assert.Equal("Remark2", resourceItems[1].Remark);
         Assert.Equal("Source2", resourceItems[1].SourceId);
-        Assert.Equal("Info2", resourceItems[1].OtherInfo);
     }
 
     [Fact]
@@ -45,20 +43,20 @@ public class MatchTests
         // Arrange
         var resultDetails = new List<ResultDetail>
         {
-            new ResultDetail { ResourceId = "1", HomeValue = "Home1", AwayValue = "Away1", Remark = "Remark1", SourceId = "Source1", OtherInfo = "Info1" }
+            new ResultDetail { ResourceId = "1", HomeValue = "Home1", AwayValue = "Away1", Remark = "Remark1", SourceId = "Source1" }
         };
 
         var match = new Match { ResultDetails = resultDetails };
 
         var mockXmlConvertService = Substitute.For<XmlConvertService>();
         mockXmlConvertService.Serialize(Arg.Any<Resources<ResourceItem>>())
-            .Returns("<Resources><ResourceItem ResourceId=\"1\" HomeValue=\"Home1\" AwayValue=\"Away1\" Remark=\"Remark1\" SourceId=\"Source1\" OtherInfo=\"Info1\" /></Resources>");
+            .Returns("<Resources><ResourceItem ResourceId=\"1\" HomeValue=\"Home1\" AwayValue=\"Away1\" Remark=\"Remark1\" SourceId=\"Source1\" /></Resources>");
 
         // Act
         match.WithResourcesXml(mockXmlConvertService);
 
         // Assert
-        Assert.Equal("<Resources><ResourceItem ResourceId=\"1\" HomeValue=\"Home1\" AwayValue=\"Away1\" Remark=\"Remark1\" SourceId=\"Source1\" OtherInfo=\"Info1\" /></Resources>", match.ResourcesXml);
+        Assert.Equal("<Resources><ResourceItem ResourceId=\"1\" HomeValue=\"Home1\" AwayValue=\"Away1\" Remark=\"Remark1\" SourceId=\"Source1\" /></Resources>", match.ResourcesXml);
     }
 
     [Fact]

@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using AutoEarlyRefund.Models;
+﻿using AutoEarlyRefund.Models;
 using AutoRefund.Core;
 
 namespace AutoEarlyRefund.Features.PeekNewMatches;
@@ -10,32 +8,20 @@ public interface GetMatchesService
     Task<List<Match>> GetMatches();
 }
 
-public class GetMatchesServiceImp : GetMatchesService
+public class GetMatchesServiceImp(
+    IDynamicRepository repository,
+    ICache cache,
+    IOptions<AppSettingsKey> appSettingsKey,
+    XmlConvertService xmlConvertService)
+    : GetMatchesService
 {
-    private readonly IDynamicRepository repository;
-    private readonly ICache cache;
-    private readonly IOptions<AppSettingsKey> appSettingsKey;
-    private readonly XmlConvertService xmlConvertService;
-
-    public GetMatchesServiceImp(
-        IDynamicRepository repository,
-        ICache cache,
-        IOptions<AppSettingsKey> appSettingsKey,
-        XmlConvertService xmlConvertService)
-    {
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        this.appSettingsKey = appSettingsKey ?? throw new ArgumentNullException(nameof(appSettingsKey));
-        this.xmlConvertService = xmlConvertService ?? throw new ArgumentNullException(nameof(xmlConvertService));
-    }
-
     public async Task<List<Match>> GetMatches()
     {
         var resultDetails = await repository.FetchAsync<ResultDetail>(new GetPendingRefundResultsCriteria());
 
         if (resultDetails == null || !resultDetails.Any())
         {
-            return new List<Match>();
+            return [];
         }
 
         var matches = resultDetails

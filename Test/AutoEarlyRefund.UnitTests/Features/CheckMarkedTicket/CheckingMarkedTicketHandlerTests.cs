@@ -8,22 +8,21 @@ using NSubstitute;
 
 namespace AutoEarlyRefund.UnitTests.Features.CheckMarkedTicket;
 
-public class CheckingMarkedTicketHandlerTests
+public class CheckingMarkedTicketHandlerTests : TestBase
 {
-    private readonly IValidateHandler nextHandler;
+    private readonly IValidateHandler? nextHandler;
     private readonly IDynamicRepository repository;
-    private readonly IOptions<AppSettingsKey> appSettingsKey;
     private readonly CheckingMarkedTicketHandler handler;
 
     public CheckingMarkedTicketHandlerTests()
     {
         nextHandler = Substitute.For<IValidateHandler>();
         repository = Substitute.For<IDynamicRepository>();
-        appSettingsKey = Substitute.For<IOptions<AppSettingsKey>>();
+        var appSettingsKey = Substitute.For<IOptions<AppSettingsKey>>();
 
         appSettingsKey.Value.Returns(new AppSettingsKey
         {
-            SiteDbServer = new List<string> { "Server1", "Server2" }
+            SiteDbServer = ["Server1", "Server2"]
         });
 
         handler = new CheckingMarkedTicketHandler(
@@ -42,7 +41,7 @@ public class CheckingMarkedTicketHandlerTests
 
         await repository.ExecuteAsync(Arg.Any<CheckingMarkedTicketCriteria>());
 
-        nextHandler.HandleAsync(match).Returns(expectedResult);
+        nextHandler?.HandleAsync(match).Returns(expectedResult);
 
         // Act
         var result = await handler.HandleAsync(match);
@@ -51,21 +50,19 @@ public class CheckingMarkedTicketHandlerTests
         Assert.Equal(expectedResult.ErrCode, result.ErrCode);
         Assert.Equal(expectedResult.ErrMsg, result.ErrMsg);
 
-        await nextHandler.Received(1).HandleAsync(match);
+        await nextHandler.Received(1)?.HandleAsync(match)!;
     }
-
-
 
     private static Match CreateSampleMatch()
     {
         return new Match
         {
             MatchId = 123,
-            ResultDetails = new List<ResultDetail>
-            {
-                new() { ResourceId = "Resource1" },
-                new() { ResourceId = "Resource2" }
-            }
+            ResultDetails =
+            [
+                new ResultDetail { ResourceId = "Resource1" },
+                new ResultDetail { ResourceId = "Resource2" }
+            ]
         };
     }
 }

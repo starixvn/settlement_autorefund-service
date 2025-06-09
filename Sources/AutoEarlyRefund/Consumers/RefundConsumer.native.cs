@@ -1,40 +1,30 @@
 ﻿using AutoEarlyRefund.Features.GetResourcesTrigger;
-using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+using AutoEarlyRefund.Features.InsOrUpdAutoRefundResult;
 using AutoEarlyRefund.Features.RefundConsumerHandler;
 using AutoEarlyRefund.Helpers;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.TriggerConditions;
+using Fanex.Logging;
 using Fanex.Settlement.MessageBridge.RefundEvents;
 using MassTransit;
 
 namespace AutoEarlyRefund.Consumers;
 
-public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
-    IConsumer<ResultsRefundConfirmedSdt>,
-    IConsumer<MatchCalculated>,
-    IConsumer<ResultsCalculated>,
-    IConsumer<ResultsRefundConfirmed>,
-    IConsumer<MatchRefunded>,
-    IConsumer<NotTakenResultsConfirmed>
+public sealed class RefundConsumer(
+    IGetResourcesTriggerHandler getResourcesTriggerHandler,
+    IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler,
+    IRefundConsumerHandler refundConsumerHandler)
+    : IConsumer<ResultsRefunded>,
+        IConsumer<ResultsRefundConfirmedSdt>,
+        IConsumer<MatchCalculated>,
+        IConsumer<ResultsCalculated>,
+        IConsumer<ResultsRefundConfirmed>,
+        IConsumer<MatchRefunded>,
+        IConsumer<NotTakenResultsConfirmed>
 {
-    private readonly IGetResourcesTriggerHandler getResourcesTriggerHandler;
-    private readonly IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler;
-    private readonly IRefundConsumerHandler refundConsumerHandler;
-
-    public RefundConsumer(
-        IGetResourcesTriggerHandler getResourcesTriggerHandler,
-        IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler,
-        XmlConvertService xmlConvertService,
-        IRefundConsumerHandler refundConsumerHandler)
-    {
-        this.getResourcesTriggerHandler = getResourcesTriggerHandler;
-        this.insOrUpdAutoPayoutResultHandler = insOrUpdAutoPayoutResultHandler;
-        this.refundConsumerHandler = refundConsumerHandler;
-    }
-
     public async Task Consume(ConsumeContext<ResultsRefunded> context)
     {
-        Fanex.Logging.LogService.Info($"ResultsRefunded Received: {context.Message}");
+        await LogService.InfoAsync($"ResultsRefunded Received: {context.Message}");
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
             "Refund",
@@ -49,12 +39,12 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
 
-        Fanex.Logging.LogService.Info($"ResultsRefunded Done: {context.Message}");
+        await LogService.InfoAsync($"ResultsRefunded Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<ResultsRefundConfirmedSdt> context)
     {
-        Fanex.Logging.LogService.Info($"ResultsRefundConfirmedSdt Received: {context.Message}");
+        await LogService.InfoAsync($"ResultsRefundConfirmedSdt Received: {context.Message}");
 
         var hasValidResource = ConsumerHelper.TryGetValidResources(context.Message.Resources, out var validResources);
 
@@ -76,13 +66,12 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
 
-        Fanex.Logging.LogService.Info($"ResultsRefundConfirmedSdt Done: {context.Message}");
+        await LogService.InfoAsync($"ResultsRefundConfirmedSdt Done: {context.Message}");
     }
-
 
     public async Task Consume(ConsumeContext<MatchCalculated> context)
     {
-        Fanex.Logging.LogService.Info($"MatchCalculated Received: {context.Message}");
+        await LogService.InfoAsync($"MatchCalculated Received: {context.Message}");
 
         var action = GetAction(context.Message.Action);
 
@@ -101,14 +90,12 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
 
-        Fanex.Logging.LogService.Info($"MatchCalculated Done: {context.Message}");
+        await LogService.InfoAsync($"MatchCalculated Done: {context.Message}");
     }
-
-
 
     public async Task Consume(ConsumeContext<ResultsCalculated> context)
     {
-        Fanex.Logging.LogService.Info($"ResultsCalculated Received: {context.Message}");
+        await LogService.InfoAsync($"ResultsCalculated Received: {context.Message}");
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
            "Cal",
@@ -123,13 +110,12 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
 
-        Fanex.Logging.LogService.Info($"ResultsCalculated Done: {context.Message}");
+        await LogService.InfoAsync($"ResultsCalculated Done: {context.Message}");
     }
-
 
     public async Task Consume(ConsumeContext<ResultsRefundConfirmed> context)
     {
-        Fanex.Logging.LogService.Info($"ResultsRefundConfirmed Received: {context.Message}");
+        await LogService.InfoAsync($"ResultsRefundConfirmed Received: {context.Message}");
 
         var hasValidResource = ConsumerHelper.TryGetValidResources(context.Message.Resources, out var validResources);
 
@@ -148,12 +134,12 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
 
-        Fanex.Logging.LogService.Info($"ResultsRefundConfirmed Done: {context.Message}");
+        await LogService.InfoAsync($"ResultsRefundConfirmed Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<MatchRefunded> context)
     {
-        Fanex.Logging.LogService.Info($"MatchRefunded Received: {context.Message}");
+        await LogService.InfoAsync($"MatchRefunded Received: {context.Message}");
 
         var action = GetAction(context.Message.Action);
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
@@ -169,12 +155,12 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
 
-        Fanex.Logging.LogService.Info($"MatchRefunded Done: {context.Message}");
+        await LogService.InfoAsync($"MatchRefunded Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<NotTakenResultsConfirmed> context)
     {
-        Fanex.Logging.LogService.Info($"NotTakenResultsConfirmed Received: {context.Message}");
+        await LogService.InfoAsync($"NotTakenResultsConfirmed Received: {context.Message}");
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
             "CfmRefundAdminSite",
@@ -189,7 +175,7 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
 
-        Fanex.Logging.LogService.Info($"NotTakenResultsConfirmed Done: {context.Message}");
+        await LogService.InfoAsync($"NotTakenResultsConfirmed Done: {context.Message}");
     }
 
     private List<TargetResourceTrigger> TryGetValidTargetResourceTrigger(
@@ -208,16 +194,11 @@ public sealed class RefundConsumer : IConsumer<ResultsRefunded>,
 
     private static string GetAction(string actionName)
     {
-        if (actionName == "REFUND-FT" || actionName == "REFUND")
+        return actionName switch
         {
-            return "Refund";
-        }
-
-        if (actionName == "CAL" || actionName == "CAL-FT")
-        {
-            return "Cal";
-        }
-
-        return actionName;
+            "REFUND-FT" or "REFUND" => "Refund",
+            "CAL" or "CAL-FT" => "Cal",
+            _ => actionName
+        };
     }
 }

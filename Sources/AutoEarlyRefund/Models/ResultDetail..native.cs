@@ -1,7 +1,8 @@
-﻿using System.Text.Json;
-using AutoEarlyRefund.Features.GetResourcesConditions;
+﻿using AutoEarlyRefund.Features.GetResourcesConditions;
+using System.Text.Json;
 
 namespace AutoEarlyRefund.Models;
+
 public class ResultDetail
 {
     public int MatchId { get; set; }
@@ -18,7 +19,7 @@ public class ResultDetail
     public int StatusId { get; set; }
     public int SettlementStatusId { get; set; }
 
-    public SourcesConditionsItem? Conditions
+    public SourcesConditionsItem Conditions
         => string.IsNullOrWhiteSpace(OtherInfo)
             ? null
             : JsonSerializer.Deserialize<SourcesConditionsItem>(OtherInfo, new JsonSerializerOptions
@@ -32,9 +33,9 @@ public class ResultDetail
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     });
 
-    public override bool Equals(object? obj) => obj is ResultDetail detail && MatchId == detail.MatchId && ResourceId == detail.ResourceId;
-    public override int GetHashCode() => HashCode.Combine(MatchId, ResourceId);
+    public override bool Equals(object obj) => obj is ResultDetail detail && MatchId == detail.MatchId && ResourceId == detail.ResourceId;
 
+    public override int GetHashCode() => HashCode.Combine(MatchId, ResourceId);
 
     public ResultDetail WithRemark(string remark)
     {

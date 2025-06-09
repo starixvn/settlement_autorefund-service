@@ -1,4 +1,4 @@
-using AutoEarlyRefund.Features.GetResourcesInfo;
+using AutoEarlyRefund.Features.GetSrcResources;
 using AutoEarlyRefund.Models;
 using Fanex.Data.Repository;
 using NSubstitute;
@@ -85,33 +85,12 @@ public class GetSrcResourcesHandlerTests
         Assert.Null(result[0].Resource);
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    public async Task HandleAsync_WithInvalidMatchId_ShouldThrowArgumentException(int matchId)
-    {
-        // Arrange
-        var sourcesConditions = new List<SourcesConditions>();
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            handler.HandleAsync([matchId], sourcesConditions));
-    }
-
     [Fact]
     public async Task HandleAsync_WithNullSourcesConditions_ShouldThrowArgumentNullException()
     {
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             handler.HandleAsync([1], null!));
-    }
-
-    [Fact]
-    public void Constructor_WithNullRepository_ShouldThrowArgumentNullException()
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new GetSrcResourcesHandler(null!));
     }
 
     [Fact]

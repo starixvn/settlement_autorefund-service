@@ -1,27 +1,20 @@
 ﻿using AutoEarlyRefund.Models;
 using Fanex.Logging;
 
-namespace AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+namespace AutoEarlyRefund.Features.InsOrUpdAutoRefundResult;
 
 public interface IInsOrUpdAutoPayoutResultHandler
 {
     Task Handle(Match match, int statusId);
+
     Task Handle(List<Match> matches, int statusId);
 }
 
-public class InsOrUpdAutoRefundResultHandler : IInsOrUpdAutoPayoutResultHandler
+public class InsOrUpdAutoRefundResultHandler(IDynamicRepository repository) : IInsOrUpdAutoPayoutResultHandler
 {
-    private readonly IDynamicRepository repository;
-
-
-    public InsOrUpdAutoRefundResultHandler(IDynamicRepository repository)
-    {
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-    }
-
     public async Task Handle(Match match, int statusId)
     {
-        Logger.Log.Info($"InsOrUpdAutoRefundResultHandler.Handle: {match}");
+        await LogService.InfoAsync($"InsOrUpdAutoRefundResultHandler.Handle: {match}");
 
         var criteria = new InsOrUpdAutoRefundResultCriteria
         {

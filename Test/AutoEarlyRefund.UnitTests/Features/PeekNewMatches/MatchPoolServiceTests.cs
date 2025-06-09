@@ -1,7 +1,6 @@
 using AutoEarlyRefund.Features.PeekNewMatches;
 using AutoEarlyRefund.Models;
 using NSubstitute;
-using Xunit;
 
 namespace AutoEarlyRefund.UnitTests.Features.PeekNewMatches;
 

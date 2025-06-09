@@ -1,4 +1,4 @@
-﻿namespace AutoEarlyRefund.Features.GetResourcesInfo;
+﻿namespace AutoEarlyRefund.Features.GetSrcResources;
 
 public class GetSrcResourcesCriteria : CriteriaBase
 {
@@ -8,6 +8,7 @@ public class GetSrcResourcesCriteria : CriteriaBase
     }
 
     public string ResourceInfo { get; set; }
+
     public override string GetSettingKey() => "NAP_Set_AutoRefund_ResourceInfo_Sel";
 
     public override bool IsValid() => true;

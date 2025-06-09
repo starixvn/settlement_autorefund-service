@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
-using AutoEarlyRefund.Models;
+
+namespace AutoEarlyRefund.Models;
 
 public class Match
 {
@@ -11,16 +12,16 @@ public class Match
     public string ResourcesXml { get; set; } = "";
 
     public IEnumerable<ResourceItem> ResourceItems => ResultDetails
-            .Select(x => new ResourceItem
-            {
-                ResourceId = x.ResourceId,
-                HomeValue = x.HomeValue,
-                AwayValue = x.AwayValue,
-                Remark = x.Remark,
-                SourceId = x.SourceId,
-                OtherInfo = x.OtherInfo,
-                IsSettleDetermined = x.Conditions?.IsRefundSdt ?? false
-            });
+        .Select(x => new ResourceItem
+        {
+            ResourceId = x.ResourceId,
+            HomeValue = x.HomeValue,
+            AwayValue = x.AwayValue,
+            Remark = x.Remark,
+            SourceId = x.SourceId,
+            OtherInfo = x.OtherInfo,
+            IsSettleDetermined = x.Conditions?.IsRefundSdt ?? false
+        });
 
     public Match WithResourcesXml(XmlConvertService xmlConvertService, bool hasOtherInfo = true)
     {

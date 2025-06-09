@@ -1,4 +1,4 @@
-﻿namespace AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+﻿namespace AutoEarlyRefund.Features.InsOrUpdAutoRefundResult;
 
 public class InsOrUpdAutoRefundResultCriteria : INonQueryCommand
 {
@@ -7,6 +7,7 @@ public class InsOrUpdAutoRefundResultCriteria : INonQueryCommand
     public string SelectedResources { get; set; }
     public int TypeId { get; set; } = 7; //Direct early soccer
     public string Remark { get; set; }
+
     public string GetSettingKey() => "NAP_Set_AutoRefundResult_Update";
 
     public bool IsValid() => MatchId > 0;

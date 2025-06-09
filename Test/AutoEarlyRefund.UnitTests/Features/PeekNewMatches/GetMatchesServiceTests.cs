@@ -165,17 +165,4 @@ public class GetMatchesServiceTests
         // Assert
         Assert.Empty(result);
     }
-
-    [Theory]
-    [InlineData(null)]
-    public void Constructor_WithNullDependencies_ShouldThrowArgumentNullException(object nullDependency)
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new GetMatchesServiceImp(
-                nullDependency as IDynamicRepository,
-                nullDependency as ICache,
-                nullDependency as IOptions<AppSettingsKey>,
-                nullDependency as XmlConvertService));
-    }
 }

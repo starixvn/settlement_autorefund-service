@@ -2,14 +2,13 @@ using AutoEarlyRefund.Features.GetResourcesTrigger;
 using AutoEarlyRefund.Models;
 using Fanex.Data.Repository;
 using NSubstitute;
-using Xunit;
 
 namespace AutoEarlyRefund.UnitTests.Features.GetResourcesTrigger;
 
 public class GetResourcesTriggerHandlerTests
 {
     private readonly IDynamicRepository repository;
-    private readonly IGetResourcesTriggerHandler handler;
+    private readonly GetResourcesTriggerHandler handler;
 
     public GetResourcesTriggerHandlerTests()
     {

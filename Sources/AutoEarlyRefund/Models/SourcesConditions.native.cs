@@ -19,10 +19,9 @@ public class SourcesConditions
     public string SourceResourceId { get; set; } = string.Empty;
     public string Conditions { get; set; } = string.Empty;
 
-    public Resource? Resource { get; set; }
+    public Resource Resource { get; set; }
 
     public IEnumerable<string> SourceResourceIds => SourceResource.Split(',');
-
 
     public override string ToString()
         => JsonSerializer.Serialize(this, new JsonSerializerOptions

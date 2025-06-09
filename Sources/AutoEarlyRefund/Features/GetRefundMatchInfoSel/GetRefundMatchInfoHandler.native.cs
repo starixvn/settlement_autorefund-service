@@ -8,16 +8,8 @@ public interface IGetRefundMatchInfoHandler
     Task<List<RelatedMatchItem>> HandleAsync(List<GetRelatedMatchItemRequest> request);
 }
 
-public class GetRefundMatchInfoHandler : IGetRefundMatchInfoHandler
+public class GetRefundMatchInfoHandler(IDynamicRepository repository) : IGetRefundMatchInfoHandler
 {
-    private readonly IDynamicRepository repository;
-
-    public GetRefundMatchInfoHandler(IDynamicRepository repository)
-    {
-        this.repository = repository;
-    }
-
-
     public async Task<List<RelatedMatchItem>> HandleAsync(List<GetRelatedMatchItemRequest> request)
     {
         var options = new JsonSerializerOptions

@@ -1,11 +1,10 @@
 using AutoEarlyRefund.Helpers;
 using Fanex.Settlement.MessageBridge.RefundEvents;
 
-namespace AutoEarlyRefund.Tests.Helpers
+namespace AutoEarlyRefund.UnitTests.Helpers
 {
     public class ConsumerHelperTests
     {
-
         [Fact]
         public void TryGetValidResources_ShouldReturnTrueAndValidResources_WhenResourcesAreValid()
         {

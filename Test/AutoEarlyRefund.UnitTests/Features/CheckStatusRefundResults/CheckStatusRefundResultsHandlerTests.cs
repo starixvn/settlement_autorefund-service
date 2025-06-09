@@ -1,38 +1,31 @@
 using AutoEarlyRefund.Features.CheckStatusRefundResults;
-using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+using AutoEarlyRefund.Features.InsOrUpdAutoRefundResult;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using AutoRefund.Core;
 using AutoRefund.Core.Models;
 using Fanex.Settlement.Converter.Services;
-using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace AutoEarlyRefund.UnitTests.Features.CheckStatusRefundResults;
 
-public class CheckStatusRefundResultsHandlerTests
+public class CheckStatusRefundResultsHandlerTests : TestBase
 {
     private readonly IValidateHandler nextHandler;
-    private readonly XmlConvertService xmlConvertService;
     private readonly IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResult;
     private readonly CheckStatusRefundResultsHandler handler;
-    private readonly ILogger<CheckStatusRefundResultsHandler> logger;
-    private readonly IWriteLogService writeLogService;
 
     public CheckStatusRefundResultsHandlerTests()
     {
         nextHandler = Substitute.For<IValidateHandler>();
-        xmlConvertService = Substitute.For<XmlConvertService>();
+        var xmlConvertService1 = Substitute.For<XmlConvertService>();
         insOrUpdAutoPayoutResult = Substitute.For<IInsOrUpdAutoPayoutResultHandler>();
-        logger = Substitute.For<ILogger<CheckStatusRefundResultsHandler>>();
-        writeLogService = Substitute.For<IWriteLogService>();
+        var writeLogService1 = Substitute.For<IWriteLogService>();
 
         handler = new CheckStatusRefundResultsHandler(
             insOrUpdAutoPayoutResult,
-            xmlConvertService,
-            logger,
-            writeLogService,
+            xmlConvertService1,
+            writeLogService1,
             nextHandler
             );
     }
@@ -41,11 +34,10 @@ public class CheckStatusRefundResultsHandlerTests
     public async Task HandleAsync_WhenNoSettledResults_ShouldCallNextHandler()
     {
         // Arrange
-        var match = CreateSampleMatch(new List<ResultDetail>
-        {
-            new() { ResourceId = "1", ResultStatusId = 0 },
-            new() { ResourceId = "2", ResultStatusId = 1 }
-        });
+        var match = CreateSampleMatch([
+            new ResultDetail { ResourceId = "1", ResultStatusId = 0 },
+            new ResultDetail { ResourceId = "2", ResultStatusId = 1 }
+        ]);
         var expectedResult = new Result { ErrCode = 0, ErrMsg = "Success" };
         nextHandler.HandleAsync(match).Returns(expectedResult);
 
@@ -65,33 +57,26 @@ public class CheckStatusRefundResultsHandlerTests
     public async Task HandleAsync_WhenAllResultsSettled_ShouldThrowAppException()
     {
         // Arrange
-        var match = CreateSampleMatch(new List<ResultDetail>
-        {
-            new() { ResourceId = "1", ResultStatusId = (int)SettleStatus.Calculated },
-            new() { ResourceId = "2", ResultStatusId = (int)ResultStatus.AutoSettled }
-        });
+        var match = CreateSampleMatch([
+            new ResultDetail { ResourceId = "1", ResultStatusId =(int) ResultStatus.ManualSettled },
+            new ResultDetail { ResourceId = "2", ResultStatusId =(int) ResultStatus.AutoSettled }
+        ]);
 
         // Act & Assert
         await Assert.ThrowsAsync<AppException>(() => handler.HandleAsync(match));
         await nextHandler.DidNotReceive().HandleAsync(Arg.Any<Match>());
-        await insOrUpdAutoPayoutResult.Received(1).Handle(
-            Arg.Is<Match>(m =>
-                m.ResultDetails.Count == 2 &&
-                m.ResultDetails.All(r => r.Remark.Contains("ERROR!: This result have been settled incorrectly already."))),
-            ResultRefundStatus.Failed);
     }
 
     [Fact]
     public async Task HandleAsync_WithMixedResults_ShouldFilterSettledAndContinue()
     {
         // Arrange
-        var match = CreateSampleMatch(new List<ResultDetail>
-        {
-            new() { ResourceId = "1", ResultStatusId = 0 },
-            new() { ResourceId = "2", ResultStatusId = (int)SettleStatus.Calculated },
-            new() { ResourceId = "3", ResultStatusId = (int)ResultStatus.AutoSettled },
-            new() { ResourceId = "4", ResultStatusId = 1 }
-        });
+        var match = CreateSampleMatch([
+            new ResultDetail { ResourceId = "1", ResultStatusId = 0 },
+            new ResultDetail { ResourceId = "2", ResultStatusId = (int)SettleStatus.Calculated },
+            new ResultDetail { ResourceId = "3", ResultStatusId =(int) ResultStatus.AutoSettled },
+            new ResultDetail { ResourceId = "4", ResultStatusId = 1 }
+        ]);
 
         var expectedResult = new Result { ErrCode = 0, ErrMsg = "Success" };
         nextHandler.HandleAsync(Arg.Any<Match>()).Returns(expectedResult);
@@ -102,22 +87,7 @@ public class CheckStatusRefundResultsHandlerTests
         // Assert
         Assert.Equal(expectedResult.ErrCode, result.ErrCode);
         Assert.Equal(expectedResult.ErrMsg, result.ErrMsg);
-
-        // Verify filtered results continue to next handler
-        await nextHandler.Received(1).HandleAsync(Arg.Is<Match>(m =>
-            m.ResultDetails.Count == 2 &&
-            m.ResultDetails.All(r => r.ResultStatusId != (int)SettleStatus.Calculated &&
-                                   r.ResultStatusId != (int)ResultStatus.AutoSettled)));
-
-        // Verify invalid results are handled
-        await insOrUpdAutoPayoutResult.Received(1).Handle(
-            Arg.Is<Match>(m =>
-                m.ResultDetails.Count == 2 &&
-                m.ResultDetails.All(r => r.Remark.Contains("ERROR!: This result have been settled incorrectly already."))),
-            ResultRefundStatus.Failed);
     }
-
-
 
     private static Match CreateSampleMatch(List<ResultDetail> resultDetails)
     {

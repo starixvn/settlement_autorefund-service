@@ -1,26 +1,18 @@
-﻿using AutoEarlyRefund.Services;
+﻿using AutoEarlyRefund.Models;
+using AutoEarlyRefund.Services;
+using Fanex.Logging;
 
 namespace AutoEarlyRefund.Features.CheckMarkedTicket;
 
-
-public class CheckingMarkedTicketHandler : IValidateHandler
+public class CheckingMarkedTicketHandler(
+    IValidateHandler next,
+    IDynamicRepository repository,
+    IOptions<AppSettingsKey> appSettingsKey)
+    : IValidateHandler
 {
-    private readonly IDynamicRepository repository;
-    private readonly IOptions<AppSettingsKey> appSettingsKey;
-    private readonly IValidateHandler next;
-    public CheckingMarkedTicketHandler(
-        IValidateHandler next,
-        IDynamicRepository repository,
-        IOptions<AppSettingsKey> appSettingsKey)
-    {
-        this.repository = repository;
-        this.appSettingsKey = appSettingsKey;
-        this.next = next;
-    }
-
     public async Task<Result> HandleAsync(Match match)
     {
-        await Fanex.Logging.Logger.Log.InfoAsync($"Before CheckingMarkedTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
+        await LogService.InfoAsync($"Before CheckingMarkedTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
 
         var criteria = new CheckingMarkedTicketCriteria
         {
@@ -32,8 +24,7 @@ public class CheckingMarkedTicketHandler : IValidateHandler
 
         var results = await Task.WhenAll(tasks.ToArray());
 
-
-        await Fanex.Logging.Logger.Log.InfoAsync($"After CheckingMarkedTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
+        await LogService.InfoAsync($"After CheckingMarkedTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
 
         if (results.ToList().TrueForAll(x => !x) && next != null)
         {

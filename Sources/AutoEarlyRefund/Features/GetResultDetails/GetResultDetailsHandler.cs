@@ -1,28 +1,22 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using AutoEarlyRefund.Features.GetResourcesConditions;
+﻿using AutoEarlyRefund.Features.GetResourcesConditions;
 using AutoEarlyRefund.Models;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace AutoEarlyRefund.Features.GetRefundResults;
+namespace AutoEarlyRefund.Features.GetResultDetails;
 
 public interface IGetResultDetailsHandler
 {
     Task<List<SourcesConditionsItem>> Handle(List<int> matchIds, List<TargetResourceTrigger> targetResourceTriggers);
 }
 
-public class GetResultDetailsHandler : IGetResultDetailsHandler
+public class GetResultDetailsHandler(IDynamicRepository repository) : IGetResultDetailsHandler
 {
-    private readonly IDynamicRepository repository;
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
-
-    public GetResultDetailsHandler(IDynamicRepository repository)
-    {
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-    }
 
     public async Task<List<SourcesConditionsItem>> Handle(List<int> matchIds, List<TargetResourceTrigger> targetResourceTriggers)
     {
@@ -52,15 +46,13 @@ public class GetResultDetailsHandler : IGetResultDetailsHandler
     }
 
     private static bool IsSettled(int resultStatusId) =>
-        resultStatusId == (int)ResultStatus.ManualSettled ||
-        resultStatusId == (int)ResultStatus.AutoSettled;
+        resultStatusId is (int)ResultStatus.ManualSettled or (int)ResultStatus.AutoSettled;
 
     private static string SerializeToJson<T>(T value) =>
         JsonSerializer.Serialize(value, SerializerOptions);
 
     private static List<SourcesConditionsItem> GetSourcesConditionsItems(List<TargetResourceTrigger> triggers)
     {
-
         return [.. triggers
             .SelectMany(trigger => trigger.TargetResourceIds.Select(resourceId =>
                 MapToTargetResourceTrigger(trigger, resourceId)))
@@ -72,7 +64,6 @@ public class GetResultDetailsHandler : IGetResultDetailsHandler
                 x.TargetResource
             })
             .Select(MapToSourcesConditionsItem)
-            //.Where(x => x.ResourceId == "38101")
         ];
     }
 

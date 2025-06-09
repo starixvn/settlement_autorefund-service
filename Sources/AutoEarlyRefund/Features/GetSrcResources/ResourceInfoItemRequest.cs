@@ -1,4 +1,4 @@
-﻿namespace AutoEarlyRefund.Features.GetResourcesInfo;
+﻿namespace AutoEarlyRefund.Features.GetSrcResources;
 
 public class ResourceInfoItemRequest
 {

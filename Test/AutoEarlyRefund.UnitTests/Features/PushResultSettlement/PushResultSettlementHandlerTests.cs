@@ -47,7 +47,6 @@ public class PushResultSettlementHandlerTests
                 c.IsAuto &&
                 c.SelectedResources == match.ResourcesXml)
                 );
-
     }
 
     [Fact]
@@ -82,17 +81,6 @@ public class PushResultSettlementHandlerTests
         // Assert
         await repository.DidNotReceive().ExecuteAsync(
                 Arg.Any<PushResultSettlementCriteria>());
-    }
-
-    [Theory]
-    [InlineData(null)]
-    public void Constructor_WithNullDependencies_ShouldThrowArgumentNullException(object nullDependency)
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new PushResultSettlementHandler(
-                nullDependency as IDynamicRepository,
-                nullDependency as IOptions<AppSettingsKey>));
     }
 
     [Theory]

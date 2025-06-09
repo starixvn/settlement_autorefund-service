@@ -1,10 +1,11 @@
 ﻿using AutoEarlyRefund.Conditions;
 using AutoEarlyRefund.Features.GetResourcesConditions;
-using AutoEarlyRefund.Features.GetResourcesInfo;
-using AutoEarlyRefund.Features.InsOrUpdAutoPayoutResult;
+using AutoEarlyRefund.Features.GetSrcResources;
+using AutoEarlyRefund.Features.InsOrUpdAutoRefundResult;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
+using Fanex.Logging;
 
 namespace AutoEarlyRefund.Features.CheckConditionsRefund;
 
@@ -19,7 +20,7 @@ public class CheckConditionsRefundHandler(
 {
     public async Task<Result> HandleAsync(Match match)
     {
-        await Fanex.Logging.Logger.Log.InfoAsync($"Before CheckConditionsRefundHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
+        await LogService.InfoAsync($"Before CheckConditionsRefundHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
 
         var request = match.ResultDetails.Select(x => new SourcesConditionsItem
         {
@@ -41,8 +42,7 @@ public class CheckConditionsRefundHandler(
 
         match.ResultDetails = [.. match.ResultDetails.Where(x => validResultsIds.Contains(x.ResourceId))];
 
-
-        await Fanex.Logging.Logger.Log.InfoAsync($"After CheckConditionsRefundHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
+        await LogService.InfoAsync($"After CheckConditionsRefundHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
         if (match.ResultDetails.Count == 0)
         {
             throw new AppException();
@@ -64,7 +64,6 @@ public class CheckConditionsRefundHandler(
                 .Select(ruleGroup => ruleGroup.First())
                 .Take(1))];
 
-
     private async Task HandleInvalidResults(Match match, List<string> validResultsIds)
     {
         var invalidResults = match.ResultDetails
@@ -75,7 +74,7 @@ public class CheckConditionsRefundHandler(
             return;
         }
 
-        var errorMessage = "ERROR:This result did incorrect rule refund condition";
+        const string errorMessage = "ERROR:This result did incorrect rule refund condition";
 
         var failedMatch = new Match
         {

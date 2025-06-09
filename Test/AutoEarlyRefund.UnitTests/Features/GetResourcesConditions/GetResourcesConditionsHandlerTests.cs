@@ -20,7 +20,7 @@ public class GetResourcesConditionsHandlerTests
     public async Task GetConditionsAsync_WithMatchType_ShouldSetMatchTypeAndReturnConditions()
     {
         // Arrange
-        var matchType = (short)1;
+        const short matchType = 1;
         var items = new List<SourcesConditionsItem>
         {
             new() { ResourceId = "R1", SportType = 1, ChildMatchType = 1 },
@@ -44,7 +44,6 @@ public class GetResourcesConditionsHandlerTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(2, result.Count);
-
     }
 
     [Fact]
@@ -111,18 +110,10 @@ public class GetResourcesConditionsHandlerTests
     public async Task GetConditionsAsync_WithEmptySourceResourceIds_ShouldReturnEmptyList()
     {
         // Arrange
-        var items = new List<SourcesConditionsItem>
-        {
-
-        };
-
-        var repoResults = new List<SourcesConditions>
-        {
-
-        };
+        var items = new List<SourcesConditionsItem>();
 
         repository.FetchAsync<SourcesConditions>(Arg.Any<GetResourcesConditionsCriteria>())
-            .Returns(repoResults);
+            .Returns(new List<SourcesConditions>());
 
         // Act
         var result = await handler.GetConditionsAsync(items);

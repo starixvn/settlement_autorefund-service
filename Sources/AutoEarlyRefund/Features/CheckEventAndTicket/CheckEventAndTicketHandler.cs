@@ -1,4 +1,6 @@
-﻿using AutoEarlyRefund.Services;
+﻿using AutoEarlyRefund.Models;
+using AutoEarlyRefund.Services;
+using Fanex.Logging;
 using Fanex.Settlement.ScaleOut.Criteria.Normal;
 using Mapster;
 
@@ -9,24 +11,14 @@ public class CheckEventAndTicketHandler(
     IDynamicRepository repository,
     XmlConvertService xmlConvertService,
     IOptions<AppSettingsKey> appSettingsKey,
-    IValidateHandler? next = null) : IValidateHandler
+    IValidateHandler next = null) : IValidateHandler
 {
     public async Task<Result> HandleAsync(Match match)
     {
-        await Fanex.Logging.Logger.Log.InfoAsync($"Before CheckEventAndTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
-        var newMatch = match.WithResourcesXml(xmlConvertService, false);
-        var request = new EventTicketRequest
-        {
-            MatchId = newMatch.MatchId,
-            Action = "REFUND",
-            Mode = "EAR",
-            SpName = "NAP_Admin_Settlement_Auto_1s_Push",
-            IsAuto = true,
-            SelectedResources = newMatch.ResourcesXml
-        };
+        await LogService.InfoAsync($"Before CheckEventAndTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
 
-        var eventResult = await generalService.ExecuteSingle(request.Adapt<ValidateEventCriteria>());
-
+        var eventTicketRequest = CreateEventTicketRequest(match);
+        var eventResult = await generalService.ExecuteSingle(eventTicketRequest.Adapt<ValidateEventCriteria>());
         if (eventResult.ErrorCode != 0)
         {
             return new Result
@@ -36,42 +28,81 @@ public class CheckEventAndTicketHandler(
             };
         }
 
-        var result = new Result();
-        for (var i = 0; i < appSettingsKey.Value.RetryCount; i++)
+        var result = await RetryValidateRefundTicketAsync(eventTicketRequest, match);
+
+        await LogService.InfoAsync($"After CheckEventAndTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
+
+        return result;
+    }
+
+    private EventTicketRequest CreateEventTicketRequest(Match match)
+    {
+        var matchWithResourcesXml = match.WithResourcesXml(xmlConvertService, false);
+        return new EventTicketRequest
         {
-            var tasks = appSettingsKey.Value.SiteDbServer.Select(s => CheckValidateRefundTicket(s, request.Adapt<ValidateRefundTicketCriteria>()));
-            var results = await Task.WhenAll(tasks.ToArray());
+            MatchId = matchWithResourcesXml.MatchId,
+            Action = "REFUND",
+            Mode = "EAR",
+            SpName = "NAP_Admin_Settlement_Auto_1s_Push",
+            IsAuto = true,
+            SelectedResources = matchWithResourcesXml.ResourcesXml
+        };
+    }
 
-            var inValidResult = results.FirstOrDefault(x => x.ErrCode != 0);
+    private async Task<Result> RetryValidateRefundTicketAsync(EventTicketRequest request, Match match)
+    {
+        var result = new Result();
 
-            if (inValidResult == null)
+        for (var attempt = 0; attempt < appSettingsKey.Value.RetryCount; attempt++)
+        {
+            var validateResults = await ValidateRefundTicketsOnAllServers(request);
+            var firstError = GetFirstErrorResult(validateResults);
+
+            if (firstError == null)
             {
-                break;
+                return await HandleSuccess(result, match);
             }
 
-            if (inValidResult.ErrCode == 1_001_003 && i < appSettingsKey.Value.RetryCount - 1)
+            if (ShouldRetry(firstError, attempt))
             {
-                await Fanex.Logging.Logger.Log.InfoAsync("After CheckEventAndTicketHandler ErrorCode InQueue");
                 await Task.Delay(appSettingsKey.Value.RetryInterval);
                 continue;
             }
 
-            result.ErrCode = inValidResult.ErrCode;
-            result.ErrMsg = inValidResult.ErrMsg;
-
-            break;
+            return await HandleError(result, firstError, match);
         }
 
-        await Fanex.Logging.Logger.Log.InfoAsync($"After CheckEventAndTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTime.Now}");
-
-        return result.IsSuccess && next is not null
-            ? await next.HandleAsync(match)
-            : result;
+        return await HandleSuccess(result, match);
     }
 
-    private async Task<Result> CheckValidateRefundTicket(string s, ValidateRefundTicketCriteria criteria)
+    private bool ShouldRetry(Result firstError, int attempt)
+        => firstError?.ErrCode == 1_001_003 && attempt < appSettingsKey.Value.RetryCount - 1;
+
+    private async Task<Result> HandleError(Result result, Result firstError, Match match)
     {
-        criteria.DbServer = s;
+        result.ErrCode = firstError.ErrCode;
+        result.ErrMsg = firstError.ErrMsg;
+        return result.IsSuccess && next is not null ? await next.HandleAsync(match) : result;
+    }
+
+    private async Task<Result> HandleSuccess(Result result, Match match)
+        => result.IsSuccess && next is not null ? await next.HandleAsync(match) : result;
+
+    private async Task<List<Result>> ValidateRefundTicketsOnAllServers(EventTicketRequest request)
+    {
+        var tasks = appSettingsKey.Value.SiteDbServer
+            .Select(server => CheckValidateRefundTicket(server, request.Adapt<ValidateRefundTicketCriteria>()));
+        return (await Task.WhenAll(tasks)).ToList();
+    }
+
+    private static Result GetFirstErrorResult(List<Result> results)
+    {
+        return results.Find(x => x.ErrCode != 0);
+    }
+
+    private async Task<Result> CheckValidateRefundTicket(string dbServer, ValidateRefundTicketCriteria criteria)
+    {
+        criteria.DbServer = dbServer;
         await repository.ExecuteAsync(criteria);
 
         return new Result

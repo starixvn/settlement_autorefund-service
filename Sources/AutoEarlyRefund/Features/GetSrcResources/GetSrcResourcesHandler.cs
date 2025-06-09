@@ -1,27 +1,21 @@
-﻿using System.Text.Json;
+﻿using AutoEarlyRefund.Models;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using AutoEarlyRefund.Models;
 
-namespace AutoEarlyRefund.Features.GetResourcesInfo;
+namespace AutoEarlyRefund.Features.GetSrcResources;
 
 public interface IGetSrcResourcesHandler
 {
     Task<List<SourcesConditions>> HandleAsync(List<int> matchIds, List<SourcesConditions> sourcesConditions);
 }
 
-public class GetSrcResourcesHandler : IGetSrcResourcesHandler
+public class GetSrcResourcesHandler(IDynamicRepository repository) : IGetSrcResourcesHandler
 {
-    private readonly IDynamicRepository repository;
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
-
-    public GetSrcResourcesHandler(IDynamicRepository repository)
-    {
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-    }
 
     public async Task<List<SourcesConditions>> HandleAsync(List<int> matchIds, List<SourcesConditions> sourcesConditions)
     {
@@ -44,7 +38,6 @@ public class GetSrcResourcesHandler : IGetSrcResourcesHandler
         List<SourcesConditions> sourcesConditions,
         List<int> matchIds)
     {
-
         return [.. matchIds.SelectMany(matchId =>
             sourcesConditions
                 .Select(sc => new ResourceInfoItemRequest
@@ -91,7 +84,7 @@ public class GetSrcResourcesHandler : IGetSrcResourcesHandler
         s.SourceChildMatchType
     };
 
-    private static SourcesConditions CreateMappedCondition(SourcesConditions sc, Resource? resource)
+    private static SourcesConditions CreateMappedCondition(SourcesConditions sc, Resource resource)
     {
         return new SourcesConditions
         {
@@ -115,4 +108,3 @@ public class GetSrcResourcesHandler : IGetSrcResourcesHandler
     private static string SerializeToJson<T>(T value) =>
         JsonSerializer.Serialize(value, SerializerOptions);
 }
-
