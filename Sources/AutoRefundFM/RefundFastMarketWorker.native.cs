@@ -4,7 +4,7 @@ using ONEbook.UM.Services;
 
 namespace AutoRefundFM;
 
-public class ReufundFastMarketWorker(
+public class RefundFastMarketWorker(
     IConfiguration configuration,
     IMaintenanceService maintenanceService) : BackgroundService
 {
