@@ -96,6 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AutoEarlyRefund\AutoEarlyRefund.csproj" />
+    <ProjectReference Include="..\AutoRefundFM\AutoRefundFM.csproj" />
     <ProjectReference Include="..\AutoRefund\AutoRefund.csproj" />
   </ItemGroup>
   <ItemGroup>
