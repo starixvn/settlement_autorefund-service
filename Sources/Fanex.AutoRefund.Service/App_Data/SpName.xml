@@ -65,6 +65,7 @@
 
 	<Function Name="Fast Market">
 		<Setting Key="NAP_Set_FastMarket_MatchSelDetail" SpName="NAP_Set_FastMarket_MatchSelDetail" DbName="DBPRO.bodb02.wsv_nap" />
+		<Setting Key="NAP_Set_AutoRefund_FM_ScheduleSel" SpName="NAP_Set_AutoRefund_FM_ScheduleSel_xtest" DbName="DBPRO.bodb02.wsv_nap" />
 
 		<Function Name="NAP_Set_FastMarket_MatchSelDetail_Ticket">
 			<Setting Key="NAP_Set_FastMarket_MatchSelDetail_Ticket_DBTXN" SpName="NAP_Set_FastMarket_MatchSelDetail_Ticket" DbName="DBTXN.bodb02.wsv_nap" />

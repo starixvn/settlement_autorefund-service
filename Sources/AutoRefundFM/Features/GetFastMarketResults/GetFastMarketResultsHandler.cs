@@ -5,7 +5,12 @@ using Microsoft.Extensions.Options;
 
 namespace AutoRefundFM.Features.GetFastMarketResults;
 
-public class GetFastMarketResultsHandler
+public interface IGetFastMarketResultsHandler
+{
+    Task<BetTypesRoot> Handle(Match match);
+}
+
+public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
 {
     private readonly IDynamicRepository repository;
     private readonly AppSettingsKey appSettingsKey;
@@ -17,21 +22,115 @@ public class GetFastMarketResultsHandler
         this.appSettingsKey = options.Value;
     }
 
-    public async Task Handle()
+    public async Task<BetTypesRoot> Handle(Match match)
     {
-        //var criteria = new GetFastMarketResultsCriteria
-        //{
-        //    MatchId = 83770848,
-        //};
+        var fastMarketResults = await GetFastMarketResults(match.MatchId);
 
-        //var (eventCounters, handicapValues, fastMarketResults, resultDetails) = await repository
-        //    .FetchMultipleAsync<EventCounter, string, FastMarketResultDetail, ResultDetail>(criteria);
+        var ticketResults = await GetFastMarketTicketDetail(match.MatchId);
+        var newTicketResults = ticketResults
+            .Where(item => !fastMarketResults.Any(x => x.Position == item.Position && x.BetType == item.BetType))
+            .ToList();
 
+        var combinedResults = fastMarketResults.Concat(newTicketResults).ToList();
 
-        await GetFastMarketTicketDetail(83770848);
+        var allFilteredFastMarketResults = match.SpecialSessions
+            .SelectMany(specialSession => FilterResultsBySpecialSession(combinedResults, specialSession))
+            .ToList();
+
+        var betTypesRoot = CreateBetTypesRoot(allFilteredFastMarketResults);
+
+        return betTypesRoot;
     }
 
-    private async Task GetFastMarketTicketDetail(int matchId)
+    private static BetTypesRoot CreateBetTypesRoot(List<FastMarketResultDetail> filteredResults)
+    {
+        var betTypes = filteredResults.GroupBy(x => x.BetType)
+            .OrderBy(x => x.Key)
+            .Select(z => new BetTypeElement
+            {
+                Id = z.Key,
+                Items = [.. z.Select(x => new ItemElement
+                {
+                    Position = x.Position,
+                    Result = GetResult(x),
+
+                })]
+            }).ToList();
+
+        var betTypesRoot = new BetTypesRoot
+        {
+            BetType = betTypes
+        };
+
+        return betTypesRoot;
+    }
+
+    private static IEnumerable<FastMarketResultDetail> FilterResultsBySpecialSession(
+        IEnumerable<FastMarketResultDetail> results,
+        SpecialSession specialSession)
+    {
+        return results
+                .Where(item => item.BetType switch
+                {
+                    FastMarketBetType.TimeMachineHdp or FastMarketBetType.TimeMachineMinutes => false,
+                    FastMarketBetType.NextOneMinute or FastMarketBetType.FirstNextOneMinute or
+                    FastMarketBetType.NextOneMinuteSetPiece or FastMarketBetType.CombinationNextOneMinute => ApplyFilterOneMinuteWaterBreak(item, specialSession),
+                    _ => ApplyFilterFiveMinuteWaterBreak(item, specialSession),
+                    //_ => false
+                })
+                .ToList();
+    }
+
+    private static string GetResult(FastMarketResultDetail resultDetail)
+    {
+        return resultDetail.BetType switch
+        {
+            FastMarketBetType.TimeMachineMinutes or FastMarketBetType.TimeMachineHdp
+                => resultDetail.Result?.ToString() ?? string.Empty,
+
+            FastMarketBetType.NextOneMinuteSetPiece
+                => resultDetail.ResultItem.Goal
+                    ? SetPiece.CornerFreeKickGoalKickAndPenalty.ToString()
+                    : resultDetail.ResultItem.Value.ToString(),
+
+            _ => resultDetail.ResultItem.Value.ToString()
+        };
+    }
+
+    private static bool ApplyFilterFiveMinuteWaterBreak(FastMarketResultDetail item, SpecialSession waterBreakTime)
+    {
+        int endMinute = waterBreakTime.StartMinute == waterBreakTime.EndMinute
+            ? waterBreakTime.StartMinute
+            : waterBreakTime.EndMinute;
+
+        return item.Position > waterBreakTime.StartMinute - 5 && item.Position <= endMinute;
+    }
+
+
+    private static bool ApplyFilterOneMinuteWaterBreak(FastMarketResultDetail item, SpecialSession waterBreakTime)
+    {
+        if (waterBreakTime.StartMinute == waterBreakTime.EndMinute)
+        {
+            return item.Position == waterBreakTime.StartMinute;
+        }
+
+        return item.Position >= waterBreakTime.StartMinute && item.Position <= waterBreakTime.EndMinute;
+    }
+
+
+    private async Task<List<FastMarketResultDetail>> GetFastMarketResults(int matchId)
+    {
+        var criteria = new GetFastMarketResultsCriteria
+        {
+            MatchId = matchId,
+        };
+
+        var (_, _, fastMarketResults, _) = await repository.FetchMultipleAsync<EventCounter, string, FastMarketResultDetail, ResultDetail>(criteria);
+
+        return fastMarketResults.ToList();
+    }
+
+    private async Task<List<FastMarketResultDetail>> GetFastMarketTicketDetail(int matchId)
     {
         var criteria = new GetFastMarketTicketDetailCriteria
         {
@@ -41,28 +140,31 @@ public class GetFastMarketResultsHandler
         var servers = appSettingsKey.SiteDbServer.Select(s => GetTicketDetailByServer(criteria, s));
 
         var results = await Task.WhenAll(servers.ToArray());
-        var allBetTypes = results.SelectMany(x => x.betTypes).ToList();
-        var ticketCounts = results.Select(x => x.ticketCounts).ToList();
+        var allTicketResults = results.SelectMany(x => x).ToList();
 
-        var totalTicketCount = new TicketCounts
-        {
-            BetRunningCount = ticketCounts.Sum(x => x.BetRunningCount),
-            BetSettledCount = ticketCounts.Sum(x => x.BetSettledCount),
-            BetRefundedCount = ticketCounts.Sum(x => x.BetRefundedCount),
-            BetCount = ticketCounts.Sum(x => x.BetCount),
-        };
+        var ticketResults = allTicketResults.GroupBy(x => new { x.BetType, x.Position })
+            .Select(g => new FastMarketResultDetail
+            {
+                BetType = g.Key.BetType,
+                Position = g.Key.Position,
+                Result = g.Sum(x => x.Result ?? 0),
+                ResultStatus = g.FirstOrDefault()?.ResultStatus ?? 0,
+                TicketStatus = g.FirstOrDefault()?.TicketStatus ?? 0,
+                TicketCount = g.Sum(x => x.TicketCount),
+                TicketRunning = g.Sum(x => x.TicketRunning),
+                TicketMarked = g.Sum(x => x.TicketMarked),
+            }).ToList();
 
-
-
+        return ticketResults;
     }
 
-    private async Task<(List<FastMarketResultDetail> betTypes, TicketCounts ticketCounts)> GetTicketDetailByServer(
-        GetFastMarketTicketDetailCriteria criteria,
-        string server)
+    private async Task<IEnumerable<FastMarketResultDetail>> GetTicketDetailByServer(GetFastMarketTicketDetailCriteria criteria, string server)
     {
         criteria.DbServer = server;
-        var (ticketCounts, betTypeTickets) = await repository.FetchMultipleAsync<TicketCounts, FastMarketResultDetail>(criteria);
 
-        return (betTypeTickets.ToList(), ticketCounts.FirstOrDefault());
+        var (_, ticketResults) = await repository.FetchMultipleAsync<TicketCounts, FastMarketResultDetail>(criteria);
+
+        return ticketResults;
     }
+
 }

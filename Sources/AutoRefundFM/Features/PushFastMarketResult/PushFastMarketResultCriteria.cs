@@ -8,13 +8,13 @@ public class PushFastMarketResultCriteria : NonQueryCommand
 
     public int AdminId { get; set; }
 
-    public string Results { get; set; }
+    public string Results { get; set; } = string.Empty;
 
-    public string EventCounters { get; set; }
+    public string EventCounters { get; set; } = string.Empty;
 
     public bool IsSettleDetermined { get; set; }
 
-    public string Action { get; set; }
+    public string Action { get; set; } = "REFUND";
 
     public bool IsAuto { get; set; } = true;
 

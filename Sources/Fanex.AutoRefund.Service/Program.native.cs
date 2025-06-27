@@ -35,7 +35,7 @@ builder.Services.AddAutoRefundFM();
 //services.AddHostedService<AutoRefundService>();
 //services.AddHostedService<AutoEarlyRefundWorker>();
 //services.AddHostedService<GetConfirmNtResultsSchedule>();
-builder.Services.AddHostedService<ReufundFastMarketWorker>();
+builder.Services.AddHostedService<RefundFastMarketWorker>();
 services.AddHealthChecks();
 
 var app = builder.Build();
