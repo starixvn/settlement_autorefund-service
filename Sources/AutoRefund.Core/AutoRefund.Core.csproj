@@ -10,4 +10,8 @@
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

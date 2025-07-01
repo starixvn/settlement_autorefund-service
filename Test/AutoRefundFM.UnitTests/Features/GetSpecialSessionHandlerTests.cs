@@ -1,11 +1,10 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using AutoRefund.Core.Models;
 using AutoRefundFM.Features.GetSpecialSession;
 using AutoRefundFM.Models;
+using Fanex.Caching;
 using Fanex.Data.Repository;
+using Microsoft.Extensions.Options;
 using NSubstitute;
-using Xunit;
 
 namespace AutoRefundFM.UnitTests.Features;
 
@@ -16,6 +15,9 @@ public class GetSpecialSessionHandlerTests
     {
         // Arrange
         var repository = Substitute.For<IDynamicRepository>();
+        var appSettingsKey = Substitute.For<IOptions<AppSettingsKey>>();
+        var cache = Substitute.For<ICache>();
+
         var resultDetails = new List<ResultDetail>
         {
             new ResultDetail
@@ -45,7 +47,7 @@ public class GetSpecialSessionHandlerTests
         };
         repository.FetchAsync<ResultDetail>(Arg.Any<GetSpecialSessionCriteria>()).Returns(resultDetails);
 
-        var handler = new GetSpecialSessionHandler(repository);
+        var handler = new GetSpecialSessionHandler(repository, appSettingsKey, cache);
 
         // Act
         var matches = await handler.Handle();

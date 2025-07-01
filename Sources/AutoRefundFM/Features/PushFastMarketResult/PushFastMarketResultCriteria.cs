@@ -28,18 +28,15 @@ public class PushFastMarketResultCriteria : NonQueryCommand
 
     public string BroadcastSessionId { get; } = Guid.NewGuid().ToString();
 
-    //[SpParam(Ignored = true)]
-    //public IEnumerable<ResourceItem> SelectedResources { get; set; }
-
     [SpParam(Ignored = true)]
-    public string DbServer { get; set; }
+    public string DbServer { get; set; } = string.Empty;
 
     [SpParam(Ignored = true)]
     public string SpName => "NAP_Admin_Settlement_Fast_Market_Auto_1s_Push";
 
     public int ErrCode { get; set; }
 
-    public string ErrMsg { get; set; }
+    public string ErrMsg { get; set; } = string.Empty;
 
     public override string GetSettingKey() => $"NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_{DbServer}";
 

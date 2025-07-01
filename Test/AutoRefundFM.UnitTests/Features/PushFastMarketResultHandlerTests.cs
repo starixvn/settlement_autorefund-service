@@ -1,14 +1,16 @@
-using System.Threading.Tasks;
-using AutoRefundFM.Features.PushFastMarketResult;
+using AutoRefund.Core.Models;
+using AutoRefund.Services;
 using AutoRefundFM.Features.GetFastMarketResults;
+using AutoRefundFM.Features.PushFastMarketResult;
 using AutoRefundFM.Models;
+using Fanex.Data.Repository;
 using Fanex.Settlement.Converter.Services;
+using Fanex.Settlement.ScaleOut.Constants;
+using Fanex.Settlement.ScaleOut.Models;
 using Fanex.Settlement.ScaleOut.Request;
 using Fanex.Settlement.ScaleOut.Services;
+using Microsoft.Extensions.Options;
 using NSubstitute;
-using Xunit;
-using Fanex.Settlement.ScaleOut.Models;
-using Fanex.Settlement.ScaleOut.Constants;
 
 namespace AutoRefundFM.UnitTests.Features;
 
@@ -21,6 +23,9 @@ public class PushFastMarketResultHandlerTests
         var scaleOutSettleService = Substitute.For<ScaleOutSettleService>();
         var getFastMarketResultsHandler = Substitute.For<IGetFastMarketResultsHandler>();
         var xmlConvertService = Substitute.For<XmlConvertService>();
+        var logService = Substitute.For<LogService>();
+        var repository = Substitute.For<IDynamicRepository>();
+        var appSettingsKey = Substitute.For<IOptions<AppSettingsKey>>();
         var match = new Match { MatchId = 123 };
         var betTypesRoot = new BetTypesRoot();
         var betTypesXml = "<BetTypesRoot />";
@@ -31,7 +36,13 @@ public class PushFastMarketResultHandlerTests
         scaleOutSettleService.ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>())
             .Returns(validationResult);
 
-        var handler = new PushFastMarketResultHandler(scaleOutSettleService, getFastMarketResultsHandler, xmlConvertService);
+        var handler = new PushFastMarketResultHandler(
+            scaleOutSettleService,
+            getFastMarketResultsHandler,
+            xmlConvertService,
+            logService,
+            repository,
+            appSettingsKey);
 
         // Act
         await handler.Handle(match);
@@ -48,6 +59,9 @@ public class PushFastMarketResultHandlerTests
         var scaleOutSettleService = Substitute.For<ScaleOutSettleService>();
         var getFastMarketResultsHandler = Substitute.For<IGetFastMarketResultsHandler>();
         var xmlConvertService = Substitute.For<XmlConvertService>();
+        var logService = Substitute.For<LogService>();
+        var repository = Substitute.For<IDynamicRepository>();
+        var appSettingsKey = Substitute.For<IOptions<AppSettingsKey>>();
         var match = new Match { MatchId = 123 };
         var betTypesRoot = new BetTypesRoot();
         var betTypesXml = "<BetTypesRoot />";
@@ -58,7 +72,13 @@ public class PushFastMarketResultHandlerTests
         scaleOutSettleService.ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>())
             .Returns(validationResult);
 
-        var handler = new PushFastMarketResultHandler(scaleOutSettleService, getFastMarketResultsHandler, xmlConvertService);
+        var handler = new PushFastMarketResultHandler(
+            scaleOutSettleService,
+            getFastMarketResultsHandler,
+            xmlConvertService,
+            logService,
+            repository,
+            appSettingsKey);
 
         // Act
         await handler.Handle(match);

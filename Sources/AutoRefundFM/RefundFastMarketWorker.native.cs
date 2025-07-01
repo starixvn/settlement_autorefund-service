@@ -1,6 +1,6 @@
-﻿using AutoRefundFM.Features.GetFastMarketResults;
-using AutoRefundFM.Features.GetSpecialSession;
+﻿using AutoRefundFM.Features.GetSpecialSession;
 using AutoRefundFM.Features.PushFastMarketResult;
+using AutoRefundFM.Features.UpdateWaterBreak;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using ONEbook.UM.Services;
@@ -10,9 +10,9 @@ namespace AutoRefundFM;
 public class RefundFastMarketWorker(
     IConfiguration configuration,
     IMaintenanceService maintenanceService,
-    IGetFastMarketResultsHandler getFastMarketResults,
-    IGetSpecialSessionHandler getSpecialSessionHandler,
-    IPushFastMarketResultHandler pushFastMarketResult) : BackgroundService
+    IMatchPoolService matchPoolService,
+    IPushFastMarketResultHandler pushFastMarketResult,
+    IUpdateWaterBreakHandler updateWaterBreakHandler) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -28,7 +28,7 @@ public class RefundFastMarketWorker(
         //    }
 
         //}
-        var matches = await getSpecialSessionHandler.Handle();
+        var matches = await matchPoolService.PeekNewMatch();
         if (matches.Count == 0)
         {
             return;
@@ -36,6 +36,7 @@ public class RefundFastMarketWorker(
 
         foreach (var item in matches)
         {
+            //await updateWaterBreakHandler.Handle(item);
             await pushFastMarketResult.Handle(item);
         }
     }
