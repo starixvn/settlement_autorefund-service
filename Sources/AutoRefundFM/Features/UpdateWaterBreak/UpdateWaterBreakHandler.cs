@@ -9,16 +9,10 @@ public interface IUpdateWaterBreakHandler
     Task Handle(Match match);
 }
 
-public class UpdateWaterBreakHandler : IUpdateWaterBreakHandler
+public class UpdateWaterBreakHandler(
+    IDynamicRepository repository,
+    XmlConvertService xmlConvertService) : IUpdateWaterBreakHandler
 {
-    private readonly IDynamicRepository repository;
-    private readonly XmlConvertService xmlConvertService;
-
-    public UpdateWaterBreakHandler(IDynamicRepository repository, XmlConvertService xmlConvertService)
-    {
-        this.repository = repository;
-        this.xmlConvertService = xmlConvertService;
-    }
 
     public async Task Handle(Match match)
     {

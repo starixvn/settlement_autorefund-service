@@ -1,5 +1,5 @@
 using AutoRefund.Core.Models;
-using AutoRefund.Services;
+using AutoRefund.Core.Services;
 using AutoRefundFM.Features.GetFastMarketResults;
 using AutoRefundFM.Features.PushFastMarketResult;
 using AutoRefundFM.Models;
@@ -23,7 +23,7 @@ public class PushFastMarketResultHandlerTests
         var scaleOutSettleService = Substitute.For<ScaleOutSettleService>();
         var getFastMarketResultsHandler = Substitute.For<IGetFastMarketResultsHandler>();
         var xmlConvertService = Substitute.For<XmlConvertService>();
-        var logService = Substitute.For<LogService>();
+        var logService = Substitute.For<SettlementLogService>();
         var repository = Substitute.For<IDynamicRepository>();
         var appSettingsKey = Substitute.For<IOptions<AppSettingsKey>>();
         var match = new Match { MatchId = 123 };
@@ -59,7 +59,7 @@ public class PushFastMarketResultHandlerTests
         var scaleOutSettleService = Substitute.For<ScaleOutSettleService>();
         var getFastMarketResultsHandler = Substitute.For<IGetFastMarketResultsHandler>();
         var xmlConvertService = Substitute.For<XmlConvertService>();
-        var logService = Substitute.For<LogService>();
+        var logService = Substitute.For<SettlementLogService>();
         var repository = Substitute.For<IDynamicRepository>();
         var appSettingsKey = Substitute.For<IOptions<AppSettingsKey>>();
         var match = new Match { MatchId = 123 };

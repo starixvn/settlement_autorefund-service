@@ -34,6 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="14.0.0" />
+    <PackageReference Include="Fanex.Data.SqlServer" Version="4.3.4" />
     <PackageReference Include="Fanex.Logging.Extensions" Version="2.0.2.1" />
     <PackageReference Include="Fanex.Logging.Extensions.Database" Version="2.0.2.1" />
     <PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="2.0.2" />

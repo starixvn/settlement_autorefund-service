@@ -20,9 +20,9 @@ public class PushFastMarketResultCriteria : NonQueryCommand
 
     public bool IsReSettledTickets { get; set; }
 
-    public string Ip { get; set; }
+    public string Ip { get; set; } = string.Empty;
 
-    public string OldResults { get; set; }
+    public string OldResults { get; set; } = string.Empty;
 
     public bool IsOrg { get; set; } = true;
 

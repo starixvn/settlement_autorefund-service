@@ -1,7 +1,6 @@
 ﻿using Fanex.Data.Repository;
 
-namespace AutoRefundFM.Features.InsOrUpdAutoRefundResult;
-
+namespace AutoRefund.Core.Criteria;
 public class InsOrUpdAutoRefundResultCriteria : INonQueryCommand
 {
     public int MatchId { get; set; }

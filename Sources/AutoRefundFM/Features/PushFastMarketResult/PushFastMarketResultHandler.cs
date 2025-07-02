@@ -1,14 +1,15 @@
-﻿using AutoRefund.Core.Models;
-using AutoRefund.Criteria;
-using AutoRefund.Services;
+﻿using AutoRefund.Core.Criteria;
+using AutoRefund.Core.Models;
+using AutoRefund.Core.Services;
 using AutoRefundFM.Features.GetFastMarketResults;
-using AutoRefundFM.Features.InsOrUpdAutoRefundResult;
 using AutoRefundFM.Features.UpdateWaterBreak;
 using AutoRefundFM.Models;
 using Fanex.Data.Repository;
 using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut.Constants;
+using Fanex.Settlement.ScaleOut.Request;
 using Fanex.Settlement.ScaleOut.Services;
+using Mapster;
 using Microsoft.Extensions.Options;
 
 
@@ -24,9 +25,9 @@ public class PushFastMarketResultHandler : IPushFastMarketResultHandler
     private readonly ScaleOutSettleService scaleOutSettleService;
     private readonly IGetFastMarketResultsHandler getFastMarketResultsHandler;
     private readonly XmlConvertService xmlConvertService;
-    private readonly LogService logService;
+    private readonly SettlementLogService logService;
     private readonly IDynamicRepository repository;
-    private readonly IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler;
+    private readonly AutoRefundResultService refundResultService;
     private readonly IUpdateWaterBreakHandler updateWaterBreakHandler;
     private readonly AppSettingsKey appSettingsKey;
 
@@ -34,10 +35,10 @@ public class PushFastMarketResultHandler : IPushFastMarketResultHandler
         ScaleOutSettleService scaleOutSettleService,
         IGetFastMarketResultsHandler getFastMarketResultsHandler,
         XmlConvertService xmlConvertService,
-        LogService logService,
+        SettlementLogService logService,
         IDynamicRepository repository,
         IOptions<AppSettingsKey> appSettingsKey,
-        IInsOrUpdAutoPayoutResultHandler insOrUpdAutoPayoutResultHandler,
+        AutoRefundResultService refundResultService,
         IUpdateWaterBreakHandler updateWaterBreakHandler
         )
     {
@@ -47,47 +48,62 @@ public class PushFastMarketResultHandler : IPushFastMarketResultHandler
         this.logService = logService;
         this.repository = repository;
         this.appSettingsKey = appSettingsKey.Value;
-        this.insOrUpdAutoPayoutResultHandler = insOrUpdAutoPayoutResultHandler;
+        this.refundResultService = refundResultService;
         this.updateWaterBreakHandler = updateWaterBreakHandler;
     }
 
     public async Task Handle(Match match)
     {
-        var betTypes = await getFastMarketResultsHandler.Handle(match);
-        var betTypesXml = xmlConvertService.Serialize(betTypes);
-        var resourceXml = CreateResourceItemsFromBetTypes(betTypes);
+        var betTypeRoot = await getFastMarketResultsHandler.Handle(match);
+        if (betTypeRoot.BetType.Count == 0)
+        {
+            await updateWaterBreakHandler.Handle(match);
+            return;
+        }
 
-        //var criteria = new PushFastMarketResultCriteria
-        //{
-        //    MatchId = match.MatchId,
-        //    Results = betTypesXml,
-        //};
-        //var validRequest = criteria.Adapt<EventTicketFastMarketRequest>();
-        //validRequest.IsAuto = false;
-        //var validationResult = await scaleOutSettleService.ValidateEventAndTicketFastMarket(validRequest);
+        var betTypeRootXml = xmlConvertService.Serialize(betTypeRoot);
+        var resourceXml = CreateResourceItemsFromBetTypes(betTypeRoot);
+        var getRefundResultsItems = betTypeRoot.BetType
+            .SelectMany(betType => betType.Items.Select(item => new GetRefundResultsItem(
+                match.MatchId,
+                betType.Id.ToString(),
+                11,
+                item.Position.ToString())))
+            .ToList();
 
-        //if (validationResult.ErrorCode > 0)
-        //{
-        //    return;
-        //}
+        var results = await refundResultService.GetResults(getRefundResultsItems);
 
-        //var updateMatchInfoRequest = criteria.Adapt<UpdateMatchInfoRequest>();
-        //updateMatchInfoRequest.Mode = Mode.FastMarket;
+        var criteria = new PushFastMarketResultCriteria
+        {
+            MatchId = match.MatchId,
+            Results = betTypeRootXml,
+        };
+        var validRequest = criteria.Adapt<EventTicketFastMarketRequest>();
+        validRequest.IsAuto = false;
+        var validationResult = await scaleOutSettleService.ValidateEventAndTicketFastMarket(validRequest);
 
-        //await scaleOutSettleService.UpdateMatchInfo(updateMatchInfoRequest);
+        if (validationResult.ErrorCode > 0)
+        {
+            return;
+        }
 
-        //await WritePreSettlementLog(match, betTypesXml);
-        //await WriteSettlementLog(match, resourceXml);
+        var updateMatchInfoRequest = criteria.Adapt<UpdateMatchInfoRequest>();
+        updateMatchInfoRequest.Mode = Mode.FastMarket;
 
-        //ExecuteCalculate(criteria);
+        await scaleOutSettleService.UpdateMatchInfo(updateMatchInfoRequest);
+
+        await WritePreSettlementLog(match, betTypeRootXml);
+        await WriteSettlementLog(match, resourceXml);
+
+        ExecuteCalculate(criteria);
 
         await updateWaterBreakHandler.Handle(match);
-        await insOrUpdAutoPayoutResultHandler.Handle(match.MatchId, 2, resourceXml);
+        await refundResultService.InsertOrUpdateResults(match.MatchId, 2, resourceXml);
     }
 
     private async Task WriteSettlementLog(Match match, string resourceXml)
     {
-        var criteria = new InsertLogCriteria
+        var criteria = new InsertSettlementLogCriteria
         {
             MatchId = match.MatchId,
             Action = "REFUND",
@@ -97,14 +113,14 @@ public class PushFastMarketResultHandler : IPushFastMarketResultHandler
             SelectedResources = resourceXml,
         };
 
-        await logService.WriteLogResettle(criteria);
+        await logService.WriteSettlementLog(criteria);
     }
 
     private async Task WritePreSettlementLog(Match match, string betTypesXml)
     {
         var message = $"NAP: Fast Market REFUND for matchId: {match.MatchId} with {betTypesXml}";
 
-        await logService.WriteLog(match.MatchId, message);
+        await logService.WriteUserLogSettle(match.MatchId, message);
     }
 
     private void ExecuteCalculate(PushFastMarketResultCriteria criteria)

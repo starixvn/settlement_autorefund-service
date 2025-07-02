@@ -1,4 +1,5 @@
 ﻿using AutoRefund.Core.Models;
+using AutoRefund.Core.Services;
 using AutoRefundFM.Models;
 using Fanex.Data.Repository;
 using Microsoft.Extensions.Options;
@@ -14,12 +15,14 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
 {
     private readonly IDynamicRepository repository;
     private readonly AppSettingsKey appSettingsKey;
+    private readonly AutoRefundResultService refundResultService;
 
 
-    public GetFastMarketResultsHandler(IDynamicRepository repository, IOptions<AppSettingsKey> options)
+    public GetFastMarketResultsHandler(IDynamicRepository repository, IOptions<AppSettingsKey> options, AutoRefundResultService refundResultService)
     {
         this.repository = repository;
-        this.appSettingsKey = options.Value;
+        appSettingsKey = options.Value;
+        this.refundResultService = refundResultService;
     }
 
     public async Task<BetTypesRoot> Handle(Match match)
@@ -31,15 +34,47 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
             .Where(item => !fastMarketResults.Any(x => x.Position == item.Position && x.BetType == item.BetType))
             .ToList();
 
-        var combinedResults = fastMarketResults.Concat(newTicketResults).ToList();
-
-        var allFilteredFastMarketResults = match.SpecialSessions
-            .SelectMany(specialSession => FilterResultsBySpecialSession(combinedResults, specialSession))
+        var combinedResults = fastMarketResults.Concat(newTicketResults)
             .ToList();
 
-        var betTypesRoot = CreateBetTypesRoot(allFilteredFastMarketResults);
+        var allFilteredFastMarketResults = match.SpecialSessions
+            .SelectMany(specialSession => ApplyFilterByWaterBreak(combinedResults, specialSession))
+            .Where(x => x.ResultStatusName.Equals("Running"))
+            .ToList();
+
+        var filteredFastMarketResults = await ApllyFilterByRefundResult(match, allFilteredFastMarketResults);
+
+        var betTypesRoot = CreateBetTypesRoot(filteredFastMarketResults);
+
+
+        var getRefundResultsItems = betTypesRoot.BetType
+               .SelectMany(betType => betType.Items.Select(item => new GetRefundResultsItem(
+                   match.MatchId,
+                   betType.Id.ToString(),
+                   11, // assuming TypeId is 11 for Fast Market
+                   item.Position.ToString())))
+               .ToList();
+
+        var results = await refundResultService.GetResults(getRefundResultsItems);
 
         return betTypesRoot;
+    }
+
+    private async Task<List<FastMarketResultDetail>> ApllyFilterByRefundResult(Match match, List<FastMarketResultDetail> fastMarketResults)
+    {
+        var getRefundResultsItems = fastMarketResults
+       .Select(x => new GetRefundResultsItem(
+            match.MatchId,
+            x.BetType.ToString(),
+            11, // assuming TypeId is 11 for Fast Market
+            x.Position.ToString()))
+       .ToList();
+
+        var results = await refundResultService.GetResults(getRefundResultsItems);
+
+        return fastMarketResults
+            .Where(x => !results.Exists(r => r.ResourceId == x.BetType.ToString() && r.OtherInfo == x.Position.ToString()))
+            .ToList();
     }
 
     private static BetTypesRoot CreateBetTypesRoot(List<FastMarketResultDetail> filteredResults)
@@ -65,7 +100,7 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
         return betTypesRoot;
     }
 
-    private static IEnumerable<FastMarketResultDetail> FilterResultsBySpecialSession(
+    private static IEnumerable<FastMarketResultDetail> ApplyFilterByWaterBreak(
         IEnumerable<FastMarketResultDetail> results,
         SpecialSession specialSession)
     {
@@ -117,7 +152,6 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
         return item.Position >= waterBreakTime.StartMinute && item.Position <= waterBreakTime.EndMinute;
     }
 
-
     private async Task<List<FastMarketResultDetail>> GetFastMarketResults(int matchId)
     {
         var criteria = new GetFastMarketResultsCriteria
@@ -166,5 +200,7 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
 
         return ticketResults;
     }
+
+
 
 }

@@ -11,6 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="Fanex.Caching" Version="2.2.8" />
 	  <PackageReference Include="Fanex.Data.Repository" Version="4.3.4" />
 	  <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
 	  <PackageReference Include="Fanex.Settlement.MessageBridge" Version="1.0.8" />
@@ -21,7 +22,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\AutoRefund.Core\AutoRefund.Core.csproj" />
-	  <ProjectReference Include="..\AutoRefund\AutoRefund.csproj" />
 	</ItemGroup>
 
 </Project>

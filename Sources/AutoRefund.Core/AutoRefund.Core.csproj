@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fanex.Data.Repository" Version="4.3.4" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
