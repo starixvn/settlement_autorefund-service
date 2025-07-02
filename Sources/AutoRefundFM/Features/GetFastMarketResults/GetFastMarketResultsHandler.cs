@@ -17,7 +17,6 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
     private readonly AppSettingsKey appSettingsKey;
     private readonly AutoRefundResultService refundResultService;
 
-
     public GetFastMarketResultsHandler(IDynamicRepository repository, IOptions<AppSettingsKey> options, AutoRefundResultService refundResultService)
     {
         this.repository = repository;
@@ -45,17 +44,6 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
         var filteredFastMarketResults = await ApllyFilterByRefundResult(match, allFilteredFastMarketResults);
 
         var betTypesRoot = CreateBetTypesRoot(filteredFastMarketResults);
-
-
-        var getRefundResultsItems = betTypesRoot.BetType
-               .SelectMany(betType => betType.Items.Select(item => new GetRefundResultsItem(
-                   match.MatchId,
-                   betType.Id.ToString(),
-                   11, // assuming TypeId is 11 for Fast Market
-                   item.Position.ToString())))
-               .ToList();
-
-        var results = await refundResultService.GetResults(getRefundResultsItems);
 
         return betTypesRoot;
     }
@@ -94,7 +82,7 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
 
         var betTypesRoot = new BetTypesRoot
         {
-            BetType = betTypes
+            BetType = betTypes ?? []
         };
 
         return betTypesRoot;

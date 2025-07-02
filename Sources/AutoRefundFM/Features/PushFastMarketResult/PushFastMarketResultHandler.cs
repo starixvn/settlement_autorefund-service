@@ -63,15 +63,6 @@ public class PushFastMarketResultHandler : IPushFastMarketResultHandler
 
         var betTypeRootXml = xmlConvertService.Serialize(betTypeRoot);
         var resourceXml = CreateResourceItemsFromBetTypes(betTypeRoot);
-        var getRefundResultsItems = betTypeRoot.BetType
-            .SelectMany(betType => betType.Items.Select(item => new GetRefundResultsItem(
-                match.MatchId,
-                betType.Id.ToString(),
-                11,
-                item.Position.ToString())))
-            .ToList();
-
-        var results = await refundResultService.GetResults(getRefundResultsItems);
 
         var criteria = new PushFastMarketResultCriteria
         {
