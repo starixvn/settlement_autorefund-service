@@ -11,7 +11,7 @@ public class InsertSettlementLogCriteria : NonQueryCommand
 
     public string Mode { get; set; }
 
-    public bool IsAuto { get; set; } = false;
+    public bool IsAuto { get; set; }
 
     public int AdminId { get; set; }
 

@@ -30,7 +30,7 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
 
         var ticketResults = await GetFastMarketTicketDetail(match.MatchId);
         var newTicketResults = ticketResults
-            .Where(item => !fastMarketResults.Any(x => x.Position == item.Position && x.BetType == item.BetType))
+            .Where(item => !fastMarketResults.Exists(x => x.Position == item.Position && x.BetType == item.BetType))
             .ToList();
 
         var combinedResults = fastMarketResults.Concat(newTicketResults)

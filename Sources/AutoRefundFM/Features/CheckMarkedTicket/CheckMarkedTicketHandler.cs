@@ -27,7 +27,7 @@ public class CheckMarkedTicketHandler(
 
         var results = await Task.WhenAll(tasks);
 
-        return results.Any(x => x);
+        return results.ToList().Exists(x => x);
 
     }
 

@@ -79,13 +79,12 @@ public class SettleOpaqueFacadeImp(
 
     private List<ResourceItem> CreateResourceItemsFromBetTypes(BetTypesRoot betTypesRoot)
     {
-        return betTypesRoot.BetType
+        return [.. betTypesRoot.BetType
             .SelectMany(betType => betType.Items.Select(item => new ResourceItem
             {
                 ResourceId = betType.Id.ToString(),
                 OtherInfo = item.Position.ToString()
-            }))
-            .ToList();
+            }))];
     }
 
     private async Task HandleInValidRefundResult(int matchId, List<ResourceItem> resourceItems, string errorMsg)
@@ -99,7 +98,7 @@ public class SettleOpaqueFacadeImp(
             })
             .ToList();
 
-        var resourceXml = CreateResourceXml(resourceItems);
+        var resourceXml = CreateResourceXml(newResourceItems);
         await refundResultService.InsertOrUpdateResults(matchId, 3, resourceXml);
     }
 }
