@@ -1,11 +1,9 @@
 ﻿using AutoRefund.Core.Criteria;
 using AutoRefund.Core.Models;
 using AutoRefund.Core.Services;
-using AutoRefundFM.Features.GetFastMarketResults;
 using AutoRefundFM.Features.UpdateWaterBreak;
 using AutoRefundFM.Models;
 using Fanex.Data.Repository;
-using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut.Constants;
 using Fanex.Settlement.ScaleOut.Request;
 using Fanex.Settlement.ScaleOut.Services;
@@ -17,73 +15,28 @@ namespace AutoRefundFM.Features.PushFastMarketResult;
 
 public interface IPushFastMarketResultHandler
 {
-    Task Handle(Match match);
+    Task Handle(Match match, PushFastMarketResultCriteria criteria, string resourceXml);
 }
 
-public class PushFastMarketResultHandler : IPushFastMarketResultHandler
+public class PushFastMarketResultHandler(
+    ScaleOutSettleService scaleOutSettleService,
+    IDynamicRepository repository,
+    IOptions<AppSettingsKey> appSettingsKey,
+    AutoRefundResultService refundResultService,
+    IUpdateWaterBreakHandler updateWaterBreakHandler,
+    SettlementLogService logService
+        ) : IPushFastMarketResultHandler
 {
-    private readonly ScaleOutSettleService scaleOutSettleService;
-    private readonly IGetFastMarketResultsHandler getFastMarketResultsHandler;
-    private readonly XmlConvertService xmlConvertService;
-    private readonly SettlementLogService logService;
-    private readonly IDynamicRepository repository;
-    private readonly AutoRefundResultService refundResultService;
-    private readonly IUpdateWaterBreakHandler updateWaterBreakHandler;
-    private readonly AppSettingsKey appSettingsKey;
+    private readonly AppSettingsKey appSettingsKey = appSettingsKey.Value;
 
-    public PushFastMarketResultHandler(
-        ScaleOutSettleService scaleOutSettleService,
-        IGetFastMarketResultsHandler getFastMarketResultsHandler,
-        XmlConvertService xmlConvertService,
-        SettlementLogService logService,
-        IDynamicRepository repository,
-        IOptions<AppSettingsKey> appSettingsKey,
-        AutoRefundResultService refundResultService,
-        IUpdateWaterBreakHandler updateWaterBreakHandler
-        )
+    public async Task Handle(Match match, PushFastMarketResultCriteria criteria, string resourceXml)
     {
-        this.scaleOutSettleService = scaleOutSettleService;
-        this.getFastMarketResultsHandler = getFastMarketResultsHandler;
-        this.xmlConvertService = xmlConvertService;
-        this.logService = logService;
-        this.repository = repository;
-        this.appSettingsKey = appSettingsKey.Value;
-        this.refundResultService = refundResultService;
-        this.updateWaterBreakHandler = updateWaterBreakHandler;
-    }
-
-    public async Task Handle(Match match)
-    {
-        var betTypeRoot = await getFastMarketResultsHandler.Handle(match);
-        if (betTypeRoot.BetType.Count == 0)
-        {
-            await updateWaterBreakHandler.Handle(match);
-            return;
-        }
-
-        var betTypeRootXml = xmlConvertService.Serialize(betTypeRoot);
-        var resourceXml = CreateResourceItemsFromBetTypes(betTypeRoot);
-
-        var criteria = new PushFastMarketResultCriteria
-        {
-            MatchId = match.MatchId,
-            Results = betTypeRootXml,
-        };
-        var validRequest = criteria.Adapt<EventTicketFastMarketRequest>();
-        validRequest.IsAuto = false;
-        var validationResult = await scaleOutSettleService.ValidateEventAndTicketFastMarket(validRequest);
-
-        if (validationResult.ErrorCode > 0)
-        {
-            return;
-        }
-
         var updateMatchInfoRequest = criteria.Adapt<UpdateMatchInfoRequest>();
         updateMatchInfoRequest.Mode = Mode.FastMarket;
 
         await scaleOutSettleService.UpdateMatchInfo(updateMatchInfoRequest);
 
-        await WritePreSettlementLog(match, betTypeRootXml);
+        await WritePreSettlementLog(match, criteria.Results);
         await WriteSettlementLog(match, resourceXml);
 
         ExecuteCalculate(criteria);
@@ -121,24 +74,5 @@ public class PushFastMarketResultHandler : IPushFastMarketResultHandler
             criteria.DbServer = server;
             repository.Execute(criteria);
         }
-    }
-    private string CreateResourceItemsFromBetTypes(BetTypesRoot betTypesRoot)
-    {
-        var resourceItems = betTypesRoot.BetType
-              .SelectMany(betType => betType.Items.Select(item => new ResourceItem
-              {
-                  ResourceId = betType.Id.ToString(),
-                  OtherInfo = item.Position.ToString()
-              }))
-              .ToList();
-
-        var resourceRoot = new Resources<ResourceItem>
-        {
-            ResourceItems = resourceItems
-        };
-
-        var selectedResources = xmlConvertService.Serialize(resourceRoot);
-
-        return selectedResources;
     }
 }

@@ -4,18 +4,16 @@ using Microsoft.Extensions.Options;
 
 namespace AutoRefundFM.Features.CheckingMarkedTicket;
 
-public class CheckMarkedTicketHandler
+public interface ICheckMarkedTicketHandler
 {
-    private readonly IDynamicRepository repository;
-    private readonly AppSettingsKey appSettingsKey;
+    Task<bool> Handle(int matchId, string betTypeXml);
+}
 
-    public CheckMarkedTicketHandler(IDynamicRepository repository,
-        IOptions<AppSettingsKey> options)
-    {
-        this.repository = repository;
-        this.appSettingsKey = options.Value;
-    }
-
+public class CheckMarkedTicketHandler(
+    IDynamicRepository repository,
+    IOptions<AppSettingsKey> options) : ICheckMarkedTicketHandler
+{
+    private readonly AppSettingsKey appSettingsKey = options.Value;
 
     public async Task<bool> Handle(int matchId, string betTypeXml)
     {
@@ -42,7 +40,6 @@ public class CheckMarkedTicketHandler
         return markedTicket.IsExistMarkedTicket;
     }
 }
-
 
 public class MarkedTickets
 {

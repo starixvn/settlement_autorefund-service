@@ -1,13 +1,10 @@
-using AutoRefund.Core.Criteria;
+﻿using AutoRefund.Core.Criteria;
 using AutoRefund.Core.Models;
 using AutoRefund.Core.Services;
-using AutoRefundFM.Features.GetFastMarketResults;
 using AutoRefundFM.Features.PushFastMarketResult;
 using AutoRefundFM.Features.UpdateWaterBreak;
 using AutoRefundFM.Models;
 using Fanex.Data.Repository;
-using Fanex.Settlement.Converter.Services;
-using Fanex.Settlement.ScaleOut.Models;
 using Fanex.Settlement.ScaleOut.Request;
 using Fanex.Settlement.ScaleOut.Services;
 using Microsoft.Extensions.Options;
@@ -17,88 +14,120 @@ namespace AutoRefundFM.UnitTests.Features;
 
 public class PushFastMarketResultHandlerTests
 {
-    private readonly ScaleOutSettleService scaleOutSettleService;
-    private readonly IGetFastMarketResultsHandler getFastMarketResultsHandler;
-    private readonly XmlConvertService xmlConvertService;
-    private readonly SettlementLogService logService;
-    private readonly IDynamicRepository repository;
-    private readonly IOptions<AppSettingsKey> appSettingsKey;
-    private readonly AutoRefundResultService refundResultService;
-    private readonly IUpdateWaterBreakHandler updateWaterBreakHandler;
-    private readonly Match match;
+    private readonly ScaleOutSettleService _scaleOutSettleService;
+    private readonly IDynamicRepository _repository;
+    private readonly IOptions<AppSettingsKey> _appSettingsKey;
+    private readonly AutoRefundResultService _refundResultService;
+    private readonly IUpdateWaterBreakHandler _updateWaterBreakHandler;
+    private readonly SettlementLogService _logService;
+    private readonly PushFastMarketResultHandler _handler;
 
     public PushFastMarketResultHandlerTests()
     {
-        scaleOutSettleService = Substitute.For<ScaleOutSettleService>();
-        getFastMarketResultsHandler = Substitute.For<IGetFastMarketResultsHandler>();
-        xmlConvertService = Substitute.For<XmlConvertService>();
-        logService = Substitute.For<SettlementLogService>();
-        repository = Substitute.For<IDynamicRepository>();
-        appSettingsKey = Substitute.For<IOptions<AppSettingsKey>>();
-        refundResultService = Substitute.For<AutoRefundResultService>();
-        updateWaterBreakHandler = Substitute.For<IUpdateWaterBreakHandler>();
-        match = new Match { MatchId = 123 };
+        _scaleOutSettleService = Substitute.For<ScaleOutSettleService>();
+        _repository = Substitute.For<IDynamicRepository>();
+        _appSettingsKey = Options.Create(new AppSettingsKey
+        {
+            SiteDbServer = new List<string> { "Server1", "Server2" }
+        });
+        _refundResultService = Substitute.For<AutoRefundResultService>();
+        _updateWaterBreakHandler = Substitute.For<IUpdateWaterBreakHandler>();
+        _logService = Substitute.For<SettlementLogService>();
+
+        _handler = new PushFastMarketResultHandler(
+            _scaleOutSettleService,
+            _repository,
+            _appSettingsKey,
+            _refundResultService,
+            _updateWaterBreakHandler,
+            _logService
+        );
     }
 
     [Fact]
-    public async Task Handle_BetTypeRootEmpty_CallsUpdateWaterBreakAndReturnsEarly()
+    public async Task Handle_ShouldUpdateMatchInfoAndExecuteCalculateForAllServers()
     {
         // Arrange
-        var betTypesRoot = new BetTypesRoot { BetType = new List<BetTypeElement>() };
-
-        getFastMarketResultsHandler.Handle(match).Returns(betTypesRoot);
-
-        var handler = new PushFastMarketResultHandler(
-            scaleOutSettleService,
-            getFastMarketResultsHandler,
-            xmlConvertService,
-            logService,
-            repository,
-            appSettingsKey,
-            refundResultService,
-            updateWaterBreakHandler);
+        var match = new Match { MatchId = 123 };
+        var criteria = new PushFastMarketResultCriteria
+        {
+            MatchId = 123,
+            Results = "<results>test</results>"
+        };
+        var resourceXml = "<resources>test</resources>";
 
         // Act
-        await handler.Handle(match);
+        await _handler.Handle(match, criteria, resourceXml);
 
         // Assert
-        await updateWaterBreakHandler.Received(1).Handle(match);
-        await scaleOutSettleService.DidNotReceive().ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>());
-        await scaleOutSettleService.DidNotReceive().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
+        await _scaleOutSettleService.Received(1)
+            .UpdateMatchInfo(Arg.Is<UpdateMatchInfoRequest>(r =>
+                r.Mode == Fanex.Settlement.ScaleOut.Constants.Mode.FastMarket));
+
+        // Verify ExecuteCalculate was called for each server
+        _repository.Received(2).Execute(Arg.Is<PushFastMarketResultCriteria>(c =>
+            c.MatchId == match.MatchId));
+
+        // Verify logs were written
+        await _logService.Received(1)
+            .WriteSettlementLog(Arg.Is<InsertSettlementLogCriteria>(c =>
+                c.MatchId == match.MatchId &&
+                c.Mode == Fanex.Settlement.ScaleOut.Constants.Mode.FastMarket));
+
+        await _logService.Received(1)
+            .WriteUserLogSettle(
+                match.MatchId,
+                Arg.Is<string>(s => s.Contains(match.MatchId.ToString())));
+
+        // Verify water break update and results update
+        await _updateWaterBreakHandler.Received(1).Handle(match);
+        await _refundResultService.Received(1)
+            .InsertOrUpdateResults(match.MatchId, 2, resourceXml);
     }
 
-
     [Fact]
-    public async Task Handle_ValidationFails_DoesNotCallUpdateOrLogMethods()
+    public async Task Handle_WhenUpdateMatchInfoFails_ShouldThrowException()
     {
         // Arrange
-        var betTypesRoot = new BetTypesRoot { BetType = new List<BetTypeElement> { new() { Id = FastMarketBetType.NextOneMinute, Items = new List<ItemElement> { new() { Position = 1, Result = "1" } } } } };
-        var betTypesXml = "<BetTypesRoot />";
-        var validationResult = new ResultMessage { ErrorCode = 1 };
+        var match = new Match { MatchId = 123 };
+        var criteria = new PushFastMarketResultCriteria();
+        var resourceXml = "<resources>test</resources>";
 
-        getFastMarketResultsHandler.Handle(match).Returns(betTypesRoot);
-        xmlConvertService.Serialize(betTypesRoot).Returns(betTypesXml);
-        scaleOutSettleService.ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>()).Returns(validationResult);
+        _scaleOutSettleService
+            .UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>())
+            .Returns(Task.FromException(new Exception("Update failed")));
+
+        // Act & Assert
+        await Assert.ThrowsAsync<Exception>(() =>
+            _handler.Handle(match, criteria, resourceXml));
+    }
+
+    [Fact]
+    public async Task Handle_WithEmptyServerList_ShouldNotExecuteCalculate()
+    {
+        // Arrange
+        var emptyServerOptions = Options.Create(new AppSettingsKey
+        {
+            SiteDbServer = new List<string>()
+        });
 
         var handler = new PushFastMarketResultHandler(
-            scaleOutSettleService,
-            getFastMarketResultsHandler,
-            xmlConvertService,
-            logService,
-            repository,
-            appSettingsKey,
-            refundResultService,
-            updateWaterBreakHandler);
+            _scaleOutSettleService,
+            _repository,
+            emptyServerOptions,
+            _refundResultService,
+            _updateWaterBreakHandler,
+            _logService
+        );
+
+        var match = new Match { MatchId = 123 };
+        var criteria = new PushFastMarketResultCriteria();
+        var resourceXml = "<resources>test</resources>";
 
         // Act
-        await handler.Handle(match);
+        await handler.Handle(match, criteria, resourceXml);
 
         // Assert
-        await scaleOutSettleService.Received(1).ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>());
-        await scaleOutSettleService.DidNotReceive().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
-        await logService.DidNotReceive().WriteUserLogSettle(Arg.Any<int>(), Arg.Any<string>());
-        await logService.DidNotReceive().WriteSettlementLog(Arg.Any<InsertSettlementLogCriteria>());
-        await refundResultService.DidNotReceive().InsertOrUpdateResults(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string>());
-        await updateWaterBreakHandler.DidNotReceive().Handle(match);
+        _repository.DidNotReceive().Execute(Arg.Any<PushFastMarketResultCriteria>());
     }
 }
