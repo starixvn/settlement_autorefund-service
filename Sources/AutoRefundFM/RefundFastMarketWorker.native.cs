@@ -27,16 +27,7 @@ public class RefundFastMarketWorker(
 
             var matches = await matchPoolService.PeekNewMatch();
 
-            if (matches == null || matches.Count == 0)
-            {
-                continue;
-            }
-
-            foreach (var item in matches)
-            {
-                await settleOpaqueFacade.Refund(item);
-            }
-
+            matches.ForEach(match => Task.Run(() => settleOpaqueFacade.Refund(match)));
         }
     }
 }
