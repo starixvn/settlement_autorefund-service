@@ -4,40 +4,37 @@ using Fanex.AutoRefund.Service;
 using Fanex.Data.SqlServer;
 using Fanex.Logging.Sentry.RavenClient;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using ONEbook.UM.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
+var services = builder.Services;
 
-builder.Services.Configure<AppSettingsKey>(configuration);
+services.Configure<AppSettingsKey>(configuration);
 
-builder.Services.AddMassTransit(configuration);
+services.AddMassTransit(configuration);
 
-builder.Services.AddOneBookUmForService(configuration);
+services.AddOneBookUmForService(configuration);
 
-builder.Services.AddFanexLogSentry(configuration);
+services.AddFanexLogSentry(configuration);
 
-builder.Services.AddFanexSql(configuration);
+services.AddFanexSql(configuration);
 
-builder.Services.AddConfigRedisCache(configuration);
+services.AddConfigRedisCache(configuration);
 
-builder.Services.InitializeServices(configuration);
+services.InitializeServices(configuration);
 
-builder.Services.AddAutoMapper();
+services.AddAutoMapper();
 
-builder.Services.AddAutoEarlyRefund();
+services.AddAutoEarlyRefund();
 
-builder.Services.AddHostedService<AutoRefundService>();
-builder.Services.AddHostedService<AutoEarlyRefundWorker>();
-builder.Services.AddHostedService<GetConfirmNtResultsSchedule>();
+services.AddHostedService<AutoRefundService>();
+services.AddHostedService<AutoEarlyRefundWorker>();
+services.AddHostedService<GetConfirmNtResultsSchedule>();
+services.AddHealthChecks();
 
 var app = builder.Build();
-
-app.Run(async context =>
-{
-    await context.Response.WriteAsync("OK");
-});
+app.MapHealthChecks("/healthz");
 
 await app.RunAsync();
