@@ -1,5 +1,4 @@
 ﻿using AutoEarlyRefund.Consumers;
-using AutoMapper;
 using AutoRefund.Services;
 using Fanex.Caching;
 using Fanex.Caching.Redis;
@@ -48,15 +47,9 @@ public static class AutoRefundInjector
         services.AddSingleton<ICacheService>(new CacheService());
     }
 
-    public static void AddAutoMapper(this IServiceCollection service)
+    public static void AddAutoMapper(this IServiceCollection services)
     {
-        var mapperConfig = new MapperConfiguration(mc =>
-        {
-            mc.AddProfile(typeof(ScaleOutMappingProfile));
-        });
-
-        var mapper = mapperConfig.CreateMapper();
-        service.AddSingleton(mapper);
+        services.AddAutoMapper(cfg => cfg.AddProfile<ScaleOutMappingProfile>());
     }
 
     public static void AddMassTransit(this IServiceCollection service, IConfiguration configuration)

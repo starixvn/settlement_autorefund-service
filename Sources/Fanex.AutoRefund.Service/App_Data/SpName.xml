@@ -14,7 +14,6 @@
 		<Setting Key="NAP_Set_AutoPayoutResult_Update" SpName="NAP_Set_AutoPayoutResult_Update" DbName="DBPRO.bodb02.wsv_nap" />
 	</Function>
 
-
 	<Function Name="AutoEarlyRefund">
 		<Setting Key="NAP_Set_AutoRefund_Resource_ScheduleSel" SpName="NAP_Set_AutoRefund_Resource_ScheduleSel" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_AutoRefundResult_Update" SpName="NAP_Set_AutoRefundResult_Update" DbName="DBPRO.bodb02.wsv_nap" />
@@ -25,8 +24,6 @@
 		<Setting Key="NAP_Set_AutoRefund_ResourceStatusInfo_Sel" SpName="NAP_Set_AutoRefund_ResourceStatusInfo_Sel" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_AutoRefund_ResourceCfm_ScheduleSel" SpName="NAP_Set_AutoRefund_ResourceCfm_ScheduleSel" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_AutoRefundResult_Select" SpName="NAP_Set_AutoRefundResult_Select" DbName="DBPRO.bodb02.wsv_nap" />
-
-		
 
 		<Function Name="NAP_Admin_Settlement_Auto_1s_Push">
 			<Setting Key="NAP_Admin_Settlement_Auto_1s_Push_DBTXN" SpName="NAP_Admin_Settlement_Auto_1s_Push" DbName="DBTXN.bodb02.wsv_nap" />
@@ -64,9 +61,5 @@
 			<Setting Key="NAP_Admin_Settlement_Refund_1_Push_DBSITE02" SpName="NAP_Admin_Settlement_Refund_1_Push" DbName="DBSITE02.bodb02.wsv_nap" />
 			<Setting Key="NAP_Admin_Settlement_Refund_1_Push_DBSITE03" SpName="NAP_Admin_Settlement_Refund_1_Push" DbName="DBSITE03.bodb02.wsv_nap" />
 		</Function>
-
-		
 	</Function>
 </Functions>
-
-
