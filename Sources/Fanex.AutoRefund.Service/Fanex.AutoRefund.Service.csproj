@@ -20,14 +20,8 @@
     <None Remove="AutoRefundInjector.native.cs.orig" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="appsettings.KLDR.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="appsettings.json" />
     <Content Include="appsettings.LOCAL.json" />
-    <Content Include="appsettings.PROD.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
 <Content Include="appsettings.KLPROD.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -78,9 +72,6 @@
     <None Remove="AutoRefundInjector.native.cs.orig" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="appsettings.KLDR.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="appsettings.json" />
     <Content Include="appsettings.LOCAL.json" />
     <Content Include="appsettings.KLPROD.json">
