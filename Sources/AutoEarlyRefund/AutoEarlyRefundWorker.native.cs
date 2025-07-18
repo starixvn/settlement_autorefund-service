@@ -1,5 +1,8 @@
 ﻿using AutoEarlyRefund.Features.PeekNewMatches;
 using AutoEarlyRefund.Services;
+using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.Database;
 using ONEbook.UM.Services;
 
 namespace AutoEarlyRefund;
@@ -17,15 +20,34 @@ public class AutoEarlyRefundWorker(
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
-            var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
-            if (isMaintenance)
+            try
             {
-                continue;
+                var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
+                if (isMaintenance)
+                {
+                    continue;
+                }
+
+                await HandleAutoAsync(stoppingToken);
             }
+            catch (Exception ex)
+            {
+                var logMessage = new LogMessage(ex.Message)
+                    .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
+                    .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                    .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
+                    .ToString();
 
-            var matches = await matchPoolService.PeekNewMatch();
-
-            matches.ForEach(x => Task.Run(() => settleOpaqueFacade.Settle(x), stoppingToken));
+                await LogService.ErrorAsync(logMessage);
+            }
         }
+    }
+
+    private async Task HandleAutoAsync(CancellationToken cancellationToken)
+    {
+
+        var matches = await matchPoolService.PeekNewMatch();
+
+        matches.ForEach(x => Task.Run(() => settleOpaqueFacade.Settle(x), cancellationToken));
     }
 }

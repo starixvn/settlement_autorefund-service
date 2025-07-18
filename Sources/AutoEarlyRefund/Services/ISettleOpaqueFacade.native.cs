@@ -4,8 +4,11 @@ using AutoEarlyRefund.Features.PushResultSettlement;
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.Database;
 using Fanex.Settlement.MessageBridge.RefundEvents;
 using MassTransit;
+
 using ResourceItem = Fanex.Settlement.MessageBridge.RefundEvents.ResourceItem;
 
 namespace AutoEarlyRefund.Services;
@@ -61,17 +64,27 @@ public class SettleOpaqueFacadeImp(
         }
         catch (AppException ex)
         {
-            await LogService.ErrorAsync(ex.Message, ex);
+            await LogService.InfoAsync(ex.Message, ex);
         }
         catch (Exception ex)
         {
-            await LogService.ErrorAsync(ex.Message, ex);
-            throw;
+            await ExceptionLog(match, ex);
         }
         finally
         {
             matchPoolService.Remove(match);
         }
+    }
+
+    public async Task ExceptionLog(Match match, Exception exception)
+    {
+        var logMessage = new LogMessage($"Match: {match} - {exception.Message}")
+            .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(exception))
+            .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+            .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(exception))
+            .ToString();
+
+        await LogService.ErrorAsync(logMessage);
     }
 
     private async Task HandleErrorValidMatch(Match match, string errorMsg)
