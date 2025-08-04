@@ -35,39 +35,26 @@ public class SettleOpaqueFacadeImp(
         try
         {
             var betTypeRoot = await getFastMarketResultsHandler.Handle(match);
-            if (betTypeRoot.BetType.Count == 0)
-            {
-                await updateWaterBreakHandler.Handle(match);
+
+            if (await ShouldUpdateWaterBreak(match, betTypeRoot))
                 return;
-            }
 
-            var betTypeRootXml = xmlConvertService.Serialize(betTypeRoot);
-            var resourceItems = CreateResourceItemsFromBetTypes(betTypeRoot);
-            var resourceXml = CreateResourceXml(resourceItems);
+            var (betTypeRootXml, resourceItems, resourceXml) = PrepareRefundData(betTypeRoot);
 
-            var criteria = new PushFastMarketResultCriteria
-            {
-                MatchId = match.MatchId,
-                Results = betTypeRootXml,
-            };
-            var validRequest = criteria.Adapt<EventTicketFastMarketRequest>();
-            validRequest.IsAuto = false;
-            var validationResult = await scaleOutSettleService.ValidateEventAndTicketFastMarket(validRequest);
-
-            if (validationResult.ErrorCode > 0)
+            var validationResult = await ValidateRefundRequest(match, betTypeRootXml);
+            if (!validationResult.IsValid)
             {
                 await HandleInValidRefundResult(match.MatchId, resourceItems, validationResult.ErrorMessage);
                 return;
             }
 
-            var markedTicketResult = await checkMarkedTicketHandler.Handle(match.MatchId, betTypeRootXml);
-            if (markedTicketResult)
+            if (await HasMarkedTickets(match.MatchId, betTypeRootXml))
             {
                 await HandleInValidRefundResult(match.MatchId, resourceItems, "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.");
                 return;
             }
 
-            await pushFastMarketResultHandler.Handle(match, criteria, resourceXml);
+            await ProcessRefund(match, betTypeRootXml, resourceXml);
         }
         catch (Exception ex)
         {
@@ -77,6 +64,59 @@ public class SettleOpaqueFacadeImp(
         {
             matchPoolService.RemoveMatch(match);
         }
+    }
+
+    private async Task<bool> ShouldUpdateWaterBreak(Match match, BetTypesRoot betTypeRoot)
+    {
+        if (betTypeRoot.BetType.Count == 0)
+        {
+            await updateWaterBreakHandler.Handle(match);
+            return true;
+        }
+        return false;
+    }
+
+    private (string betTypeRootXml, List<ResourceItem> resourceItems, string resourceXml) PrepareRefundData(BetTypesRoot betTypeRoot)
+    {
+        var betTypeRootXml = xmlConvertService.Serialize(betTypeRoot);
+        var resourceItems = CreateResourceItemsFromBetTypes(betTypeRoot);
+        var resourceXml = CreateResourceXml(resourceItems);
+
+        return (betTypeRootXml, resourceItems, resourceXml);
+    }
+
+    private async Task<(bool IsValid, string ErrorMessage)> ValidateRefundRequest(Match match, string betTypeRootXml)
+    {
+        var criteria = new PushFastMarketResultCriteria
+        {
+            MatchId = match.MatchId,
+            Results = betTypeRootXml,
+        };
+
+        var validRequest = criteria.Adapt<EventTicketFastMarketRequest>();
+        validRequest.IsAuto = false;
+
+        var validationResult = await scaleOutSettleService.ValidateEventAndTicketFastMarket(validRequest);
+
+        return validationResult.ErrorCode > 0
+            ? (false, validationResult.ErrorMessage)
+            : (true, string.Empty);
+    }
+
+    private async Task<bool> HasMarkedTickets(int matchId, string betTypeRootXml)
+    {
+        return await checkMarkedTicketHandler.Handle(matchId, betTypeRootXml);
+    }
+
+    private async Task ProcessRefund(Match match, string betTypeRootXml, string resourceXml)
+    {
+        var criteria = new PushFastMarketResultCriteria
+        {
+            MatchId = match.MatchId,
+            Results = betTypeRootXml,
+        };
+
+        await pushFastMarketResultHandler.Handle(match, criteria, resourceXml);
     }
 
     public async Task ExceptionLog(Match match, Exception exception)

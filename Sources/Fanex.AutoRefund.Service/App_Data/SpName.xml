@@ -82,5 +82,19 @@
 			<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBSITE02" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push" DbName="DBSITE02.bodb02.wsv_nap" />
 			<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBSITE03" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push" DbName="DBSITE03.bodb02.wsv_nap" />
 		</Function>
+
+		<Function Name="NAP_Admin_Settlement_ValidationFM_Ticket">
+			<Setting Key="NAP_Admin_Settlement_ValidationFM_Ticket_DBTXN" SpName="NAP_Admin_Settlement_ValidationFM_Ticket" DbName="DBTXN.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_ValidationFM_Ticket_DBSITE01" SpName="NAP_Admin_Settlement_ValidationFM_Ticket" DbName="DBSITE01.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_ValidationFM_Ticket_DBSITE02" SpName="NAP_Admin_Settlement_ValidationFM_Ticket" DbName="DBSITE02.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_ValidationFM_Ticket_DBSITE03" SpName="NAP_Admin_Settlement_ValidationFM_Ticket" DbName="DBSITE03.bodb02.wsv_nap" />
+		</Function>
+
+		<Function Name="NAP_Set_FastMarket_CheckingMarkedTransaction">
+			<Setting Key="NAP_Set_FastMarket_CheckingMarkedTransaction_DBTXN" SpName="NAP_Set_FastMarket_CheckingMarkedTransaction" DbName="DBTXN.bodb02.wsv_nap" />
+			<Setting Key="NAP_Set_FastMarket_CheckingMarkedTransaction_DBSITE01" SpName="NAP_Set_FastMarket_CheckingMarkedTransaction" DbName="DBSITE01.bodb02.wsv_nap" />
+			<Setting Key="NAP_Set_FastMarket_CheckingMarkedTransaction_DBSITE02" SpName="NAP_Set_FastMarket_CheckingMarkedTransaction" DbName="DBSITE02.bodb02.wsv_nap" />
+			<Setting Key="NAP_Set_FastMarket_CheckingMarkedTransaction_DBSITE03" SpName="NAP_Set_FastMarket_CheckingMarkedTransaction" DbName="DBSITE03.bodb02.wsv_nap" />
+		</Function>
 	</Function>
 </Functions>
