@@ -10,5 +10,5 @@ public class SpecialSession
     public int EndSecond { get; set; }
     public int EndMinute { get; set; }
     public int ResultStatusId { get; set; }
-    public string OtherInfo { get; set; }
+    public string OtherInfo { get; set; } = string.Empty;
 }

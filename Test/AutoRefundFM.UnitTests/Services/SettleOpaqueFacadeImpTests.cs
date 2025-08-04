@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoRefund.Core.Models;
 using AutoRefund.Core.Services;
 using AutoRefundFM.Features.CheckingMarkedTicket;
 using AutoRefundFM.Features.GetFastMarketResults;
+using AutoRefundFM.Features.GetSpecialSession;
 using AutoRefundFM.Features.PushFastMarketResult;
 using AutoRefundFM.Features.UpdateWaterBreak;
 using AutoRefundFM.Models;
@@ -14,7 +11,6 @@ using Fanex.Settlement.ScaleOut.Models;
 using Fanex.Settlement.ScaleOut.Request;
 using Fanex.Settlement.ScaleOut.Services;
 using NSubstitute;
-using Xunit;
 
 namespace AutoRefundFM.UnitTests.Features;
 
@@ -27,6 +23,7 @@ public class SettleOpaqueFacadeImpTests
     private readonly IPushFastMarketResultHandler pushFastMarketResultHandler = Substitute.For<IPushFastMarketResultHandler>();
     private readonly AutoRefundResultService refundResultService = Substitute.For<AutoRefundResultService>();
     private readonly ICheckMarkedTicketHandler checkMarkedTicketHandler = Substitute.For<ICheckMarkedTicketHandler>();
+    private readonly IMatchPoolService matchPoolService = Substitute.For<IMatchPoolService>();
     private readonly Match match = new() { MatchId = 123 };
 
     private SettleOpaqueFacadeImp CreateSut() => new(
@@ -36,7 +33,8 @@ public class SettleOpaqueFacadeImpTests
         xmlConvertService,
         pushFastMarketResultHandler,
         refundResultService,
-        checkMarkedTicketHandler);
+        checkMarkedTicketHandler,
+        matchPoolService);
 
     [Fact]
     public async Task Refund_BetTypeRootEmpty_CallsUpdateWaterBreakAndReturnsEarly()

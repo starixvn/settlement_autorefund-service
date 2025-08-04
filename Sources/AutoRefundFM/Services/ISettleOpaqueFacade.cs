@@ -2,9 +2,12 @@
 using AutoRefund.Core.Services;
 using AutoRefundFM.Features.CheckingMarkedTicket;
 using AutoRefundFM.Features.GetFastMarketResults;
+using AutoRefundFM.Features.GetSpecialSession;
 using AutoRefundFM.Features.PushFastMarketResult;
 using AutoRefundFM.Features.UpdateWaterBreak;
 using AutoRefundFM.Models;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.Database;
 using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut.Request;
 using Fanex.Settlement.ScaleOut.Services;
@@ -24,44 +27,67 @@ public class SettleOpaqueFacadeImp(
     XmlConvertService xmlConvertService,
     IPushFastMarketResultHandler pushFastMarketResultHandler,
     AutoRefundResultService refundResultService,
-    ICheckMarkedTicketHandler checkMarkedTicketHandler) : SettleOpaqueFacade
+    ICheckMarkedTicketHandler checkMarkedTicketHandler,
+    IMatchPoolService matchPoolService) : SettleOpaqueFacade
 {
     public async Task Refund(Match match)
     {
-        var betTypeRoot = await getFastMarketResultsHandler.Handle(match);
-        if (betTypeRoot.BetType.Count == 0)
+        try
         {
-            await updateWaterBreakHandler.Handle(match);
-            return;
+            var betTypeRoot = await getFastMarketResultsHandler.Handle(match);
+            if (betTypeRoot.BetType.Count == 0)
+            {
+                await updateWaterBreakHandler.Handle(match);
+                return;
+            }
+
+            var betTypeRootXml = xmlConvertService.Serialize(betTypeRoot);
+            var resourceItems = CreateResourceItemsFromBetTypes(betTypeRoot);
+            var resourceXml = CreateResourceXml(resourceItems);
+
+            var criteria = new PushFastMarketResultCriteria
+            {
+                MatchId = match.MatchId,
+                Results = betTypeRootXml,
+            };
+            var validRequest = criteria.Adapt<EventTicketFastMarketRequest>();
+            validRequest.IsAuto = false;
+            var validationResult = await scaleOutSettleService.ValidateEventAndTicketFastMarket(validRequest);
+
+            if (validationResult.ErrorCode > 0)
+            {
+                await HandleInValidRefundResult(match.MatchId, resourceItems, validationResult.ErrorMessage);
+                return;
+            }
+
+            var markedTicketResult = await checkMarkedTicketHandler.Handle(match.MatchId, betTypeRootXml);
+            if (markedTicketResult)
+            {
+                await HandleInValidRefundResult(match.MatchId, resourceItems, "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.");
+                return;
+            }
+
+            await pushFastMarketResultHandler.Handle(match, criteria, resourceXml);
         }
-
-        var betTypeRootXml = xmlConvertService.Serialize(betTypeRoot);
-        var resourceItems = CreateResourceItemsFromBetTypes(betTypeRoot);
-        var resourceXml = CreateResourceXml(resourceItems);
-
-        var criteria = new PushFastMarketResultCriteria
+        catch (Exception ex)
         {
-            MatchId = match.MatchId,
-            Results = betTypeRootXml,
-        };
-        var validRequest = criteria.Adapt<EventTicketFastMarketRequest>();
-        validRequest.IsAuto = false;
-        var validationResult = await scaleOutSettleService.ValidateEventAndTicketFastMarket(validRequest);
-
-        if (validationResult.ErrorCode > 0)
-        {
-            await HandleInValidRefundResult(match.MatchId, resourceItems, validationResult.ErrorMessage);
-            return;
+            await ExceptionLog(match, ex);
         }
-
-        var markedTicketResult = await checkMarkedTicketHandler.Handle(match.MatchId, betTypeRootXml);
-        if (markedTicketResult)
+        finally
         {
-            await HandleInValidRefundResult(match.MatchId, resourceItems, "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.");
-            return;
+            matchPoolService.RemoveMatch(match);
         }
+    }
 
-        await pushFastMarketResultHandler.Handle(match, criteria, resourceXml);
+    public async Task ExceptionLog(Match match, Exception exception)
+    {
+        var logMessage = new LogMessage($"Match: {match} - {exception.Message}")
+            .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(exception))
+            .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+            .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(exception))
+            .ToString();
+
+        await Fanex.Logging.LogService.ErrorAsync(logMessage);
     }
 
     private string CreateResourceXml(List<ResourceItem> resourceItems)
