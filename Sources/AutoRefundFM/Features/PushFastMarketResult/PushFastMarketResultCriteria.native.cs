@@ -16,7 +16,7 @@ public class PushFastMarketResultCriteria : NonQueryCommand
 
     public string Action { get; set; } = "REFUND";
 
-    public bool IsAuto { get; set; } = true;
+    public bool IsAuto { get; set; } = false;
 
     public bool IsReSettledTickets { get; set; }
 
@@ -40,5 +40,5 @@ public class PushFastMarketResultCriteria : NonQueryCommand
 
     public override string GetSettingKey() => $"NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_{DbServer}";
 
-    public override bool IsValid() => AdminId > 0 && MatchId > 0;
+    public override bool IsValid() => MatchId > 0;
 }

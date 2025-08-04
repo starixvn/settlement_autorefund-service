@@ -39,7 +39,7 @@ public class PushFastMarketResultHandler(
         await WritePreSettlementLog(match, criteria.Results);
         await WriteSettlementLog(match, resourceXml);
 
-        ExecuteCalculate(criteria);
+        await ExecuteCalculate(criteria);
 
         await updateWaterBreakHandler.Handle(match);
         await refundResultService.InsertOrUpdateResults(match.MatchId, 2, resourceXml);
@@ -67,12 +67,12 @@ public class PushFastMarketResultHandler(
         await logService.WriteUserLogSettle(match.MatchId, message);
     }
 
-    private void ExecuteCalculate(PushFastMarketResultCriteria criteria)
+    private async Task ExecuteCalculate(PushFastMarketResultCriteria criteria)
     {
         foreach (var server in appSettingsKey.SiteDbServer)
         {
             criteria.DbServer = server;
-            repository.Execute(criteria);
+            await repository.ExecuteAsync(criteria);
         }
     }
 }
