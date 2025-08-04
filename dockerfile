@@ -4,6 +4,7 @@ WORKDIR /src
 COPY ./Sources/AutoRefund.Core ./AutoRefund.Core
 COPY ./Sources/AutoEarlyRefund ./AutoEarlyRefund
 COPY ./Sources/AutoRefund ./AutoRefund
+COPY ./Sources/AutoRefundFM ./AutoRefundFM
 COPY ./Sources/Fanex.AutoRefund.Service/Fanex.AutoRefund.Service.csproj ./Fanex.AutoRefund.Service/Fanex.AutoRefund.Service.csproj
 
 WORKDIR /src/Fanex.AutoRefund.Service
