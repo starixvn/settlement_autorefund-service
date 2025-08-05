@@ -1,4 +1,5 @@
-﻿using AutoRefund.Core.Models;
+﻿using AutoRefund.Core.Criteria;
+using AutoRefund.Core.Models;
 using AutoRefund.Core.Services;
 using AutoRefundFM.Features.CheckingMarkedTicket;
 using AutoRefundFM.Features.GetFastMarketResults;
@@ -28,13 +29,15 @@ public class SettleOpaqueFacadeImp(
     IPushFastMarketResultHandler pushFastMarketResultHandler,
     AutoRefundResultService refundResultService,
     ICheckMarkedTicketHandler checkMarkedTicketHandler,
-    IMatchPoolService matchPoolService) : SettleOpaqueFacade
+    IMatchPoolService matchPoolService,
+    SettlementLogService settlementLogService) : SettleOpaqueFacade
 {
     public async Task Refund(Match match)
     {
         try
         {
             var betTypeRoot = await getFastMarketResultsHandler.Handle(match);
+            await AddWBRefundResult(match, 1);
 
             if (await ShouldUpdateWaterBreak(match, betTypeRoot))
                 return;
@@ -44,17 +47,30 @@ public class SettleOpaqueFacadeImp(
             var validationResult = await ValidateRefundRequest(match, betTypeRootXml);
             if (!validationResult.IsValid)
             {
-                await HandleInValidRefundResult(match.MatchId, resourceItems, validationResult.ErrorMessage);
-                return;
+                await UpdateInValidRefundResult(match.MatchId, resourceItems, validationResult.ErrorMessage);
+                throw new AutoRefundFMException(validationResult.ErrorMessage);
             }
 
             if (await HasMarkedTickets(match.MatchId, betTypeRootXml))
             {
-                await HandleInValidRefundResult(match.MatchId, resourceItems, "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.");
-                return;
+                var errorMessage = "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.";
+                await UpdateInValidRefundResult(match.MatchId, resourceItems, errorMessage);
+
+                throw new AutoRefundFMException(errorMessage);
             }
 
             await ProcessRefund(match, betTypeRootXml, resourceXml);
+        }
+        catch (AutoRefundFMException ex)
+        {
+            await settlementLogService.WriteUserLogSettle(new UserLogCriteria
+            {
+                ActionId = 167,
+                MatchId = match.MatchId,
+                Remark = ex.Message,
+            });
+            await AddWBRefundResult(match, 3);
+
         }
         catch (Exception ex)
         {
@@ -84,6 +100,8 @@ public class SettleOpaqueFacadeImp(
 
         return (betTypeRootXml, resourceItems, resourceXml);
     }
+
+
 
     private async Task<(bool IsValid, string ErrorMessage)> ValidateRefundRequest(Match match, string betTypeRootXml)
     {
@@ -119,6 +137,7 @@ public class SettleOpaqueFacadeImp(
         await pushFastMarketResultHandler.Handle(match, criteria, resourceXml);
     }
 
+
     public async Task ExceptionLog(Match match, Exception exception)
     {
         var logMessage = new LogMessage($"Match: {match} - {exception.Message}")
@@ -132,7 +151,6 @@ public class SettleOpaqueFacadeImp(
 
     private string CreateResourceXml(List<ResourceItem> resourceItems)
     {
-
         var resourceRoot = new Resources<ResourceItem>
         {
             ResourceItems = resourceItems
@@ -153,7 +171,7 @@ public class SettleOpaqueFacadeImp(
             }))];
     }
 
-    private async Task HandleInValidRefundResult(int matchId, List<ResourceItem> resourceItems, string errorMsg)
+    private async Task UpdateInValidRefundResult(int matchId, List<ResourceItem> resourceItems, string errorMsg)
     {
         var newResourceItems = resourceItems
             .Select(item => new ResourceItem
@@ -167,4 +185,20 @@ public class SettleOpaqueFacadeImp(
         var resourceXml = CreateResourceXml(newResourceItems);
         await refundResultService.InsertOrUpdateResults(matchId, 3, resourceXml);
     }
+
+    private async Task AddWBRefundResult(Match match, int statusId)
+    {
+        var resourceItems = match.SpecialSessions
+            .Select(x => new ResourceItem
+            {
+                ResourceId = x.ResourceId,
+                HomeValue = $"{x.StartMinute}",
+                AwayValue = $"{x.EndMinute}",
+                OtherInfo = x.OtherInfo,
+            }).ToList();
+
+        var resourceXml = CreateResourceXml(resourceItems);
+        await refundResultService.InsertOrUpdateResults(match.MatchId, statusId, resourceXml);
+    }
+
 }

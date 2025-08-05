@@ -64,7 +64,7 @@ public class PushFastMarketResultHandler(
     {
         var message = $"NAP: Fast Market REFUND for matchId: {match.MatchId} with {betTypesXml}";
 
-        await logService.WriteUserLogSettle(match.MatchId, message);
+        await logService.WriteUserLogPreSettle(match.MatchId, message);
     }
 
     private async Task ExecuteCalculate(PushFastMarketResultCriteria criteria)

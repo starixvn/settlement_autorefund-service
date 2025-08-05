@@ -75,7 +75,7 @@ public class PushFastMarketResultHandlerTests
                 c.Mode == Fanex.Settlement.ScaleOut.Constants.Mode.FastMarket));
 
         await _logService.Received(1)
-            .WriteUserLogSettle(
+            .WriteUserLogPreSettle(
                 match.MatchId,
                 Arg.Is<string>(s => s.Contains(match.MatchId.ToString())));
 

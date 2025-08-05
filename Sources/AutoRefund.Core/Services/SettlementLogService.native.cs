@@ -7,7 +7,9 @@ public interface SettlementLogService
 {
     Task WriteSettlementLog(InsertSettlementLogCriteria insertLogCriteria);
 
-    Task WriteUserLogSettle(int matchId, string message);
+    Task WriteUserLogPreSettle(int matchId, string message);
+
+    Task WriteUserLogSettle(UserLogCriteria userLogCriteria);
 }
 
 
@@ -18,12 +20,17 @@ public class SettlementLogServiceImp(IDynamicRepository repository) : Settlement
         await repository.ExecuteAsync(insertLogCriteria);
     }
 
-    public async Task WriteUserLogSettle(int matchId, string message)
+    public async Task WriteUserLogPreSettle(int matchId, string message)
     {
         await repository.ExecuteAsync(new UserLogWriteLogPreSettlementCriteria
         {
             Extend = matchId,
             Doing = message,
         });
+    }
+
+    public async Task WriteUserLogSettle(UserLogCriteria userLogCriteria)
+    {
+        await repository.ExecuteAsync(userLogCriteria);
     }
 }
