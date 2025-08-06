@@ -1,5 +1,4 @@
 ﻿using AutoRefund.Core.Models;
-using AutoRefund.Core.Services;
 using AutoRefundFM.Models;
 using Fanex.Data.Repository;
 using Microsoft.Extensions.Options;
@@ -8,91 +7,45 @@ namespace AutoRefundFM.Features.GetFastMarketResults;
 
 public interface IGetFastMarketResultsHandler
 {
-    Task<BetTypesRoot> Handle(Match match);
+    Task<List<SpecialSession>> GetSpecialSessions(Match match);
 }
 
-public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
+public class GetFastMarketResultsHandler(IDynamicRepository repository, IOptions<AppSettingsKey> options) : IGetFastMarketResultsHandler
 {
-    private readonly IDynamicRepository repository;
-    private readonly AppSettingsKey appSettingsKey;
-    private readonly AutoRefundResultService refundResultService;
+    private readonly AppSettingsKey appSettingsKey = options.Value;
 
-    public GetFastMarketResultsHandler(IDynamicRepository repository, IOptions<AppSettingsKey> options, AutoRefundResultService refundResultService)
-    {
-        this.repository = repository;
-        appSettingsKey = options.Value;
-        this.refundResultService = refundResultService;
-    }
-
-    public async Task<BetTypesRoot> Handle(Match match)
+    public async Task<List<SpecialSession>> GetSpecialSessions(Match match)
     {
         var fastMarketResults = await GetFastMarketResults(match.MatchId);
 
         var ticketResults = await GetFastMarketTicketDetail(match.MatchId);
+
         var newTicketResults = ticketResults
-            .Where(item => !fastMarketResults.Exists(x => x.Position == item.Position && x.BetType == item.BetType))
-            .ToList();
+            .Where(item => !fastMarketResults.Exists(x => x.Position == item.Position && x.BetType == item.BetType));
+        var combinedResults = fastMarketResults.Concat(newTicketResults);
 
-        var combinedResults = fastMarketResults.Concat(newTicketResults)
-            .ToList();
-
-        var allFilteredFastMarketResults = match.SpecialSessions
-            .SelectMany(specialSession => ApplyFilterByWaterBreak(combinedResults, specialSession))
-            .Where(x => x.ResultStatusName.Equals("Running"))
-            .ToList();
-
-        var filteredFastMarketResults = await ApllyFilterByRefundResult(match, allFilteredFastMarketResults);
-
-        var betTypesRoot = CreateBetTypesRoot(filteredFastMarketResults);
-
-        return betTypesRoot;
-    }
-
-    private async Task<List<FastMarketResultDetail>> ApllyFilterByRefundResult(Match match, List<FastMarketResultDetail> fastMarketResults)
-    {
-        var getRefundResultsItems = fastMarketResults
-       .Select(x => new GetRefundResultsItem(
-            match.MatchId,
-            x.BetType.ToString(),
-            11, // assuming TypeId is 11 for Fast Market
-            x.Position.ToString()))
-       .ToList();
-
-        var results = await refundResultService.GetResults(getRefundResultsItems);
-
-        return fastMarketResults
-            .Where(x => !results.Exists(r => r.ResourceId == x.BetType.ToString() && r.OtherInfo == x.Position.ToString()))
-            .ToList();
-    }
-
-    private static BetTypesRoot CreateBetTypesRoot(List<FastMarketResultDetail> filteredResults)
-    {
-        var betTypes = filteredResults.GroupBy(x => x.BetType)
-            .OrderBy(x => x.Key)
-            .Select(z => new BetTypeElement
+        var runnableStatus = new List<int> { 0, 1, 2, 3, Status.CompletedAutoResult, Status.CompletedManualResult };
+        var result = match.SpecialSessions
+            .Select(session =>
             {
-                Id = z.Key,
-                Items = [.. z.Select(x => new ItemElement
-                {
-                    Position = x.Position,
-                    Result = GetResult(x),
-
-                })]
+                session.FastMarketResultDetails = [.. ApplyFilterByWaterBreak(combinedResults, session)
+                    .Where(result => runnableStatus.Contains(result.ResultStatus))
+                    .Select(result =>
+                    {
+                        result.SourceId = session.ResourceId;
+                        return result;
+                    })];
+                return session;
             }).ToList();
 
-        var betTypesRoot = new BetTypesRoot
-        {
-            BetType = betTypes ?? []
-        };
-
-        return betTypesRoot;
+        return result;
     }
 
-    private static IEnumerable<FastMarketResultDetail> ApplyFilterByWaterBreak(
+    private static List<FastMarketResultDetail> ApplyFilterByWaterBreak(
         IEnumerable<FastMarketResultDetail> results,
         SpecialSession specialSession)
     {
-        return results
+        return [.. results
                 .Where(item => item.BetType switch
                 {
                     FastMarketBetType.TimeMachineHdp or FastMarketBetType.TimeMachineMinutes => false,
@@ -100,29 +53,12 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
                     FastMarketBetType.NextOneMinuteSetPiece or FastMarketBetType.CombinationNextOneMinute => ApplyFilterOneMinuteWaterBreak(item, specialSession),
                     _ => ApplyFilterFiveMinuteWaterBreak(item, specialSession),
                     //_ => false
-                })
-                .ToList();
-    }
-
-    private static string GetResult(FastMarketResultDetail resultDetail)
-    {
-        return resultDetail.BetType switch
-        {
-            FastMarketBetType.TimeMachineMinutes or FastMarketBetType.TimeMachineHdp
-                => resultDetail.Result?.ToString() ?? string.Empty,
-
-            FastMarketBetType.NextOneMinuteSetPiece
-                => resultDetail.ResultItem.Goal
-                    ? SetPiece.CornerFreeKickGoalKickAndPenalty.ToString()
-                    : resultDetail.ResultItem.Value.ToString(),
-
-            _ => resultDetail.ResultItem.Value.ToString()
-        };
+                })];
     }
 
     private static bool ApplyFilterFiveMinuteWaterBreak(FastMarketResultDetail item, SpecialSession waterBreakTime)
     {
-        int endMinute = waterBreakTime.StartMinute == waterBreakTime.EndMinute
+        var endMinute = waterBreakTime.StartMinute == waterBreakTime.EndMinute
             ? waterBreakTime.StartMinute
             : waterBreakTime.EndMinute;
 
@@ -149,7 +85,7 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
 
         var (_, _, fastMarketResults, _) = await repository.FetchMultipleAsync<EventCounter, string, FastMarketResultDetail, ResultDetail>(criteria);
 
-        return fastMarketResults.ToList();
+        return [.. fastMarketResults];
     }
 
     private async Task<List<FastMarketResultDetail>> GetFastMarketTicketDetail(int matchId)
@@ -188,7 +124,4 @@ public class GetFastMarketResultsHandler : IGetFastMarketResultsHandler
 
         return ticketResults;
     }
-
-
-
 }

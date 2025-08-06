@@ -17,15 +17,16 @@ public class RefundFastMarketWorker(
         var intervalTime = TimeSpan.FromMilliseconds(configuration.GetValue<int>("ServiceInterval"));
         using PeriodicTimer timer = new(intervalTime);
 
-        while (await timer.WaitForNextTickAsync(stoppingToken))
+        //while (await timer.WaitForNextTickAsync(stoppingToken))
         {
             var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
             if (isMaintenance)
             {
-                continue;
+                //continue;
             }
 
             var matches = await matchPoolService.PeekNewMatch();
+
 
             matches.ForEach(match => Task.Run(() => settleOpaqueFacade.Refund(match)));
         }

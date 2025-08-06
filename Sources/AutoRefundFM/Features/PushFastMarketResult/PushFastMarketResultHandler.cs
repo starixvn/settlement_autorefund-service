@@ -3,6 +3,7 @@ using AutoRefund.Core.Models;
 using AutoRefund.Core.Services;
 using AutoRefundFM.Features.UpdateWaterBreak;
 using AutoRefundFM.Models;
+using AutoRefundFM.Services;
 using Fanex.Data.Repository;
 using Fanex.Settlement.ScaleOut.Constants;
 using Fanex.Settlement.ScaleOut.Request;
@@ -22,9 +23,9 @@ public class PushFastMarketResultHandler(
     ScaleOutSettleService scaleOutSettleService,
     IDynamicRepository repository,
     IOptions<AppSettingsKey> appSettingsKey,
-    AutoRefundResultService refundResultService,
     IUpdateWaterBreakHandler updateWaterBreakHandler,
-    SettlementLogService logService
+    SettlementLogService logService,
+    IFmRefundResultService fmRefundResultService
         ) : IPushFastMarketResultHandler
 {
     private readonly AppSettingsKey appSettingsKey = appSettingsKey.Value;
@@ -42,7 +43,13 @@ public class PushFastMarketResultHandler(
         await ExecuteCalculate(criteria);
 
         await updateWaterBreakHandler.Handle(match);
-        await refundResultService.InsertOrUpdateResults(match.MatchId, 2, resourceXml);
+        await fmRefundResultService.AddOrUpdateSessionResult(match, 2);
+        await fmRefundResultService.AddOrUpdateBetTypeResult(
+            match.MatchId,
+            [.. match.SpecialSessions.SelectMany(x => x.FastMarketResultDetails)],
+            2,
+            string.Empty);
+
     }
 
     private async Task WriteSettlementLog(Match match, string resourceXml)

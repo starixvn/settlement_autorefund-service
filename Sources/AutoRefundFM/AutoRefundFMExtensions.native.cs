@@ -19,6 +19,8 @@ public static class AutoRefundFMExtensions
             .AddSingleton<IMatchPoolService, MatchPoolServiceImp>()
             .AddSingleton<IUpdateWaterBreakHandler, UpdateWaterBreakHandler>()
             .AddSingleton<ICheckMarkedTicketHandler, CheckMarkedTicketHandler>()
+            .AddSingleton<IFmRefundResultService, FmRefundResultService>()
+            .AddSingleton<IValidateSessionService, ValidateSessionService>()
             .AddSingleton<SettleOpaqueFacade, SettleOpaqueFacadeImp>();
 
         return services;

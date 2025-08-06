@@ -11,4 +11,10 @@ public class SpecialSession
     public int EndMinute { get; set; }
     public int ResultStatusId { get; set; }
     public string OtherInfo { get; set; } = string.Empty;
+
+    public List<FastMarketResultDetail> FastMarketResultDetails { get; set; } = [];
+
+
+    public override string ToString() => $"{ResourceId}({OtherInfo})";
+
 }

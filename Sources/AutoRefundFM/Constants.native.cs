@@ -55,3 +55,8 @@ public static class SetPiece
 {
     public const int CornerFreeKickGoalKickAndPenalty = 44;
 }
+
+public static class Message
+{
+
+}

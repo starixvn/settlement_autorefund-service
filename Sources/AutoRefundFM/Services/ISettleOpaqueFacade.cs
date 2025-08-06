@@ -5,7 +5,6 @@ using AutoRefundFM.Features.CheckingMarkedTicket;
 using AutoRefundFM.Features.GetFastMarketResults;
 using AutoRefundFM.Features.GetSpecialSession;
 using AutoRefundFM.Features.PushFastMarketResult;
-using AutoRefundFM.Features.UpdateWaterBreak;
 using AutoRefundFM.Models;
 using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.Database;
@@ -23,54 +22,104 @@ public interface SettleOpaqueFacade
 
 public class SettleOpaqueFacadeImp(
     IGetFastMarketResultsHandler getFastMarketResultsHandler,
-    IUpdateWaterBreakHandler updateWaterBreakHandler,
     ScaleOutSettleService scaleOutSettleService,
     XmlConvertService xmlConvertService,
     IPushFastMarketResultHandler pushFastMarketResultHandler,
-    AutoRefundResultService refundResultService,
     ICheckMarkedTicketHandler checkMarkedTicketHandler,
     IMatchPoolService matchPoolService,
-    SettlementLogService settlementLogService) : SettleOpaqueFacade
+    SettlementLogService settlementLogService,
+    IValidateSessionService validateResultDetailService,
+    IFmRefundResultService fmRefundResultService) : SettleOpaqueFacade
 {
     public async Task Refund(Match match)
     {
         try
         {
-            var betTypeRoot = await getFastMarketResultsHandler.Handle(match);
-            await AddWBRefundResult(match, 1);
+            await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, match.SpecialSessions, 1);
+            var sessionResults = await getFastMarketResultsHandler.GetSpecialSessions(match);
+            // validate result
+            var validateCompletedResult = validateResultDetailService.ValidateSessionsWithCompletedResults(match, sessionResults);
+            if (!validateCompletedResult.IsValid && validateCompletedResult.InvalidSessions.Count > 0)
+            {
+                await settlementLogService.WriteUserLogSettle(new UserLogCriteria
+                {
+                    MatchId = match.MatchId,
+                    ActionId = 167,
+                    Remark = validateCompletedResult.ErrorMessage
+                });
 
-            if (await ShouldUpdateWaterBreak(match, betTypeRoot))
+                await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, validateCompletedResult.InvalidSessions, 3);
+                await fmRefundResultService.AddOrUpdateBetTypeResult(
+                    match.MatchId,
+                    validateCompletedResult.InvalidSessions.SelectMany(x => x.FastMarketResultDetails).ToList(),
+                    3,
+                    validateCompletedResult.ErrorMessage);
+            }
+
+            if (validateCompletedResult.Sessions.Count == 0)
+            {
                 return;
+            }
 
-            var (betTypeRootXml, resourceItems, resourceXml) = PrepareRefundData(betTypeRoot);
+            var validRunAutoRefund = await validateResultDetailService.ValidRunAutoRefund(match, validateCompletedResult.Sessions);
+
+            if (validRunAutoRefund.Sessions.Count == 0)
+            {
+                await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, validRunAutoRefund.InvalidSessions, 2);
+                return;
+            }
+
+            var validSessions = validRunAutoRefund.Sessions;
+            var validFm = validSessions.SelectMany(x => x.FastMarketResultDetails).ToList();
+            var betTypeRoot = CreateBetTypesRoot([.. validFm]);
+
+            if (betTypeRoot.BetType.Count == 0)
+            {
+                await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, validSessions, 2);
+                return;
+            }
+
+            var (betTypeRootXml, resourceXml) = PrepareRefundData(betTypeRoot);
 
             var validationResult = await ValidateRefundRequest(match, betTypeRootXml);
             if (!validationResult.IsValid)
             {
-                await UpdateInValidRefundResult(match.MatchId, resourceItems, validationResult.ErrorMessage);
-                throw new AutoRefundFMException(validationResult.ErrorMessage);
+                await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, validSessions, 3);
+                await fmRefundResultService.AddOrUpdateBetTypeResult(
+                    match.MatchId,
+                    validFm,
+                    3,
+                    validationResult.ErrorMessage);
+                await settlementLogService.WriteUserLogSettle(new UserLogCriteria
+                {
+                    MatchId = match.MatchId,
+                    ActionId = 167,
+                    Remark = validationResult.ErrorMessage
+                });
+
+                return;
             }
 
             if (await HasMarkedTickets(match.MatchId, betTypeRootXml))
             {
                 var errorMessage = "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.";
-                await UpdateInValidRefundResult(match.MatchId, resourceItems, errorMessage);
+                await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, validSessions, 3);
+                await fmRefundResultService.AddOrUpdateBetTypeResult(
+                    match.MatchId,
+                    validFm,
+                    3,
+                    errorMessage);
+                await settlementLogService.WriteUserLogSettle(new UserLogCriteria
+                {
+                    MatchId = match.MatchId,
+                    ActionId = 167,
+                    Remark = errorMessage
+                });
 
-                throw new AutoRefundFMException(errorMessage);
+                return;
             }
 
-            await ProcessRefund(match, betTypeRootXml, resourceXml);
-        }
-        catch (AutoRefundFMException ex)
-        {
-            await settlementLogService.WriteUserLogSettle(new UserLogCriteria
-            {
-                ActionId = 167,
-                MatchId = match.MatchId,
-                Remark = ex.Message,
-            });
-            await AddWBRefundResult(match, 3);
-
+            await ProcessRefund(new Match { MatchId = match.MatchId, SpecialSessions = validSessions }, betTypeRootXml, resourceXml);
         }
         catch (Exception ex)
         {
@@ -82,23 +131,12 @@ public class SettleOpaqueFacadeImp(
         }
     }
 
-    private async Task<bool> ShouldUpdateWaterBreak(Match match, BetTypesRoot betTypeRoot)
-    {
-        if (betTypeRoot.BetType.Count == 0)
-        {
-            await updateWaterBreakHandler.Handle(match);
-            return true;
-        }
-        return false;
-    }
 
-    private (string betTypeRootXml, List<ResourceItem> resourceItems, string resourceXml) PrepareRefundData(BetTypesRoot betTypeRoot)
+    private (string betTypeRootXml, string resourceXml) PrepareRefundData(BetTypesRoot betTypeRoot)
     {
         var betTypeRootXml = xmlConvertService.Serialize(betTypeRoot);
-        var resourceItems = CreateResourceItemsFromBetTypes(betTypeRoot);
-        var resourceXml = CreateResourceXml(resourceItems);
 
-        return (betTypeRootXml, resourceItems, resourceXml);
+        return (betTypeRootXml, resourceXml);
     }
 
 
@@ -138,7 +176,7 @@ public class SettleOpaqueFacadeImp(
     }
 
 
-    public async Task ExceptionLog(Match match, Exception exception)
+    public static async Task ExceptionLog(Match match, Exception exception)
     {
         var logMessage = new LogMessage($"Match: {match} - {exception.Message}")
             .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(exception))
@@ -161,44 +199,54 @@ public class SettleOpaqueFacadeImp(
         return selectedResources;
     }
 
-    private List<ResourceItem> CreateResourceItemsFromBetTypes(BetTypesRoot betTypesRoot)
+    private static List<ResourceItem> CreateResourceItemsFromResult(List<FastMarketResultDetail> fastMarketResults)
     {
-        return [.. betTypesRoot.BetType
-            .SelectMany(betType => betType.Items.Select(item => new ResourceItem
-            {
-                ResourceId = betType.Id.ToString(),
-                OtherInfo = item.Position.ToString()
-            }))];
+        return fastMarketResults.Select(x => new ResourceItem
+        {
+            ResourceId = x.BetType.ToString(),
+            HomeValue = $"{x.Position}",
+            AwayValue = $"{x.Result}",
+            OtherInfo = x.SourceId,
+        }).ToList();
     }
 
-    private async Task UpdateInValidRefundResult(int matchId, List<ResourceItem> resourceItems, string errorMsg)
+    private static BetTypesRoot CreateBetTypesRoot(List<FastMarketResultDetail> filteredResults)
     {
-        var newResourceItems = resourceItems
-            .Select(item => new ResourceItem
+        var betTypes = filteredResults.GroupBy(g => g.BetType)
+            .OrderBy(g => g.Key)
+            .Select(g => new BetTypeElement
             {
-                ResourceId = item.ResourceId,
-                OtherInfo = item.OtherInfo,
-                Remark = errorMsg
-            })
-            .ToList();
+                Id = g.Key,
+                Items = [.. g.Select(x => new ItemElement
+                {
+                    Position = x.Position,
+                    Result = GetResult(x),
 
-        var resourceXml = CreateResourceXml(newResourceItems);
-        await refundResultService.InsertOrUpdateResults(matchId, 3, resourceXml);
-    }
-
-    private async Task AddWBRefundResult(Match match, int statusId)
-    {
-        var resourceItems = match.SpecialSessions
-            .Select(x => new ResourceItem
-            {
-                ResourceId = x.ResourceId,
-                HomeValue = $"{x.StartMinute}",
-                AwayValue = $"{x.EndMinute}",
-                OtherInfo = x.OtherInfo,
+                })]
             }).ToList();
 
-        var resourceXml = CreateResourceXml(resourceItems);
-        await refundResultService.InsertOrUpdateResults(match.MatchId, statusId, resourceXml);
+        var betTypesRoot = new BetTypesRoot
+        {
+            BetType = betTypes ?? []
+        };
+
+        return betTypesRoot;
+    }
+
+    private static string GetResult(FastMarketResultDetail resultDetail)
+    {
+        return resultDetail.BetType switch
+        {
+            FastMarketBetType.TimeMachineMinutes or FastMarketBetType.TimeMachineHdp
+                => resultDetail.Result?.ToString() ?? string.Empty,
+
+            FastMarketBetType.NextOneMinuteSetPiece
+                => resultDetail.ResultItem.Goal
+                    ? SetPiece.CornerFreeKickGoalKickAndPenalty.ToString()
+                    : resultDetail.ResultItem.Value.ToString(),
+
+            _ => resultDetail.ResultItem.Value.ToString()
+        };
     }
 
 }

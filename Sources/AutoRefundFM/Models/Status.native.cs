@@ -2,23 +2,23 @@
 
 public static class Status
 {
-    private const int RunningTicket = 2;
+    public const int RunningTicket = 2;
 
-    private const int CalculatedTicket = 3;
+    public const int CalculatedTicket = 3;
 
-    private const int NoTicket = 4;
+    public const int NoTicket = 4;
 
-    private const int MarkedTicket = 5;
+    public const int MarkedTicket = 5;
 
-    private const int RunningResult = 3;
+    public const int RunningResult = 3;
 
-    private const int CompletedAutoResult = 4;
+    public const int CompletedAutoResult = 4;
 
-    private const int CompletedManualResult = 5;
+    public const int CompletedManualResult = 5;
 
-    private const int RefundResult = 6;
+    public const int RefundResult = 6;
 
-    private const int RefundDeterminedResult = 7;
+    public const int RefundDeterminedResult = 7;
 
     private static Dictionary<int, string> TicketStatusName => new()
     {

@@ -7,6 +7,7 @@ namespace AutoRefundFM.Features.UpdateWaterBreak;
 public interface IUpdateWaterBreakHandler
 {
     Task Handle(Match match);
+    Task Handle(int matchId, List<SpecialSession> SpecialSessions);
 }
 
 public class UpdateWaterBreakHandler(
@@ -36,5 +37,14 @@ public class UpdateWaterBreakHandler(
         };
 
         await repository.ExecuteAsync(criteria);
+    }
+
+    public async Task Handle(int matchId, List<SpecialSession> SpecialSessions)
+    {
+        await Handle(new Match
+        {
+            MatchId = matchId,
+            SpecialSessions = [.. SpecialSessions]
+        });
     }
 }

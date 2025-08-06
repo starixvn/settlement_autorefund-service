@@ -188,6 +188,8 @@ public class FastMarketResultDetail
 
     public int TicketMarked { get; set; }
 
+    public string SourceId { get; set; }
+
     public override bool Equals(object obj)
     {
         return obj is FastMarketResultDetail fastMarketResult && fastMarketResult.BetType == BetType && fastMarketResult.Position == Position;
