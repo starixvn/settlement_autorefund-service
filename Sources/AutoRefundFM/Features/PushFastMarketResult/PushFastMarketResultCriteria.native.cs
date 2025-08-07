@@ -12,7 +12,7 @@ public class PushFastMarketResultCriteria : NonQueryCommand
 
     public string EventCounters { get; set; } = string.Empty;
 
-    public bool IsSettleDetermined { get; set; }
+    public bool IsSettleDetermined { get; set; } = true;
 
     public string Action { get; set; } = "REFUND";
 
