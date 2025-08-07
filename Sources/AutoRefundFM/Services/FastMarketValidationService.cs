@@ -1,6 +1,11 @@
 ﻿using AutoRefund.Core.Models;
 using AutoRefund.Core.Services;
+using AutoRefundFM.Features.CheckingMarkedTicket;
+using AutoRefundFM.Features.PushFastMarketResult;
 using AutoRefundFM.Models;
+using Fanex.Settlement.ScaleOut.Request;
+using Fanex.Settlement.ScaleOut.Services;
+using Mapster;
 
 namespace AutoRefundFM.Services;
 
@@ -11,13 +16,16 @@ public record ValidateResult(
     List<SpecialSession> Sessions,
     List<SpecialSession> InvalidSessions);
 
-public interface IValidateSessionService
+public interface IFastMarketValidationService
 {
     ValidateResult ValidateSessionsWithCompletedResults(Match match, List<SpecialSession> specialSessions);
     Task<ValidateResult> ValidRunAutoRefund(Match match, List<SpecialSession> specialSessions);
+    Task<(bool IsValid, string ErrorMessage)> ValidateEventTicket(Match match, string betTypeRootXml);
+    Task<bool> HasMarkedTickets(int matchId, string betTypeRootXml);
 }
 
-public class ValidateSessionService(AutoRefundResultService refundResultService) : IValidateSessionService
+public class FastMarketValidationService(AutoRefundResultService refundResultService, ScaleOutSettleService scaleOutSettleService,
+    ICheckMarkedTicketHandler checkMarkedTicketHandler) : IFastMarketValidationService
 {
 
     public async Task<ValidateResult> ValidRunAutoRefund(Match match, List<SpecialSession> specialSessions)
@@ -39,6 +47,29 @@ public class ValidateSessionService(AutoRefundResultService refundResultService)
             .ToList();
 
         return new ValidateResult(false, string.Empty, validSessions, []);
+    }
+
+    public async Task<(bool IsValid, string ErrorMessage)> ValidateEventTicket(Match match, string betTypeRootXml)
+    {
+        var criteria = new PushFastMarketResultCriteria
+        {
+            MatchId = match.MatchId,
+            Results = betTypeRootXml,
+        };
+
+        var validRequest = criteria.Adapt<EventTicketFastMarketRequest>();
+        validRequest.IsAuto = false;
+
+        var validationResult = await scaleOutSettleService.ValidateEventAndTicketFastMarket(validRequest);
+
+        return validationResult.ErrorCode > 0
+            ? (false, validationResult.ErrorMessage)
+            : (true, string.Empty);
+    }
+
+    public async Task<bool> HasMarkedTickets(int matchId, string betTypeRootXml)
+    {
+        return await checkMarkedTicketHandler.Handle(matchId, betTypeRootXml);
     }
 
     private static List<FastMarketResultDetail> FindResultsWithExistingRefunds(

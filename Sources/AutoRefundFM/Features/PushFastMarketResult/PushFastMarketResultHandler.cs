@@ -16,7 +16,7 @@ namespace AutoRefundFM.Features.PushFastMarketResult;
 
 public interface IPushFastMarketResultHandler
 {
-    Task Handle(Match match, PushFastMarketResultCriteria criteria, string resourceXml);
+    Task Handle(Match match, PushFastMarketResultCriteria criteria);
 }
 
 public class PushFastMarketResultHandler(
@@ -25,13 +25,15 @@ public class PushFastMarketResultHandler(
     IOptions<AppSettingsKey> appSettingsKey,
     IUpdateWaterBreakHandler updateWaterBreakHandler,
     SettlementLogService logService,
-    IFmRefundResultService fmRefundResultService
+    IFmRefundResultService fmRefundResultService,
+    IFastMarketDataTransformationService fastMarketDataTransformationService
         ) : IPushFastMarketResultHandler
 {
     private readonly AppSettingsKey appSettingsKey = appSettingsKey.Value;
 
-    public async Task Handle(Match match, PushFastMarketResultCriteria criteria, string resourceXml)
+    public async Task Handle(Match match, PushFastMarketResultCriteria criteria)
     {
+        var (_, resourceXml) = fastMarketDataTransformationService.CreateResourceItemsFromResult(match.SpecialSessions);
         var updateMatchInfoRequest = criteria.Adapt<UpdateMatchInfoRequest>();
         updateMatchInfoRequest.Mode = Mode.FastMarket;
 

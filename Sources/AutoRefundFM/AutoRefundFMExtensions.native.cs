@@ -16,11 +16,12 @@ public static class AutoRefundFMExtensions
             .AddTransient<IGetFastMarketResultsHandler, GetFastMarketResultsHandler>()
             .AddTransient<IGetSpecialSessionHandler, GetSpecialSessionHandler>()
             .AddTransient<IPushFastMarketResultHandler, PushFastMarketResultHandler>()
+            .AddTransient<IFastMarketDataTransformationService, FastMarketDataTransformationService>()
             .AddSingleton<IMatchPoolService, MatchPoolServiceImp>()
             .AddSingleton<IUpdateWaterBreakHandler, UpdateWaterBreakHandler>()
             .AddSingleton<ICheckMarkedTicketHandler, CheckMarkedTicketHandler>()
             .AddSingleton<IFmRefundResultService, FmRefundResultService>()
-            .AddSingleton<IValidateSessionService, ValidateSessionService>()
+            .AddSingleton<IFastMarketValidationService, FastMarketValidationService>()
             .AddSingleton<SettleOpaqueFacade, SettleOpaqueFacadeImp>();
 
         return services;
