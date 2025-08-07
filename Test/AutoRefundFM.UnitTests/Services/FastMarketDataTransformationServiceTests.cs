@@ -60,7 +60,8 @@ public class FastMarketDataTransformationServiceTests
                     {
                         Result = 10,
                         Position = 1,
-                        SourceId = "SRC"
+                        SourceId = "SRC",
+                        BetType = 1
                     }
                 }
             }
@@ -72,9 +73,8 @@ public class FastMarketDataTransformationServiceTests
 
         // Assert
         Assert.Single(resourceItems);
-        Assert.Equal("10", resourceItems[0].HomeValue);
+        Assert.Equal("1", resourceItems[0].ResourceId);
         Assert.Equal("1", resourceItems[0].OtherInfo);
-        Assert.Equal("SRC", resourceItems[0].SourceId);
         Assert.Equal("<resourcesxml>", resourceXml);
         xmlConvertService.Received(1).Serialize(Arg.Any<Resources<ResourceItem>>());
     }

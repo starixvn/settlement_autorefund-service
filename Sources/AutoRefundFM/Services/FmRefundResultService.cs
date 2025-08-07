@@ -76,7 +76,7 @@ public class FmRefundResultService(AutoRefundResultService refundResultService, 
         int matchId,
         List<FastMarketResultDetail> fastMarketResults,
         int statusId,
-        string errorMsg)
+        string errorMsg = "")
     {
         var resourceItems = CreateResourceItemsFromBetTypes(fastMarketResults, errorMsg);
         var resourceXml = CreateResourceXml(resourceItems);

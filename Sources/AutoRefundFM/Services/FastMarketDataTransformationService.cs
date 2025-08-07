@@ -28,9 +28,10 @@ public class FastMarketDataTransformationService(XmlConvertService xmlConvertSer
         var resourceItems = fastMarketResultDetails
             .Select(x => new ResourceItem
             {
-                HomeValue = x.Result.ToString(),
+                HomeValue = GetResult(x),
                 OtherInfo = x.Position.ToString(),
-                SourceId = x.SourceId,
+                //SourceId = x.SourceId,
+                ResourceId = x.BetType.ToString(),
             })
             .ToList();
 

@@ -51,7 +51,7 @@ public class SettleOpaqueFacadeImp(
             }
 
             var validSessions = validRunAutoRefund.Sessions;
-            var (betTypeRoot, betTypeRootXml) = dataTransformationService.CreateBetTypesRoot([.. validSessions]);
+            var (_, betTypeRootXml) = dataTransformationService.CreateBetTypesRoot([.. validSessions]);
 
             var validationResult = await fastMarketValidationService.ValidateEventTicket(match, betTypeRootXml);
             if (!validationResult.IsValid)
