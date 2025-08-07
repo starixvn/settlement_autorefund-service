@@ -7,8 +7,6 @@ using AutoRefundFM.Features.PushFastMarketResult;
 using AutoRefundFM.Models;
 using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.Database;
-using Fanex.Settlement.Converter.Services;
-using Fanex.Settlement.ScaleOut.Services;
 
 namespace AutoRefundFM.Services;
 public interface SettleOpaqueFacade
@@ -19,8 +17,6 @@ public interface SettleOpaqueFacade
 
 public class SettleOpaqueFacadeImp(
     IGetFastMarketResultsHandler getFastMarketResultsHandler,
-    ScaleOutSettleService scaleOutSettleService,
-    XmlConvertService xmlConvertService,
     IPushFastMarketResultHandler pushFastMarketResultHandler,
     ICheckMarkedTicketHandler checkMarkedTicketHandler,
     IMatchPoolService matchPoolService,
@@ -88,7 +84,7 @@ public class SettleOpaqueFacadeImp(
     {
         var fastMarketResults = sessions.SelectMany(x => x.FastMarketResultDetails).ToList();
 
-        await fmRefundResultService.AddOrUpdateSessionResult(matchId, sessions, 3);
+        await fmRefundResultService.AddOrUpdateSessionResult(matchId, sessions, 3, errorMsg);
         await fmRefundResultService.AddOrUpdateBetTypeResult(
             matchId,
             fastMarketResults,
@@ -103,9 +99,7 @@ public class SettleOpaqueFacadeImp(
     }
 
     private async Task<bool> HasMarkedTickets(int matchId, string betTypeRootXml)
-    {
-        return await checkMarkedTicketHandler.Handle(matchId, betTypeRootXml);
-    }
+        => await checkMarkedTicketHandler.Handle(matchId, betTypeRootXml);
 
     private async Task ProcessRefund(Match match, string betTypeRootXml)
     {

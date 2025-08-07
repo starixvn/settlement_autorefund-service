@@ -45,6 +45,7 @@ public class PushFastMarketResultHandler(
         await ExecuteCalculate(criteria);
 
         await updateWaterBreakHandler.Handle(match);
+
         await fmRefundResultService.AddOrUpdateSessionResult(match, 2);
         await fmRefundResultService.AddOrUpdateBetTypeResult(
             match.MatchId,

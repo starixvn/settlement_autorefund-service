@@ -7,7 +7,7 @@ namespace AutoRefundFM.Services;
 public interface IFastMarketDataTransformationService
 {
     (BetTypesRoot, string) CreateBetTypesRoot(List<SpecialSession> sessions);
-    (List<ResourceItem>, string) CreateResourceItemsFromResult(List<SpecialSession> sessions);
+    (List<ResourceItem>, string) CreateResourceItemsFromResult(List<SpecialSession> sessions, string errorMsg = "");
 }
 
 public class FastMarketDataTransformationService(XmlConvertService xmlConvertService) : IFastMarketDataTransformationService
@@ -21,7 +21,7 @@ public class FastMarketDataTransformationService(XmlConvertService xmlConvertSer
         return (betTypesRoot, betTypesRootXml);
     }
 
-    public (List<ResourceItem>, string) CreateResourceItemsFromResult(List<SpecialSession> sessions)
+    public (List<ResourceItem>, string) CreateResourceItemsFromResult(List<SpecialSession> sessions, string errorMsg = "")
     {
         var fastMarketResultDetails = sessions.SelectMany(x => x.FastMarketResultDetails).ToList();
 
