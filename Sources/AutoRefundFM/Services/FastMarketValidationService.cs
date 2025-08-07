@@ -125,7 +125,7 @@ public class FastMarketValidationService(AutoRefundResultService refundResultSer
     private static List<SpecialSession> GetSessionsWithCompletedResults(List<SpecialSession> specialSessions, int[] completedStatuses)
     {
         return [.. specialSessions
-            .Where(session => session.FastMarketResultDetails.Any(detail => completedStatuses.Contains(detail.ResultStatus)))
+            .Where(session => session.FastMarketResultDetails.Exists(detail => completedStatuses.Contains(detail.ResultStatus)))
             .Select(session =>
             {
                 session.FastMarketResultDetails = [.. session.FastMarketResultDetails.Where(detail => completedStatuses.Contains(detail.ResultStatus))];

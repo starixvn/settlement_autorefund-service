@@ -51,7 +51,6 @@ public class SettleOpaqueFacadeImp(
             }
 
             var validSessions = validRunAutoRefund.Sessions;
-            var validFm = validSessions.SelectMany(x => x.FastMarketResultDetails).ToList();
             var (betTypeRoot, betTypeRootXml) = dataTransformationService.CreateBetTypesRoot([.. validSessions]);
 
             var validationResult = await fastMarketValidationService.ValidateEventTicket(match, betTypeRootXml);
@@ -63,7 +62,7 @@ public class SettleOpaqueFacadeImp(
 
             if (await HasMarkedTickets(match.MatchId, betTypeRootXml))
             {
-                var errorMessage = "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.";
+                const string errorMessage = "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.";
                 await HandleMatchError(match.MatchId, validSessions, errorMessage);
                 return;
             }

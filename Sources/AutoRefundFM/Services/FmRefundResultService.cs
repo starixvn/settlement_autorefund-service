@@ -8,14 +8,14 @@ namespace AutoRefundFM.Services;
 
 public interface IFmRefundResultService
 {
-    Task AddOrUpdateBetTypeResult(int matchId, List<FastMarketResultDetail> fastMarketResults, int statusId, string errorMsg);
+    Task AddOrUpdateBetTypeResult(int matchId, List<FastMarketResultDetail> fastMarketResults, int statusId, string errorMsg = "");
     Task AddOrUpdateSessionResult(int matchId, List<SpecialSession> specialSessions, int statusId, string errorMsg = "");
     Task AddOrUpdateSessionResult(Match match, int statusId, string errorMsg = "");
 }
 
 public class FmRefundResultService(AutoRefundResultService refundResultService, XmlConvertService xmlConvertService) : IFmRefundResultService
 {
-    public async Task AddOrUpdateSessionResult(int matchId, List<SpecialSession> specialSessions, int statusId, string errorMsg)
+    public async Task AddOrUpdateSessionResult(int matchId, List<SpecialSession> specialSessions, int statusId, string errorMsg = "")
     {
         var match = new Match
         {
