@@ -188,7 +188,9 @@ public class FastMarketResultDetail
 
     public int TicketMarked { get; set; }
 
-    public string SourceId { get; set; }
+    public string SourceId { get; set; } = string.Empty;
+
+    public List<EventCounter> EventCounters { get; set; } = [];
 
     public override bool Equals(object obj)
     {

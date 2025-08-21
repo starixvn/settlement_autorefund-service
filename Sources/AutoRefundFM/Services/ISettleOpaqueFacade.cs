@@ -29,45 +29,45 @@ public class SettleOpaqueFacadeImp(
     {
         try
         {
-            await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, match.SpecialSessions, 1);
+            //await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, match.SpecialSessions, 1);
             var sessionResults = await getFastMarketResultsHandler.GetSpecialSessions(match);
 
-            var validateCompletedResult = fastMarketValidationService.ValidateSessionsWithCompletedResults(match, sessionResults);
-            if (!validateCompletedResult.IsValid && validateCompletedResult.InvalidSessions.Count > 0)
-            {
-                await HandleMatchError(match.MatchId, validateCompletedResult.InvalidSessions, validateCompletedResult.ErrorMessage);
-            }
+            //var validateCompletedResult = fastMarketValidationService.ValidateSessionsWithCompletedResults(match, sessionResults);
+            //if (!validateCompletedResult.IsValid && validateCompletedResult.InvalidSessions.Count > 0)
+            //{
+            //    await HandleMatchError(match.MatchId, validateCompletedResult.InvalidSessions, validateCompletedResult.ErrorMessage);
+            //}
 
-            if (validateCompletedResult.Sessions.Count == 0)
-            {
-                return;
-            }
+            //if (validateCompletedResult.Sessions.Count == 0)
+            //{
+            //    return;
+            //}
 
-            var validRunAutoRefund = await fastMarketValidationService.ValidRunAutoRefund(match, validateCompletedResult.Sessions);
-            if (validRunAutoRefund.Sessions.Count == 0)
-            {
-                await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, validRunAutoRefund.InvalidSessions, 2);
-                return;
-            }
+            //var validRunAutoRefund = await fastMarketValidationService.ValidRunAutoRefund(match, validateCompletedResult.Sessions);
+            //if (validRunAutoRefund.Sessions.Count == 0)
+            //{
+            //    await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, validRunAutoRefund.InvalidSessions, 2);
+            //    return;
+            //}
 
-            var validSessions = validRunAutoRefund.Sessions;
-            var (_, betTypeRootXml) = dataTransformationService.CreateBetTypesRoot([.. validSessions]);
+            //var validSessions = validRunAutoRefund.Sessions;
+            //var (_, betTypeRootXml) = dataTransformationService.CreateBetTypesRoot([.. validSessions]);
 
-            var validationResult = await fastMarketValidationService.ValidateEventTicket(match, betTypeRootXml);
-            if (!validationResult.IsValid)
-            {
-                await HandleMatchError(match.MatchId, validSessions, validationResult.ErrorMessage);
-                return;
-            }
+            //var validationResult = await fastMarketValidationService.ValidateEventTicket(match, betTypeRootXml);
+            //if (!validationResult.IsValid)
+            //{
+            //    await HandleMatchError(match.MatchId, validSessions, validationResult.ErrorMessage);
+            //    return;
+            //}
 
-            if (await HasMarkedTickets(match.MatchId, betTypeRootXml))
-            {
-                const string errorMessage = "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.";
-                await HandleMatchError(match.MatchId, validSessions, errorMessage);
-                return;
-            }
+            //if (await HasMarkedTickets(match.MatchId, betTypeRootXml))
+            //{
+            //    const string errorMessage = "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.";
+            //    await HandleMatchError(match.MatchId, validSessions, errorMessage);
+            //    return;
+            //}
 
-            await ProcessRefund(new Match { MatchId = match.MatchId, SpecialSessions = validSessions }, betTypeRootXml);
+            //await ProcessRefund(new Match { MatchId = match.MatchId, SpecialSessions = validSessions }, betTypeRootXml);
         }
         catch (Exception ex)
         {
