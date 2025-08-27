@@ -38,7 +38,7 @@ public class SettleOpaqueFacadeImpTests
     {
         // Arrange
         var sessionResults = new List<SpecialSession> { new SpecialSession() };
-        getFastMarketResultsHandler.GetSpecialSessions(match).Returns(sessionResults);
+        getFastMarketResultsHandler.Handle(match).Returns(sessionResults);
         fastMarketValidationService.ValidateSessionsWithCompletedResults(match, sessionResults)
             .Returns(new ValidateResult(false, "err", new List<SpecialSession>(), new List<SpecialSession> { new SpecialSession() }));
 
@@ -58,7 +58,7 @@ public class SettleOpaqueFacadeImpTests
     {
         // Arrange
         var sessionResults = new List<SpecialSession> { new SpecialSession() };
-        getFastMarketResultsHandler.GetSpecialSessions(match).Returns(sessionResults);
+        getFastMarketResultsHandler.Handle(match).Returns(sessionResults);
         fastMarketValidationService.ValidateSessionsWithCompletedResults(match, sessionResults)
             .Returns(new ValidateResult(true, "", new List<SpecialSession>(), new List<SpecialSession>()));
 
@@ -77,7 +77,7 @@ public class SettleOpaqueFacadeImpTests
     {
         // Arrange
         var sessionResults = new List<SpecialSession> { new SpecialSession() };
-        getFastMarketResultsHandler.GetSpecialSessions(match).Returns(sessionResults);
+        getFastMarketResultsHandler.Handle(match).Returns(sessionResults);
         fastMarketValidationService.ValidateSessionsWithCompletedResults(match, sessionResults)
             .Returns(new ValidateResult(true, "", sessionResults, new List<SpecialSession>()));
         fastMarketValidationService.ValidRunAutoRefund(match, sessionResults)
@@ -98,7 +98,7 @@ public class SettleOpaqueFacadeImpTests
     {
         // Arrange
         var sessionResults = new List<SpecialSession> { new SpecialSession() };
-        getFastMarketResultsHandler.GetSpecialSessions(match).Returns(sessionResults);
+        getFastMarketResultsHandler.Handle(match).Returns(sessionResults);
         fastMarketValidationService.ValidateSessionsWithCompletedResults(match, sessionResults)
             .Returns(new ValidateResult(true, "", sessionResults, new List<SpecialSession>()));
         fastMarketValidationService.ValidRunAutoRefund(match, sessionResults)
@@ -122,7 +122,7 @@ public class SettleOpaqueFacadeImpTests
     {
         // Arrange
         var sessionResults = new List<SpecialSession> { new SpecialSession() };
-        getFastMarketResultsHandler.GetSpecialSessions(match).Returns(sessionResults);
+        getFastMarketResultsHandler.Handle(match).Returns(sessionResults);
         fastMarketValidationService.ValidateSessionsWithCompletedResults(match, sessionResults)
             .Returns(new ValidateResult(true, "", sessionResults, new List<SpecialSession>()));
         fastMarketValidationService.ValidRunAutoRefund(match, sessionResults)
@@ -147,7 +147,7 @@ public class SettleOpaqueFacadeImpTests
     {
         // Arrange
         var sessionResults = new List<SpecialSession> { new SpecialSession() };
-        getFastMarketResultsHandler.GetSpecialSessions(match).Returns(sessionResults);
+        getFastMarketResultsHandler.Handle(match).Returns(sessionResults);
         fastMarketValidationService.ValidateSessionsWithCompletedResults(match, sessionResults)
             .Returns(new ValidateResult(true, "", sessionResults, new List<SpecialSession>()));
         fastMarketValidationService.ValidRunAutoRefund(match, sessionResults)

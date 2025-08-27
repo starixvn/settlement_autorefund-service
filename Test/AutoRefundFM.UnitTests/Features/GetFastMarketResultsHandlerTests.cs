@@ -31,7 +31,7 @@ public class GetFastMarketResultsHandlerTests
             .Returns((null, new List<FastMarketResultDetail>()));
 
         // Act
-        var result = await sut.GetSpecialSessions(match);
+        var result = await sut.Handle(match);
 
         // Assert
         Assert.Empty(result);
@@ -67,7 +67,7 @@ public class GetFastMarketResultsHandlerTests
             .Returns((null, new List<FastMarketResultDetail>()));
 
         // Act
-        var result = await sut.GetSpecialSessions(match);
+        var result = await sut.Handle(match);
 
         // Assert
         Assert.Single(result);
@@ -106,7 +106,7 @@ public class GetFastMarketResultsHandlerTests
             .Returns((null, new List<FastMarketResultDetail>()));
 
         // Act
-        var result = await sut.GetSpecialSessions(match);
+        var result = await sut.Handle(match);
 
         // Assert
         Assert.Single(result);
@@ -145,7 +145,7 @@ public class GetFastMarketResultsHandlerTests
             .Returns((null, new List<FastMarketResultDetail>()));
 
         // Act
-        var result = await sut.GetSpecialSessions(match);
+        var result = await sut.Handle(match);
 
         // Assert
         Assert.Single(result);
@@ -185,7 +185,7 @@ public class GetFastMarketResultsHandlerTests
             .Returns((null, ticketResults));
 
         // Act
-        var result = await sut.GetSpecialSessions(match);
+        var result = await sut.Handle(match);
 
         // Assert
         Assert.Single(result);

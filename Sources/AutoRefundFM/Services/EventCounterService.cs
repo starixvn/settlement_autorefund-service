@@ -19,13 +19,13 @@ public class EventCounterService : IEventCounterService
         };
     }
 
-    private List<EventCounter> GetEventCountersForNextOneMinute(FastMarketResultDetail item, List<EventCounter> eventCounters)
+    private static List<EventCounter> GetEventCountersForNextOneMinute(FastMarketResultDetail item, List<EventCounter> eventCounters)
     {
         var eventCounter = eventCounters.FirstOrDefault(ec => ec.Position == item.Position);
         return eventCounter != null ? [eventCounter] : [];
     }
 
-    private List<EventCounter> GetEventCountersForNextFiveMinutes(FastMarketResultDetail item, List<EventCounter> eventCounters)
+    private static List<EventCounter> GetEventCountersForNextFiveMinutes(FastMarketResultDetail item, List<EventCounter> eventCounters)
     {
         const int positionStep = 4;
         var startPosition = item.Position;
@@ -40,23 +40,18 @@ public class EventCounterService : IEventCounterService
 
         if (newEventCounters.Count == 0)
         {
-            return true; // Không cần validate
+            return false;
         }
 
-        switch (item.BetType)
+        return item.BetType switch
         {
-            case FastMarketBetType.NextOneMinute:
-                return ValidateNextOneMinute(newEventCounters, item);
-
-            case FastMarketBetType.NextFiveMinutes:
-                return ValidateNextFiveMinutes(newEventCounters, item);
-
-            default:
-                return true;
-        }
+            FastMarketBetType.NextOneMinute => ValidateNextOneMinute(newEventCounters, item),
+            FastMarketBetType.NextFiveMinutes => ValidateNextFiveMinutes(newEventCounters, item),
+            _ => true,
+        };
     }
 
-    private bool ValidateNextOneMinute(List<EventCounter> eventCounters, FastMarketResultDetail item)
+    private static bool ValidateNextOneMinute(List<EventCounter> eventCounters, FastMarketResultDetail item)
     {
         if (eventCounters.Count == 0)
         {
@@ -78,8 +73,10 @@ public class EventCounterService : IEventCounterService
 
     private bool ValidateNextFiveMinutes(List<EventCounter> eventCounters, FastMarketResultDetail item)
     {
-        if (!eventCounters.Any())
+        if (eventCounters.Count == 0)
+        {
             return true;
+        }
 
         var validationResults = new List<bool>
         {
@@ -94,7 +91,7 @@ public class EventCounterService : IEventCounterService
         return validationResults.All(result => result);
     }
 
-    private bool ValidateEventTypeForOneMinute(EventCounter eventCounter, FastMarketResultDetail item, string eventType)
+    private static bool ValidateEventTypeForOneMinute(EventCounter eventCounter, FastMarketResultDetail item, string eventType)
     {
         var eventValue = GetEventValue(eventCounter.EventResultItem, eventType);
         var betValue = GetBetValue(item.ResultItem, eventType);
@@ -124,12 +121,12 @@ public class EventCounterService : IEventCounterService
             return false;
 
         var betValue = GetBetValue(item.ResultItem, eventType);
-        var expectedValue = GetExpectedValue(item.ResultItem, eventType);
+        var expectedValue = GetExpectedValue(item, eventType);
 
         return ValidateEventValueForFiveMinutes(totalEvents, expectedValue, betValue);
     }
 
-    private string GetEventValue(EventResultItem eventResultItem, string eventType) => eventType switch
+    private static string GetEventValue(EventResultItem eventResultItem, string eventType) => eventType switch
     {
         "Goal" => eventResultItem.Goal ?? "0",
         "Corner" => eventResultItem.Corner ?? "0",
@@ -140,7 +137,7 @@ public class EventCounterService : IEventCounterService
         _ => "0"
     };
 
-    private bool GetBetValue(ResultItem resultItem, string eventType)
+    private static bool GetBetValue(ResultItem resultItem, string eventType)
     {
         return eventType switch
         {
@@ -154,27 +151,42 @@ public class EventCounterService : IEventCounterService
         };
     }
 
-    private int GetExpectedValue(ResultItem resultItem, string eventType)
+    private static int GetExpectedValue(FastMarketResultDetail resultItem, string eventType)
     {
-        // Lấy giá trị mong đợi từ resultItem (có thể cần điều chỉnh theo logic nghiệp vụ)
-        return 0; // Placeholder
+        var value = GetHandicapValue(resultItem.ResultItemLabel, eventType);
+
+        return int.Parse(value);
+    }
+
+    private static string GetHandicapValue(ResultItemLabel resultItemLabel, string eventType)
+    {
+        return eventType switch
+        {
+            "Goal" => resultItemLabel.Goal ?? "0",
+            "Corner" => resultItemLabel.Corner ?? "0",
+            "FreeKick" => resultItemLabel.FreeKick ?? "0",
+            "GoalKick" => resultItemLabel.GoalKick ?? "0",
+            "ThrowIn" => resultItemLabel.ThrowIn ?? "0",
+            "Penalty" => resultItemLabel.Penalty ?? "0",
+            _ => "0"
+        };
     }
 
     private static bool ValidateEventValueForOneMinute(string eventValue, bool betValue)
     {
         const double threshold = 0.5;
 
-        if (!double.TryParse(eventValue, out double numericValue))
+        if (!double.TryParse(eventValue, out double numericEventValue))
         {
             return false;
         }
 
-        return (numericValue > threshold && betValue) || (numericValue < threshold && !betValue);
+        return (numericEventValue > threshold && betValue) || (numericEventValue < threshold && !betValue);
     }
 
-    private bool ValidateEventValueForFiveMinutes(int totalEvents, int expectedValue, bool betValue)
+    private static bool ValidateEventValueForFiveMinutes(int totalScoreEvents, int expectedValue, bool betValue)
     {
-        return (totalEvents > expectedValue && betValue) || (totalEvents < expectedValue && !betValue);
+        return (totalScoreEvents > expectedValue && betValue) || (totalScoreEvents < expectedValue && !betValue);
     }
 
     private bool IsValidValue(string value)

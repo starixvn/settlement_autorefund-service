@@ -14,21 +14,3 @@ public class BetType
 }
 
 
-public class ResultItemLabel
-{
-    public bool IsSetDefaultValue { get; set; }
-
-    public string None { get; set; } = string.Empty;
-
-    public string Goal { get; set; } = string.Empty;
-
-    public string Corner { get; set; } = string.Empty;
-
-    public string FreeKick { get; set; } = string.Empty;
-
-    public string GoalKick { get; set; } = string.Empty;
-
-    public string ThrowIn { get; set; } = string.Empty;
-
-    public string Penalty { get; set; } = string.Empty;
-}

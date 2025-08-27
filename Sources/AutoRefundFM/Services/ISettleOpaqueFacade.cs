@@ -30,7 +30,7 @@ public class SettleOpaqueFacadeImp(
         try
         {
             //await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, match.SpecialSessions, 1);
-            var sessionResults = await getFastMarketResultsHandler.GetSpecialSessions(match);
+            var sessionResults = await getFastMarketResultsHandler.Handle(match);
 
             //var validateCompletedResult = fastMarketValidationService.ValidateSessionsWithCompletedResults(match, sessionResults);
             //if (!validateCompletedResult.IsValid && validateCompletedResult.InvalidSessions.Count > 0)

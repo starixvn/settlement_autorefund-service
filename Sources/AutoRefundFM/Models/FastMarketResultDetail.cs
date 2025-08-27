@@ -192,6 +192,8 @@ public class FastMarketResultDetail
 
     public List<EventCounter> EventCounters { get; set; } = [];
 
+    public ResultItemLabel ResultItemLabel { get; set; } = new ResultItemLabel();
+
     public override bool Equals(object obj)
     {
         return obj is FastMarketResultDetail fastMarketResult && fastMarketResult.BetType == BetType && fastMarketResult.Position == Position;
