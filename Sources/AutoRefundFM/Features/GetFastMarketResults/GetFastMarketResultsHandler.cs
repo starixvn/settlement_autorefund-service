@@ -28,18 +28,18 @@ public class GetFastMarketResultsHandler(
             .Where(item => !fastMarketResults.Exists(x => x.Position == item.Position && x.BetType == item.BetType));
         var combinedResults = fastMarketResults.Concat(newTicketResults);
 
-        var filteredResults = FilterResultsByWaterBreakAndStatus(combinedResults, match.SpecialSessions);
-        var filteredEventCounters = filterWaterBreakService.ApplyFilterEventCountWaterBreak(evenCounters, match.SpecialSessions[0]);
+        var finalResults = FilterResultsByWaterBreakAndStatus(combinedResults, match.SpecialSessions);
+        var sessionEventCounters = filterWaterBreakService.ApplyFilterEventCountWaterBreak(evenCounters, match.SpecialSessions[0]);
 
-        SetResultWithLabelsAndCounters(filteredResults, handicapValue, filteredEventCounters);
+        SetResultWithLabelsAndCounters(finalResults, handicapValue, sessionEventCounters);
 
-        return filteredResults;
+        return finalResults;
     }
 
     private void SetResultWithLabelsAndCounters(
-    List<FastMarketResultDetail> results,
-    string handicapValue,
-    List<EventCounter> filteredEventCounters)
+        List<FastMarketResultDetail> results,
+        string handicapValue,
+        List<EventCounter> filteredEventCounters)
     {
         foreach (var item in results)
         {

@@ -22,6 +22,8 @@ public static class AutoRefundFMExtensions
             .AddSingleton<ICheckMarkedTicketHandler, CheckMarkedTicketHandler>()
             .AddSingleton<IFmRefundResultService, FmRefundResultService>()
             .AddSingleton<IFastMarketValidationService, FastMarketValidationService>()
+            .AddSingleton<IFilterWaterBreakService, FilterWaterBreakService>()
+            .AddSingleton<IEventCounterService, EventCounterService>()
             .AddSingleton<SettleOpaqueFacade, SettleOpaqueFacadeImp>();
 
         return services;

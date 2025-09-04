@@ -28,8 +28,8 @@ public class EventCounterService : IEventCounterService
     private static List<EventCounter> GetEventCountersForNextFiveMinutes(FastMarketResultDetail item, List<EventCounter> eventCounters)
     {
         const int positionStep = 4;
-        var startPosition = item.Position;
-        var endPosition = Math.Min(item.Position + positionStep, eventCounters.Count - 1);
+        var startPosition = item.Position; // Current minute
+        var endPosition = startPosition + positionStep; // Next five minutes includes the current minute and the next four minutes
 
         return [.. eventCounters.Where(ec => ec.Position >= startPosition && ec.Position <= endPosition)];
     }
