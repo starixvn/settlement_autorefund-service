@@ -10,46 +10,40 @@ using Mapster;
 namespace AutoRefundFM.Services;
 
 
-public record ValidateResult(
-    bool IsValid,
-    string ErrorMessage,
-    List<SpecialSession> Sessions,
-    List<SpecialSession> InvalidSessions);
-
 public interface IFastMarketValidationService
 {
-    ValidateResult ValidateSessionsWithCompletedResults(Match match, List<SpecialSession> specialSessions);
-    Task<ValidateResult> ValidRunAutoRefund(Match match, List<SpecialSession> specialSessions);
-    Task<(bool IsValid, string ErrorMessage)> ValidateEventTicket(Match match, string betTypeRootXml);
+    Result ValidateSessionsWithCompletedResults(Match match, List<FastMarketResultDetail> fastMarketResultDetails);
+    Task<Result> ValidRunAutoRefund(Match match, List<FastMarketResultDetail> fastMarketResults);
+    Task<Result> ValidateEventTicket(Match match, string betTypeRootXml);
     Task<bool> HasMarkedTickets(int matchId, string betTypeRootXml);
+    bool HasChoiceResult(
+        int betType,
+        ResultItem resultItem,
+        int? result = null);
 }
 
 public class FastMarketValidationService(AutoRefundResultService refundResultService, ScaleOutSettleService scaleOutSettleService,
     ICheckMarkedTicketHandler checkMarkedTicketHandler) : IFastMarketValidationService
 {
 
-    public async Task<ValidateResult> ValidRunAutoRefund(Match match, List<SpecialSession> specialSessions)
+    public async Task<Result> ValidRunAutoRefund(Match match, List<FastMarketResultDetail> fastMarketResults)
     {
-        var fastMarketResults = specialSessions.SelectMany(x => x.FastMarketResultDetails).ToList();
         var refundResults = await GetRefundResult(match, fastMarketResults);
 
         var resultsWithExistingRefunds = FindResultsWithExistingRefunds(fastMarketResults, refundResults);
 
         if (resultsWithExistingRefunds.Count == 0)
         {
-            return new ValidateResult(true, string.Empty, specialSessions, []);
+            return new Result();
         }
 
-        var sessionsWithExistingRefunds = resultsWithExistingRefunds.Select(x => x.SourceId).Distinct().ToList();
-
-        var validSessions = specialSessions
-            .Where(x => !sessionsWithExistingRefunds.Contains(x.ResourceId))
-            .ToList();
-
-        return new ValidateResult(false, string.Empty, validSessions, []);
+        return new Result
+        {
+            ErrCode = 102,
+        };
     }
 
-    public async Task<(bool IsValid, string ErrorMessage)> ValidateEventTicket(Match match, string betTypeRootXml)
+    public async Task<Result> ValidateEventTicket(Match match, string betTypeRootXml)
     {
         var criteria = new PushFastMarketResultCriteria
         {
@@ -62,9 +56,11 @@ public class FastMarketValidationService(AutoRefundResultService refundResultSer
 
         var validationResult = await scaleOutSettleService.ValidateEventAndTicketFastMarket(validRequest);
 
-        return validationResult.ErrorCode > 0
-            ? (false, validationResult.ErrorMessage)
-            : (true, string.Empty);
+        return new Result
+        {
+            ErrCode = validationResult.ErrorCode,
+            ErrMsg = validationResult.ErrorMessage
+        };
     }
 
     public async Task<bool> HasMarkedTickets(int matchId, string betTypeRootXml)
@@ -83,25 +79,58 @@ public class FastMarketValidationService(AutoRefundResultService refundResultSer
             .ToList();
     }
 
-    public ValidateResult ValidateSessionsWithCompletedResults(Match match, List<SpecialSession> specialSessions)
+    public Result ValidateSessionsWithCompletedResults(Match match, List<FastMarketResultDetail> fastMarketResultDetails)
     {
         int[] completedStatuses = [Status.CompletedManualResult, Status.CompletedAutoResult];
+        var isExistCompletedResults = fastMarketResultDetails.Exists(detail => completedStatuses.Contains(detail.ResultStatus));
 
-        var sessionsWithCompletedResults = GetSessionsWithCompletedResults(specialSessions, completedStatuses);
-
-
-        if (sessionsWithCompletedResults.Count == 0)
+        if (!isExistCompletedResults)
         {
-            return new ValidateResult(true, string.Empty, specialSessions, []);
+            var errorMessage = BuildErrorMessage(match.SpecialSessions);
+
+
+            return new Result
+            {
+                ErrCode = 101,
+                ErrMsg = errorMessage,
+            };
         }
 
-        var validSessions = GetValidSessions(specialSessions, sessionsWithCompletedResults);
-        var errorMessage = BuildErrorMessage(sessionsWithCompletedResults);
-
-
-        return new ValidateResult(false, errorMessage, validSessions, sessionsWithCompletedResults);
-
+        return new Result();
     }
+
+    public bool HasChoiceResult(int betType, ResultItem resultItem, int? result = null) => betType switch
+    {
+        FastMarketBetType.NextOneMinute => HasChoiceResultOfNextOneMinute(resultItem),
+        FastMarketBetType.NextFiveMinutes => HasChoiceResultOfNextFiveMinutes(resultItem),
+        FastMarketBetType.TimeMachineMinutes => result.HasValue,
+        //FastMarketBetType.TimeMachineHdp => !string.IsNullOrEmpty(homeGoal) && !string.IsNullOrEmpty(awayGoal),
+        _ => HasChoiceResultOfOther(resultItem),
+    };
+
+    private static bool HasChoiceResultOfNextOneMinute(ResultItem resultItem) => resultItem.None ||
+               resultItem.Goal ||
+               resultItem.Corner ||
+               resultItem.FreeKick ||
+               resultItem.GoalKick ||
+               resultItem.ThrowIn;
+
+    private static bool HasChoiceResultOfNextFiveMinutes(ResultItem resultItem) => resultItem.None ||
+               resultItem.Goal ||
+               resultItem.Corner ||
+               resultItem.FreeKick ||
+               resultItem.GoalKick ||
+               resultItem.ThrowIn ||
+               resultItem.Penalty;
+
+    private static bool HasChoiceResultOfOther(ResultItem resultItem) => resultItem.None ||
+               resultItem.Goal ||
+               resultItem.Corner ||
+               resultItem.FreeKick ||
+               resultItem.GoalKick ||
+               resultItem.ThrowIn ||
+               resultItem.Bookings ||
+               resultItem.Penalty;
 
     private static string BuildErrorMessage(List<SpecialSession> sessionsWithCompletedResults)
     {
@@ -109,29 +138,6 @@ public class FastMarketValidationService(AutoRefundResultService refundResultSer
         return $"Auto Refund failed: {sessionDetails} due to some intervals have been calculated.";
     }
 
-    private static List<SpecialSession> GetValidSessions(
-        List<SpecialSession> allSessions,
-        List<SpecialSession> sessionsWithCompletedResults)
-    {
-        var completedSessionIds = sessionsWithCompletedResults
-            .Select(s => s.ResourceId)
-            .ToHashSet();
-
-        return allSessions
-            .Where(session => !completedSessionIds.Contains(session.ResourceId))
-            .ToList();
-    }
-
-    private static List<SpecialSession> GetSessionsWithCompletedResults(List<SpecialSession> specialSessions, int[] completedStatuses)
-    {
-        return [.. specialSessions
-            .Where(session => session.FastMarketResultDetails.Exists(detail => completedStatuses.Contains(detail.ResultStatus)))
-            .Select(session =>
-            {
-                session.FastMarketResultDetails = [.. session.FastMarketResultDetails.Where(detail => completedStatuses.Contains(detail.ResultStatus))];
-                return session;
-            })];
-    }
 
     private async Task<List<AutoRefundResult>> GetRefundResult(Match match, List<FastMarketResultDetail> fastMarketResults)
     {

@@ -24,7 +24,7 @@ public class FilterWaterBreakService : IFilterWaterBreakService
             })];
     }
 
-    private bool ApplyFilterFiveMinuteWaterBreak(FastMarketResultDetail item, SpecialSession waterBreakTime)
+    private static bool ApplyFilterFiveMinuteWaterBreak(FastMarketResultDetail item, SpecialSession waterBreakTime)
     {
         var endMinute = waterBreakTime.StartMinute == waterBreakTime.EndMinute
             ? waterBreakTime.StartMinute
@@ -34,7 +34,7 @@ public class FilterWaterBreakService : IFilterWaterBreakService
     }
 
 
-    private bool ApplyFilterOneMinuteWaterBreak(FastMarketResultDetail item, SpecialSession waterBreakTime)
+    private static bool ApplyFilterOneMinuteWaterBreak(FastMarketResultDetail item, SpecialSession waterBreakTime)
     {
         if (waterBreakTime.StartMinute == waterBreakTime.EndMinute)
         {

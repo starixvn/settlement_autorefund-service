@@ -4,7 +4,7 @@ namespace AutoRefundFM.Services;
 public interface IEventCounterService
 {
     List<EventCounter> GetEventCountersForBetType(FastMarketResultDetail item, List<EventCounter> eventCounters);
-    bool ValidateEventCounterWithBetResult(FastMarketResultDetail item, List<EventCounter> eventCounters);
+    bool ValidateEventCounterWithBetResult(FastMarketResultDetail item);
 }
 
 public class EventCounterService : IEventCounterService
@@ -28,36 +28,29 @@ public class EventCounterService : IEventCounterService
     private static List<EventCounter> GetEventCountersForNextFiveMinutes(FastMarketResultDetail item, List<EventCounter> eventCounters)
     {
         const int positionStep = 4;
-        var startPosition = item.Position; // Current minute
-        var endPosition = startPosition + positionStep; // Next five minutes includes the current minute and the next four minutes
+        var startPosition = item.Position;
+        var endPosition = startPosition + positionStep;
 
         return [.. eventCounters.Where(ec => ec.Position >= startPosition && ec.Position <= endPosition)];
     }
 
-    public bool ValidateEventCounterWithBetResult(FastMarketResultDetail item, List<EventCounter> eventCounters)
+    public bool ValidateEventCounterWithBetResult(FastMarketResultDetail item)
     {
-        var newEventCounters = GetEventCountersForBetType(item, eventCounters);
-
-        if (newEventCounters.Count == 0)
+        if (item.EventCounters.Count == 0)
         {
             return false;
         }
 
         return item.BetType switch
         {
-            FastMarketBetType.NextOneMinute => ValidateNextOneMinute(newEventCounters, item),
-            FastMarketBetType.NextFiveMinutes => ValidateNextFiveMinutes(newEventCounters, item),
+            FastMarketBetType.NextOneMinute => ValidateNextOneMinute(item.EventCounters, item),
+            FastMarketBetType.NextFiveMinutes => ValidateNextFiveMinutes(item.EventCounters, item),
             _ => true,
         };
     }
 
     private static bool ValidateNextOneMinute(List<EventCounter> eventCounters, FastMarketResultDetail item)
     {
-        if (eventCounters.Count == 0)
-        {
-            return true;
-        }
-
         var eventCounter = eventCounters.First();
         var validationResults = new List<bool>
         {
@@ -73,11 +66,6 @@ public class EventCounterService : IEventCounterService
 
     private bool ValidateNextFiveMinutes(List<EventCounter> eventCounters, FastMarketResultDetail item)
     {
-        if (eventCounters.Count == 0)
-        {
-            return true;
-        }
-
         var validationResults = new List<bool>
         {
             ValidateEventTypeForFiveMinutes(eventCounters, item, "Goal"),
@@ -99,7 +87,7 @@ public class EventCounterService : IEventCounterService
         return ValidateEventValueForOneMinute(eventValue, betValue);
     }
 
-    private bool ValidateEventTypeForFiveMinutes(List<EventCounter> eventCounters, FastMarketResultDetail item, string eventType)
+    private static bool ValidateEventTypeForFiveMinutes(List<EventCounter> eventCounters, FastMarketResultDetail item, string eventType)
     {
         int totalEvents = 0;
         bool isValid = true;
@@ -118,7 +106,10 @@ public class EventCounterService : IEventCounterService
         }
 
         if (!isValid)
+        {
             return false;
+        }
+
 
         var betValue = GetBetValue(item.ResultItem, eventType);
         var expectedValue = GetExpectedValue(item, eventType);
@@ -137,40 +128,34 @@ public class EventCounterService : IEventCounterService
         _ => "0"
     };
 
-    private static bool GetBetValue(ResultItem resultItem, string eventType)
+    private static bool GetBetValue(ResultItem resultItem, string eventType) => eventType switch
     {
-        return eventType switch
-        {
-            "Goal" => resultItem.Goal,
-            "Corner" => resultItem.Corner,
-            "FreeKick" => resultItem.FreeKick,
-            "GoalKick" => resultItem.GoalKick,
-            "ThrowIn" => resultItem.ThrowIn,
-            "Penalty" => resultItem.Penalty,
-            _ => false
-        };
-    }
+        "Goal" => resultItem.Goal,
+        "Corner" => resultItem.Corner,
+        "FreeKick" => resultItem.FreeKick,
+        "GoalKick" => resultItem.GoalKick,
+        "ThrowIn" => resultItem.ThrowIn,
+        "Penalty" => resultItem.Penalty,
+        _ => false
+    };
 
-    private static int GetExpectedValue(FastMarketResultDetail resultItem, string eventType)
+    private static double GetExpectedValue(FastMarketResultDetail resultItem, string eventType)
     {
         var value = GetHandicapValue(resultItem.ResultItemLabel, eventType);
 
-        return int.Parse(value);
+        return double.Parse(value);
     }
 
-    private static string GetHandicapValue(ResultItemLabel resultItemLabel, string eventType)
+    private static string GetHandicapValue(ResultItemLabel resultItemLabel, string eventType) => eventType switch
     {
-        return eventType switch
-        {
-            "Goal" => resultItemLabel.Goal ?? "0",
-            "Corner" => resultItemLabel.Corner ?? "0",
-            "FreeKick" => resultItemLabel.FreeKick ?? "0",
-            "GoalKick" => resultItemLabel.GoalKick ?? "0",
-            "ThrowIn" => resultItemLabel.ThrowIn ?? "0",
-            "Penalty" => resultItemLabel.Penalty ?? "0",
-            _ => "0"
-        };
-    }
+        "Goal" => resultItemLabel.Goal ?? "0",
+        "Corner" => resultItemLabel.Corner ?? "0",
+        "FreeKick" => resultItemLabel.FreeKick ?? "0",
+        "GoalKick" => resultItemLabel.GoalKick ?? "0",
+        "ThrowIn" => resultItemLabel.ThrowIn ?? "0",
+        "Penalty" => resultItemLabel.Penalty ?? "0",
+        _ => "0"
+    };
 
     private static bool ValidateEventValueForOneMinute(string eventValue, bool betValue)
     {
@@ -184,13 +169,9 @@ public class EventCounterService : IEventCounterService
         return (numericEventValue > threshold && betValue) || (numericEventValue < threshold && !betValue);
     }
 
-    private static bool ValidateEventValueForFiveMinutes(int totalScoreEvents, int expectedValue, bool betValue)
-    {
-        return (totalScoreEvents > expectedValue && betValue) || (totalScoreEvents < expectedValue && !betValue);
-    }
+    private static bool ValidateEventValueForFiveMinutes(double totalScoreEvents, double expectedValue, bool betValue)
+        => (totalScoreEvents > expectedValue && betValue) || (totalScoreEvents < expectedValue && !betValue);
 
-    private bool IsValidValue(string value)
-    {
-        return !string.IsNullOrEmpty(value) && int.TryParse(value, out _);
-    }
+    private static bool IsValidValue(string value)
+        => !string.IsNullOrEmpty(value) && int.TryParse(value, out _);
 }

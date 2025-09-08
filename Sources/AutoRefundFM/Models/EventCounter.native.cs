@@ -1,23 +1,4 @@
-﻿using System.Xml.Serialization;
-
-namespace AutoRefundFM.Models;
-
-
-[XmlRoot("EventCounters")]
-public class EventCountersRoot
-{
-    [XmlElement("EventCounter")]
-    public List<EventCounterElement> EventCounter { get; set; }
-}
-
-public class EventCounterElement
-{
-    [XmlAttribute]
-    public string Id { get; set; }
-
-    [XmlElement("Item")]
-    public List<ItemElement> Items { get; set; }
-}
+﻿namespace AutoRefundFM.Models;
 
 public class EventCounter
 {

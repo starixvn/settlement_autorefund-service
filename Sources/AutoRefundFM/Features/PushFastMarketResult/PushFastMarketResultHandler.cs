@@ -33,7 +33,7 @@ public class PushFastMarketResultHandler(
 
     public async Task Handle(Match match, PushFastMarketResultCriteria criteria)
     {
-        var (_, resourceXml) = fastMarketDataTransformationService.CreateResourceItemsFromResult(match.SpecialSessions);
+        var (_, resourceXml) = fastMarketDataTransformationService.CreateResourceItemsFromResult([]);
         var updateMatchInfoRequest = criteria.Adapt<UpdateMatchInfoRequest>();
         updateMatchInfoRequest.Mode = Mode.FastMarket;
 

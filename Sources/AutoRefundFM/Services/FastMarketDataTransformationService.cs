@@ -6,45 +6,55 @@ namespace AutoRefundFM.Services;
 
 public interface IFastMarketDataTransformationService
 {
-    (BetTypesRoot, string) CreateBetTypesRoot(List<SpecialSession> sessions);
-    (List<ResourceItem>, string) CreateResourceItemsFromResult(List<SpecialSession> sessions, string errorMsg = "");
+    (BetTypesRoot, string) CreateBetTypesRoot(List<FastMarketResultDetail> fastMarketResultDetails);
+    (List<ResourceItem>, string) CreateResourceItemsFromResult(List<FastMarketResultDetail> fastMarketResultDetails, string errorMsg = "");
+    string CreateEventCountersXml(List<EventCounter> eventCounters);
 }
 
 public class FastMarketDataTransformationService(XmlConvertService xmlConvertService) : IFastMarketDataTransformationService
 {
-    public (BetTypesRoot, string) CreateBetTypesRoot(List<SpecialSession> sessions)
+    public string CreateEventCountersXml(List<EventCounter> eventCounters)
     {
-        var fastMarketResultDetails = sessions.SelectMany(x => x.FastMarketResultDetails).ToList();
-        var betTypesRoot = CreateBetTypesRoot(fastMarketResultDetails);
-        var betTypesRootXml = xmlConvertService.Serialize(betTypesRoot);
+        var eventCounter = GetEventCounters(eventCounters);
+        var eventCountersRoot = new EventCountersRoot
+        {
+            EventCounter = eventCounter
+        };
 
-        return (betTypesRoot, betTypesRootXml);
+        return xmlConvertService.Serialize(eventCountersRoot);
     }
 
-    public (List<ResourceItem>, string) CreateResourceItemsFromResult(List<SpecialSession> sessions, string errorMsg = "")
+    private List<EventCounterElement> GetEventCounters(List<EventCounter> eventCounters)
     {
-        var fastMarketResultDetails = sessions.SelectMany(x => x.FastMarketResultDetails).ToList();
+        var eventCountersElement = new List<EventCounterElement>();
+        if (eventCounters.Count != 0)
+        {
+            const int positionGoal = 0;
+            const int positionCorner = 1;
+            const int positionFreeKick = 2;
+            const int positionGoalKick = 3;
+            const int positionThrowIn = 4;
+            const int positionPenalty = 5;
 
-        var resourceItems = fastMarketResultDetails
-            .Select(x => new ResourceItem
-            {
-                HomeValue = GetResult(x),
-                OtherInfo = x.Position.ToString(),
-                //SourceId = x.SourceId,
-                ResourceId = x.BetType.ToString(),
-            })
-            .ToList();
+            var items = new EventCounterElement[6];
+            items[positionGoal] = EventCounterElement.GoalResult(eventCounters);
+            items[positionCorner] = EventCounterElement.CornerResult(eventCounters);
+            items[positionFreeKick] = EventCounterElement.FreeKickResult(eventCounters);
+            items[positionGoalKick] = EventCounterElement.GoalKickResult(eventCounters);
+            items[positionThrowIn] = EventCounterElement.ThrowInResult(eventCounters);
+            items[positionPenalty] = EventCounterElement.PenaltyResult(eventCounters);
 
-        var resourceXml = CreateResourceXml(resourceItems);
+            eventCountersElement.AddRange(items);
+        }
 
-        return (resourceItems, resourceXml);
+        return eventCountersElement;
     }
 
 
 
-    private static BetTypesRoot CreateBetTypesRoot(List<FastMarketResultDetail> results)
+    public (BetTypesRoot, string) CreateBetTypesRoot(List<FastMarketResultDetail> fastMarketResultDetails)
     {
-        var betTypes = results.GroupBy(g => g.BetType)
+        var betTypes = fastMarketResultDetails.GroupBy(g => g.BetType)
             .OrderBy(g => g.Key)
             .Select(g => new BetTypeElement
             {
@@ -62,7 +72,26 @@ public class FastMarketDataTransformationService(XmlConvertService xmlConvertSer
             BetType = betTypes ?? []
         };
 
-        return betTypesRoot;
+        var betTypesRootXml = xmlConvertService.Serialize(betTypesRoot);
+
+        return (betTypesRoot, betTypesRootXml);
+    }
+
+    public (List<ResourceItem>, string) CreateResourceItemsFromResult(List<FastMarketResultDetail> fastMarketResultDetails, string errorMsg = "")
+    {
+        var resourceItems = fastMarketResultDetails
+            .Select(x => new ResourceItem
+            {
+                HomeValue = GetResult(x),
+                OtherInfo = x.Position.ToString(),
+                //SourceId = x.SourceId,
+                ResourceId = x.BetType.ToString(),
+            })
+            .ToList();
+
+        var resourceXml = CreateResourceXml(resourceItems);
+
+        return (resourceItems, resourceXml);
     }
 
     private static string GetResult(FastMarketResultDetail resultDetail)

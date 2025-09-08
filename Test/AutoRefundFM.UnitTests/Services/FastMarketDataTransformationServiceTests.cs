@@ -16,66 +16,57 @@ public class FastMarketDataTransformationServiceTests
         sut = new FastMarketDataTransformationService(xmlConvertService);
     }
 
+
     [Fact]
-    public void CreateBetTypesRoot_ReturnsBetTypesRootAndXml()
+    public void CreateEventCountersXml_ReturnsSerializedXml()
     {
         // Arrange
-        var sessions = new List<SpecialSession>
+        var eventCounters = new List<EventCounter>
         {
-            new SpecialSession
+            new EventCounter
             {
-                FastMarketResultDetails = new List<FastMarketResultDetail>
-                {
-                    new FastMarketResultDetail
-                    {
-                        BetType = 1,
-                        Position = 2,
-                        Result = 3,
-                    }
-                }
+                Position = 1,
+                EventResultItem = new EventResultItem { Goal = "1", Corner = "2", FreeKick = "3", GoalKick = "4", ThrowIn = "5", Penalty = "6" }
             }
         };
-        xmlConvertService.Serialize(Arg.Any<BetTypesRoot>()).Returns("<bettypesxml>");
+        xmlConvertService.Serialize(Arg.Any<EventCountersRoot>()).Returns("<eventcountersxml>");
 
         // Act
-        var (betTypesRoot, betTypesRootXml) = sut.CreateBetTypesRoot(sessions);
+        var xml = sut.CreateEventCountersXml(eventCounters);
 
         // Assert
-        Assert.NotNull(betTypesRoot);
-        Assert.Equal("<bettypesxml>", betTypesRootXml);
-        xmlConvertService.Received(1).Serialize(Arg.Any<BetTypesRoot>());
+        Assert.Equal("<eventcountersxml>", xml);
+        xmlConvertService.Received(1).Serialize(Arg.Any<EventCountersRoot>());
     }
 
     [Fact]
-    public void CreateResourceItemsFromResult_ReturnsResourceItemsAndXml()
+    public void CreateBetTypesRoot_EmptyList_ReturnsEmptyBetTypesRoot()
     {
         // Arrange
-        var sessions = new List<SpecialSession>
-        {
-            new SpecialSession
-            {
-                FastMarketResultDetails = new List<FastMarketResultDetail>
-                {
-                    new FastMarketResultDetail
-                    {
-                        Result = 10,
-                        Position = 1,
-                        SourceId = "SRC",
-                        BetType = 1
-                    }
-                }
-            }
-        };
-        xmlConvertService.Serialize(Arg.Any<Resources<ResourceItem>>()).Returns("<resourcesxml>");
+        var details = new List<FastMarketResultDetail>();
+        xmlConvertService.Serialize(Arg.Any<BetTypesRoot>()).Returns("<emptyxml>");
 
         // Act
-        var (resourceItems, resourceXml) = sut.CreateResourceItemsFromResult(sessions, "errMsg");
+        var (betTypesRoot, betTypesRootXml) = sut.CreateBetTypesRoot(details);
 
         // Assert
-        Assert.Single(resourceItems);
-        Assert.Equal("1", resourceItems[0].ResourceId);
-        Assert.Equal("1", resourceItems[0].OtherInfo);
-        Assert.Equal("<resourcesxml>", resourceXml);
-        xmlConvertService.Received(1).Serialize(Arg.Any<Resources<ResourceItem>>());
+        Assert.NotNull(betTypesRoot);
+        Assert.Empty(betTypesRoot.BetType);
+        Assert.Equal("<emptyxml>", betTypesRootXml);
+    }
+
+    [Fact]
+    public void CreateResourceItemsFromResult_EmptySessions_ReturnsEmptyListAndXml()
+    {
+        // Arrange
+        var sessions = new List<SpecialSession>();
+        xmlConvertService.Serialize(Arg.Any<Resources<ResourceItem>>()).Returns("<emptyresources>");
+
+        // Act
+        var (resourceItems, resourceXml) = sut.CreateResourceItemsFromResult(sessions);
+
+        // Assert
+        Assert.Empty(resourceItems);
+        Assert.Equal("<emptyresources>", resourceXml);
     }
 }
