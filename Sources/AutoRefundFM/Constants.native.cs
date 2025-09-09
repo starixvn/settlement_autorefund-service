@@ -70,3 +70,15 @@ public static class EventCounterResource
     public const string ThrowIn = "221CNT06";
     public const string Penalty = "221CNT08";
 }
+
+public static class FastMarketErrorCodes
+{
+    public const int NoCompletedResults = 101;
+    public const int ExistingRefundsFound = 102;
+    public const int EventTicketValidationFailed = 103;
+    public const int MarkedTicketsFound = 104;
+    public const int InvalidChoiceResult = 105;
+    public const int NoEventCounters = 106;
+    public const int EventCounterValidationFailed = 107;
+
+}

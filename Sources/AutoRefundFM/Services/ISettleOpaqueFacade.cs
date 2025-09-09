@@ -1,17 +1,18 @@
 ﻿using AutoRefund.Core.Criteria;
 using AutoRefund.Core.Services;
-using AutoRefundFM.Features.CheckingMarkedTicket;
+using AutoRefundFM.Features.CheckMarkedTicket;
 using AutoRefundFM.Features.GetFastMarketResults;
 using AutoRefundFM.Features.GetSpecialSession;
 using AutoRefundFM.Features.PushFastMarketResult;
 using AutoRefundFM.Models;
+using AutoRefundFM.Services.Validation;
 using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.Database;
 
 namespace AutoRefundFM.Services;
 public interface SettleOpaqueFacade
 {
-    Task Refund(Match match);
+    Task Refund(SpecialSession session);
 }
 
 
@@ -19,101 +20,71 @@ public class SettleOpaqueFacadeImp(
     IGetFastMarketResultsHandler getFastMarketResultsHandler,
     IPushFastMarketResultHandler pushFastMarketResultHandler,
     ICheckMarkedTicketHandler checkMarkedTicketHandler,
-    IMatchPoolService matchPoolService,
+    ISessionPoolService matchPoolService,
     SettlementLogService settlementLogService,
-    IFastMarketValidationService fastMarketValidationService,
     IFmRefundResultService fmRefundResultService,
     IFastMarketDataTransformationService dataTransformationService,
-    IEventCounterService eventCounterService) : SettleOpaqueFacade
+    IValidationHandler validationHandler) : SettleOpaqueFacade
 {
-    public async Task Refund(Match match)
+    public async Task Refund(SpecialSession session)
     {
         try
         {
-            //await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, match.SpecialSessions, 1);
-            var (fmResults, eventCounters) = await getFastMarketResultsHandler.Handle(match);
-            //var x = fmResults.Exists(x => !eventCounterService.ValidateEventCounterWithBetResult(x));
-            //var errorX = "Has result is not consistent with the event counter";
+            //await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 1);
+            var (fmResults, eventCounters) = await getFastMarketResultsHandler.Handle(session);
+            session.EventCounters = eventCounters;
+            session.FastMarketResultDetails = fmResults;
 
-            //var y = fmResults.Exists(x => fastMarketValidationService.HasChoiceResult(x.BetType, x.ResultItem, x.Result));
+            var result = await validationHandler.Handle(session);
+            if (!result.IsSuccess)
+            {
+                await HandleSessionError(session, result.ErrMsg);
+                return;
+            }
 
-            //var errorY = "Has result with choice but no result is set";
+            Console.WriteLine(result);
 
 
-            //var validateCompletedResult = fastMarketValidationService.ValidateSessionsWithCompletedResults(match, fmResults);
-            //if (!validateCompletedResult.IsSuccess)
-            //{
-            //    await HandleMatchError(match, fmResults, validateCompletedResult.ErrMsg);
-            //    return;
-            //}
-
-            //var validRunAutoRefund = await fastMarketValidationService.ValidRunAutoRefund(match, fmResults);
-            //if (!validateCompletedResult.IsSuccess)
-            //{
-            //    await fmRefundResultService.AddOrUpdateSessionResult(match, 2);//
-            //    return;
-            //}
-
-            var (_, betTypeRootXml) = dataTransformationService.CreateBetTypesRoot(fmResults);
-            var eventCountersXml = dataTransformationService.CreateEventCountersXml(eventCounters);
-
-            //var validationResult = await fastMarketValidationService.ValidateEventTicket(match, betTypeRootXml);
-            //if (!validationResult.IsSuccess)
-            //{
-            //    await HandleMatchError(match, fmResults, validationResult.ErrMsg);
-            //    return;
-            //}
-
-            //if (await HasMarkedTickets(match.MatchId, betTypeRootXml))
-            //{
-            //    const string errorMessage = "ERROR! Cannot proceed due to marked tickets. Please unmark them and try again.";
-            //    await HandleMatchError(match, fmResults, errorMessage);
-            //    return;
-            //}
-
-            await ProcessRefund(new Match { MatchId = match.MatchId }, betTypeRootXml, eventCountersXml);
+            await ProcessRefund(session, "", "");
         }
         catch (Exception ex)
         {
-            await ExceptionLog(match, ex);
+            //await ExceptionLog(match, ex);
+            Console.WriteLine(ex);
         }
         finally
         {
-            matchPoolService.RemoveMatch(match);
+            matchPoolService.RemoveSession(session);
         }
     }
 
-    private async Task HandleMatchError(Match match, List<FastMarketResultDetail> fastMarketResultDetails, string errorMsg)
+    private async Task HandleSessionError(SpecialSession session, string errorMsg)
     {
-        var sessions = match.SpecialSessions;
-
-        await fmRefundResultService.AddOrUpdateSessionResult(match.MatchId, sessions, 3, errorMsg);
-        await fmRefundResultService.AddOrUpdateBetTypeResult(
-            match.MatchId,
-            fastMarketResultDetails,
+        await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 3, errorMsg);
+        await fmRefundResultService.AddOrUpdateFmResult(
+            session.MatchId,
+            session.FastMarketResultDetails,
             3,
             errorMsg);
         await settlementLogService.WriteUserLogSettle(new UserLogCriteria
         {
-            MatchId = match.MatchId,
+            MatchId = session.MatchId,
             ActionId = 167,
             Remark = errorMsg
         });
     }
 
-    private async Task<bool> HasMarkedTickets(int matchId, string betTypeRootXml)
-        => await checkMarkedTicketHandler.Handle(matchId, betTypeRootXml);
 
-    private async Task ProcessRefund(Match match, string betTypeRootXml, string eventCounterXml)
+    private async Task ProcessRefund(SpecialSession session, string betTypeRootXml, string eventCounterXml)
     {
         var criteria = new PushFastMarketResultCriteria
         {
-            MatchId = match.MatchId,
+            MatchId = session.MatchId,
             Results = betTypeRootXml,
             EventCounters = eventCounterXml,
         };
 
-        await pushFastMarketResultHandler.Handle(match, criteria);
+        await pushFastMarketResultHandler.Handle(session, criteria);
     }
 
 

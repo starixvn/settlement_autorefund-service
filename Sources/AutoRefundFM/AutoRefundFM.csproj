@@ -21,6 +21,7 @@
 	  <PackageReference Include="Fanex.Settlement.ScaleOut" Version="1.4.6.4" />
 	  <PackageReference Include="Mapster" Version="7.4.0" />
 	  <PackageReference Include="ONEbook.UM" Version="3.2.5" />
+	  <PackageReference Include="Scrutor" Version="6.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>

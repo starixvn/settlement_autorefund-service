@@ -3,13 +3,14 @@ using AutoRefund.Core.Models;
 using AutoRefundFM.Models;
 using Fanex.Caching;
 using Fanex.Data.Repository;
+using Mapster;
 using Microsoft.Extensions.Options;
 
 namespace AutoRefundFM.Features.GetSpecialSession;
 
 public interface IGetSpecialSessionHandler
 {
-    Task<List<Match>> Handle();
+    Task<List<SpecialSession>> Handle();
 }
 
 public class GetSpecialSessionHandler : IGetSpecialSessionHandler
@@ -25,35 +26,15 @@ public class GetSpecialSessionHandler : IGetSpecialSessionHandler
         this.cache = cache;
     }
 
-    public async Task<List<Match>> Handle()
+    public async Task<List<SpecialSession>> Handle()
     {
         var results = await repository.FetchAsync<ResultDetail>(new GetSpecialSessionCriteria());
 
         var matches = results
             .Where(x => x.MatchId > 0)
-            .Select(x => new SpecialSession
-            {
-                MatchId = x.MatchId,
-                LeagueId = x.LeagueId,
-                ResourceId = x.ResourceId,
-                StartMinute = int.Parse(x.HomeValue),
-                StartSecond = int.Parse(x.OtherInfo.Split(",")[0].Split(":")[1]),
-                EndMinute = int.Parse(x.AwayValue),
-                EndSecond = int.Parse(x.OtherInfo.Split(",")[1].Split(":")[1]),
-                ResultStatusId = x.ResultStatusId,
-                OtherInfo = x.OtherInfo
-            })
-            .GroupBy(x => new
-            {
-                x.MatchId,
-                x.LeagueId,
-            })
-            .Select(x => new Match
-            {
-                MatchId = x.Key.MatchId,
-                LeagueId = x.Key.LeagueId,
-                SpecialSessions = [.. x]
-            }).ToList();
+            .Select(x => x.Adapt<SpecialSession>())
+            .DistinctBy(x => new { x.MatchId, x.ResourceId })
+            .ToList();
 
 
         var (hasValue, leagueId) = await cache.TryGetAsync<int>(CacheKey.LeagueId);
@@ -61,10 +42,10 @@ public class GetSpecialSessionHandler : IGetSpecialSessionHandler
         var matchesToRefund = FilterMatchesBasedOnEnv(matches, hasValue ? leagueId : 0);
 
 
-        return matchesToRefund.ToList();
+        return [.. matchesToRefund];
     }
 
-    private IEnumerable<Match> FilterMatchesBasedOnEnv(IEnumerable<Match> matches, int leagueId)
+    private IEnumerable<SpecialSession> FilterMatchesBasedOnEnv(IEnumerable<SpecialSession> matches, int leagueId)
     {
         return appSettingsKey.EnvironmentName switch
         {

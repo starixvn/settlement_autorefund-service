@@ -9,31 +9,35 @@ namespace AutoRefundFM;
 public class RefundFastMarketWorker(
     IConfiguration configuration,
     IMaintenanceService maintenanceService,
-    IMatchPoolService matchPoolService,
+    ISessionPoolService matchPoolService,
     SettleOpaqueFacade settleOpaqueFacade) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        Console.WriteLine($"Start at {DateTimeOffset.UtcNow}");
         var intervalTime = TimeSpan.FromMilliseconds(configuration.GetValue<int>("ServiceInterval"));
         using PeriodicTimer timer = new(intervalTime);
 
-        //while (await timer.WaitForNextTickAsync(stoppingToken))
+        while (await timer.WaitForNextTickAsync(stoppingToken))
         {
             var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
             if (isMaintenance)
             {
-                //continue;
+                continue;
             }
 
-            var matches = await matchPoolService.PeekNewMatch();
+            var sessions = await matchPoolService.PeekSessions();
 
-
-            //matches.ForEach(match => Task.Run(() => settleOpaqueFacade.Refund(match)));
-
-            foreach (var item in matches)
+            sessions.ForEach(session =>
             {
-                await settleOpaqueFacade.Refund(item);
-            }
+                Console.WriteLine($"{DateTime.UtcNow} {session.ToString()}");
+                Task.Run(() => settleOpaqueFacade.Refund(session));
+            });
+
+            //foreach (var session in sessions)
+            //{
+            //    //await settleOpaqueFacade.Refund(item);
+            //}
         }
     }
 }

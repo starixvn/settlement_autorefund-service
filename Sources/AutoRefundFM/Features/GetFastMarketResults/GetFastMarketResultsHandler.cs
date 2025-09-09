@@ -8,7 +8,7 @@ namespace AutoRefundFM.Features.GetFastMarketResults;
 
 public interface IGetFastMarketResultsHandler
 {
-    Task<(List<FastMarketResultDetail>, List<EventCounter>)> Handle(Match match);
+    Task<(List<FastMarketResultDetail>, List<EventCounter>)> Handle(SpecialSession session);
 }
 
 public class GetFastMarketResultsHandler(
@@ -19,19 +19,20 @@ public class GetFastMarketResultsHandler(
 {
     private readonly AppSettingsKey appSettingsKey = options.Value;
 
-    public async Task<(List<FastMarketResultDetail>, List<EventCounter>)> Handle(Match match)
+    public async Task<(List<FastMarketResultDetail>, List<EventCounter>)> Handle(SpecialSession session)
     {
-        var (evenCounters, handicapValue, fastMarketResults) = await GetFastMarketResults(match.MatchId);
-        var ticketResults = await GetFastMarketTicketDetail(match.MatchId);
+        var (evenCounters, handicapValue, fastMarketResults) = await GetFastMarketResults(session.MatchId);
+        var ticketResults = await GetFastMarketTicketDetail(session.MatchId);
 
         var newTicketResults = ticketResults
             .Where(item => !fastMarketResults.Exists(x => x.Position == item.Position && x.BetType == item.BetType));
         var combinedResults = fastMarketResults.Concat(newTicketResults);
 
-        var finalResults = FilterResultsByWaterBreakAndStatus(combinedResults, match.SpecialSessions);
-        var finalEventCounters = filterWaterBreakService.ApplyFilterEventCountWaterBreak(evenCounters, match.SpecialSessions[0]);
+        var finalResults = FilterResultsByWaterBreakAndStatus(combinedResults, session);
+        var finalEventCounters = filterWaterBreakService.ApplyFilterEventCountWaterBreak(evenCounters, session);
 
         SetResultWithLabelsAndCounters(finalResults, handicapValue, finalEventCounters);
+
 
         return (finalResults, finalEventCounters);
     }
@@ -50,13 +51,13 @@ public class GetFastMarketResultsHandler(
 
     private List<FastMarketResultDetail> FilterResultsByWaterBreakAndStatus(
         IEnumerable<FastMarketResultDetail> combinedResults,
-        List<SpecialSession> specialSessions)
+        SpecialSession specialSession)
     {
         List<int> runnableStatus = [0, 1, 2, 3, Status.CompletedAutoResult, Status.CompletedManualResult];
 
-        return [.. specialSessions
-            .SelectMany(session => filterWaterBreakService.ApplyFilterByWaterBreak(combinedResults, session)
-                .Where(result => runnableStatus.Contains(result.ResultStatus)))];
+        return [.. filterWaterBreakService
+            .ApplyFilterByWaterBreak(combinedResults, specialSession)
+            .Where(result => runnableStatus.Contains(result.ResultStatus))];
     }
 
 

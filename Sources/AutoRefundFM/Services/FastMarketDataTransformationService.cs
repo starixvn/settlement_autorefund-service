@@ -50,8 +50,6 @@ public class FastMarketDataTransformationService(XmlConvertService xmlConvertSer
         return eventCountersElement;
     }
 
-
-
     public (BetTypesRoot, string) CreateBetTypesRoot(List<FastMarketResultDetail> fastMarketResultDetails)
     {
         var betTypes = fastMarketResultDetails.GroupBy(g => g.BetType)

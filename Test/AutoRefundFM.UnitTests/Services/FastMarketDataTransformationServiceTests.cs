@@ -59,7 +59,7 @@ public class FastMarketDataTransformationServiceTests
     public void CreateResourceItemsFromResult_EmptySessions_ReturnsEmptyListAndXml()
     {
         // Arrange
-        var sessions = new List<SpecialSession>();
+        var sessions = new List<FastMarketResultDetail>();
         xmlConvertService.Serialize(Arg.Any<Resources<ResourceItem>>()).Returns("<emptyresources>");
 
         // Act

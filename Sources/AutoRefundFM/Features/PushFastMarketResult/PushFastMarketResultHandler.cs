@@ -16,7 +16,7 @@ namespace AutoRefundFM.Features.PushFastMarketResult;
 
 public interface IPushFastMarketResultHandler
 {
-    Task Handle(Match match, PushFastMarketResultCriteria criteria);
+    Task Handle(SpecialSession session, PushFastMarketResultCriteria criteria);
 }
 
 public class PushFastMarketResultHandler(
@@ -31,35 +31,30 @@ public class PushFastMarketResultHandler(
 {
     private readonly AppSettingsKey appSettingsKey = appSettingsKey.Value;
 
-    public async Task Handle(Match match, PushFastMarketResultCriteria criteria)
+    public async Task Handle(SpecialSession session, PushFastMarketResultCriteria criteria)
     {
-        var (_, resourceXml) = fastMarketDataTransformationService.CreateResourceItemsFromResult([]);
         var updateMatchInfoRequest = criteria.Adapt<UpdateMatchInfoRequest>();
         updateMatchInfoRequest.Mode = Mode.FastMarket;
 
         await scaleOutSettleService.UpdateMatchInfo(updateMatchInfoRequest);
 
-        await WritePreSettlementLog(match, criteria.Results);
-        await WriteSettlementLog(match, resourceXml);
+        await WritePreSettlementLog(session.MatchId, criteria.Results);
+        await WriteSettlementLog(session);
 
         await ExecuteCalculate(criteria);
 
-        await updateWaterBreakHandler.Handle(match);
+        await updateWaterBreakHandler.Handle(session.MatchId, [session]);
 
-        await fmRefundResultService.AddOrUpdateSessionResult(match, 2);
-        await fmRefundResultService.AddOrUpdateBetTypeResult(
-            match.MatchId,
-            [.. match.SpecialSessions.SelectMany(x => x.FastMarketResultDetails)],
-            2,
-            string.Empty);
-
+        await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 2);
     }
 
-    private async Task WriteSettlementLog(Match match, string resourceXml)
+    private async Task WriteSettlementLog(SpecialSession session)
     {
+        var (_, resourceXml) = fastMarketDataTransformationService.CreateResourceItemsFromResult(session.FastMarketResultDetails);
+
         var criteria = new InsertSettlementLogCriteria
         {
-            MatchId = match.MatchId,
+            MatchId = session.MatchId,
             Action = "REFUND",
             Mode = Mode.FastMarket,
             SportType = 1, //soccer
@@ -70,11 +65,11 @@ public class PushFastMarketResultHandler(
         await logService.WriteSettlementLog(criteria);
     }
 
-    private async Task WritePreSettlementLog(Match match, string betTypesXml)
+    private async Task WritePreSettlementLog(int matchId, string betTypesXml)
     {
-        var message = $"NAP: Fast Market REFUND for matchId: {match.MatchId} with {betTypesXml}";
+        var message = $"NAP: Fast Market REFUND for matchId: {matchId} with {betTypesXml}";
 
-        await logService.WriteUserLogPreSettle(match.MatchId, message);
+        await logService.WriteUserLogPreSettle(matchId, message);
     }
 
     private async Task ExecuteCalculate(PushFastMarketResultCriteria criteria)

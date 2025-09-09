@@ -2,7 +2,7 @@
 using Fanex.Data.Repository;
 using Microsoft.Extensions.Options;
 
-namespace AutoRefundFM.Features.CheckingMarkedTicket;
+namespace AutoRefundFM.Features.CheckMarkedTicket;
 
 public interface ICheckMarkedTicketHandler
 {

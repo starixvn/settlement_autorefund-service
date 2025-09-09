@@ -17,12 +17,17 @@ public class UpdateWaterBreakHandler(
 
     public async Task Handle(Match match)
     {
+        await Handle(match.MatchId, [match.SpecialSession]);
+    }
+
+    public async Task Handle(int matchId, List<SpecialSession> specialSessions)
+    {
         var resources = new WaterBreakResource<List<WaterBreakModel>>
         {
-            Item = [.. match.SpecialSessions.Select(x => new WaterBreakModel
+            Item = [..specialSessions.Select(x  => new WaterBreakModel
             {
-                ResourceId = x.ResourceId,
-                HomeValue = x.StartMinute,
+                ResourceId =x.ResourceId,
+                HomeValue =x.StartMinute,
                 AwayValue = x.EndMinute,
                 OtherInfo = x.OtherInfo,
             })]
@@ -32,19 +37,10 @@ public class UpdateWaterBreakHandler(
 
         var criteria = new UpdateWaterBreakCriteria
         {
-            MatchId = match.MatchId,
+            MatchId = matchId,
             SpecialSession = resourceXml
         };
 
         await repository.ExecuteAsync(criteria);
-    }
-
-    public async Task Handle(int matchId, List<SpecialSession> SpecialSessions)
-    {
-        await Handle(new Match
-        {
-            MatchId = matchId,
-            SpecialSessions = [.. SpecialSessions]
-        });
     }
 }

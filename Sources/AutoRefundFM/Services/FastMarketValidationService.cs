@@ -1,6 +1,6 @@
 ﻿using AutoRefund.Core.Models;
 using AutoRefund.Core.Services;
-using AutoRefundFM.Features.CheckingMarkedTicket;
+using AutoRefundFM.Features.CheckMarkedTicket;
 using AutoRefundFM.Features.PushFastMarketResult;
 using AutoRefundFM.Models;
 using Fanex.Settlement.ScaleOut.Request;
@@ -86,7 +86,7 @@ public class FastMarketValidationService(AutoRefundResultService refundResultSer
 
         if (!isExistCompletedResults)
         {
-            var errorMessage = BuildErrorMessage(match.SpecialSessions);
+            var errorMessage = BuildErrorMessage([match.SpecialSession]);
 
 
             return new Result

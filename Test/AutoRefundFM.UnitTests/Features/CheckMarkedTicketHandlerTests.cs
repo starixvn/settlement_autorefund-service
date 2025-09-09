@@ -1,5 +1,5 @@
 using AutoRefund.Core.Models;
-using AutoRefundFM.Features.CheckingMarkedTicket;
+using AutoRefundFM.Features.CheckMarkedTicket;
 using Fanex.Data.Repository;
 using Microsoft.Extensions.Options;
 using NSubstitute;

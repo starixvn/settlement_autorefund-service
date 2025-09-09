@@ -8,31 +8,19 @@ namespace AutoRefundFM.Services;
 
 public interface IFmRefundResultService
 {
-    Task AddOrUpdateBetTypeResult(int matchId, List<FastMarketResultDetail> fastMarketResults, int statusId, string errorMsg = "");
+    Task AddOrUpdateFmResult(int matchId, List<FastMarketResultDetail> fastMarketResults, int statusId, string errorMsg = "");
     Task AddOrUpdateSessionResult(int matchId, List<SpecialSession> specialSessions, int statusId, string errorMsg = "");
-    Task AddOrUpdateSessionResult(Match match, int statusId, string errorMsg = "");
 }
 
 public class FmRefundResultService(AutoRefundResultService refundResultService, XmlConvertService xmlConvertService) : IFmRefundResultService
 {
     public async Task AddOrUpdateSessionResult(int matchId, List<SpecialSession> specialSessions, int statusId, string errorMsg = "")
     {
-        var match = new Match
-        {
-            MatchId = matchId,
-            SpecialSessions = specialSessions
-        };
-        await AddOrUpdateSessionResult(match, statusId, errorMsg);
-    }
-
-    public async Task AddOrUpdateSessionResult(Match match, int statusId, string errorMsg = "")
-    {
-        var resourceItems = CreateResourceItemsFromSessions(match.SpecialSessions, errorMsg);
+        var resourceItems = CreateResourceItemsFromSessions(specialSessions, errorMsg);
         var resourceXml = CreateResourceXml(resourceItems);
 
-        await refundResultService.InsertOrUpdateResults(match.MatchId, statusId, resourceXml);
+        await refundResultService.InsertOrUpdateResults(matchId, statusId, resourceXml);
     }
-
 
     private static List<ResourceItem> CreateResourceItemsFromSessions(List<SpecialSession> specialSessions, string errorMsg = "")
     {
@@ -51,14 +39,13 @@ public class FmRefundResultService(AutoRefundResultService refundResultService, 
         List<FastMarketResultDetail> fastMarketResults,
         string errorMsg)
     {
-        return fastMarketResults
+        return [.. fastMarketResults
             .Select(result => new ResourceItem
             {
                 ResourceId = result.BetType.ToString(),
                 OtherInfo = result.Position.ToString(),
                 Remark = errorMsg
-            })
-            .ToList();
+            })];
     }
 
     private string CreateResourceXml(List<ResourceItem> resourceItems)
@@ -72,7 +59,7 @@ public class FmRefundResultService(AutoRefundResultService refundResultService, 
         return xmlConvertService.Serialize(resourceRoot);
     }
 
-    public async Task AddOrUpdateBetTypeResult(
+    public async Task AddOrUpdateFmResult(
         int matchId,
         List<FastMarketResultDetail> fastMarketResults,
         int statusId,

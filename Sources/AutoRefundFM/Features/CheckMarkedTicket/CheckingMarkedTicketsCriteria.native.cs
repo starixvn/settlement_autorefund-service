@@ -1,7 +1,7 @@
 ﻿using Fanex.Data;
 using Fanex.Data.Repository;
 
-namespace AutoRefundFM.Features.CheckingMarkedTicket;
+namespace AutoRefundFM.Features.CheckMarkedTicket;
 
 public class CheckingMarkedTicketCriteria : CriteriaBase
 {
