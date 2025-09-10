@@ -20,7 +20,7 @@ public class EventCounterService : IEventCounterService
 
     private static List<EventCounter> GetEventCountersForNextOneMinute(FastMarketResultDetail item, List<EventCounter> eventCounters)
     {
-        var eventCounter = eventCounters.FirstOrDefault(ec => ec.Position == item.Position);
+        var eventCounter = eventCounters.Find(ec => ec.Position == item.Position);
         return eventCounter != null ? [eventCounter] : [];
     }
 

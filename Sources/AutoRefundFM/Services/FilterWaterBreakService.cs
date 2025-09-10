@@ -12,7 +12,7 @@ public class FilterWaterBreakService : IFilterWaterBreakService
 {
     public List<FastMarketResultDetail> ApplyFilterByWaterBreak(
          IEnumerable<FastMarketResultDetail> results,
-         SpecialSession waterBreakTime)
+         SpecialSession session)
     {
         return [.. results
             .Where(item => item.BetType switch
@@ -20,33 +20,33 @@ public class FilterWaterBreakService : IFilterWaterBreakService
                 FastMarketBetType.TimeMachineHdp or FastMarketBetType.TimeMachineMinutes => false,
                 FastMarketBetType.NextOneMinute or FastMarketBetType.FirstNextOneMinute or
                 FastMarketBetType.NextOneMinuteSetPiece or FastMarketBetType.CombinationNextOneMinute
-                    => ApplyFilterOneMinuteWaterBreak(item, waterBreakTime),
-                _ => ApplyFilterFiveMinuteWaterBreak(item, waterBreakTime)
+                    => ApplyFilterOneMinuteWaterBreak(item, session),
+                _ => ApplyFilterFiveMinuteWaterBreak(item, session)
             })];
     }
 
-    private static bool ApplyFilterFiveMinuteWaterBreak(FastMarketResultDetail item, SpecialSession waterBreakTime)
+    private static bool ApplyFilterFiveMinuteWaterBreak(FastMarketResultDetail item, SpecialSession session)
     {
-        var endMinute = waterBreakTime.StartMinute == waterBreakTime.EndMinute
-            ? waterBreakTime.StartMinute
-            : waterBreakTime.EndMinute;
+        var endMinute = session.StartMinute == session.EndMinute
+            ? session.StartMinute
+            : session.EndMinute;
 
-        return item.Position > waterBreakTime.StartMinute - 5 && item.Position <= endMinute;
+        return item.Position > session.StartMinute - 5 && item.Position <= endMinute;
     }
 
 
-    private static bool ApplyFilterOneMinuteWaterBreak(FastMarketResultDetail item, SpecialSession waterBreakTime)
+    private static bool ApplyFilterOneMinuteWaterBreak(FastMarketResultDetail item, SpecialSession session)
     {
-        if (waterBreakTime.StartMinute == waterBreakTime.EndMinute)
+        if (session.StartMinute == session.EndMinute)
         {
-            return item.Position == waterBreakTime.StartMinute;
+            return item.Position == session.StartMinute;
         }
 
-        return item.Position >= waterBreakTime.StartMinute && item.Position <= waterBreakTime.EndMinute;
+        return item.Position >= session.StartMinute && item.Position <= session.EndMinute;
     }
 
-    public List<EventCounter> ApplyFilterEventCountersByWaterBreak(List<EventCounter> eventCounters, SpecialSession waterBreakTime)
+    public List<EventCounter> ApplyFilterEventCountersByWaterBreak(List<EventCounter> eventCounters, SpecialSession session)
     {
-        return [.. eventCounters.Where(x => x.Position > waterBreakTime.StartMinute - 5 && x.Position < waterBreakTime.EndMinute + 5)];
+        return [.. eventCounters.Where(x => x.Position > session.StartMinute - 5 && x.Position < session.EndMinute + 5)];
     }
 }

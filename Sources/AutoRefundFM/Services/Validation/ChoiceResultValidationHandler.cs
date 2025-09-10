@@ -32,14 +32,14 @@ public class ChoiceResultValidationHandler(IValidationHandler? next = null) : Va
     };
 
     private static bool HasChoiceResultOfNextOneMinute(ResultItem resultItem)
-        => resultItem.None || resultItem.Goal || resultItem.Corner
-        || resultItem.FreeKick || resultItem.GoalKick || resultItem.ThrowIn;
+        => new List<bool> { resultItem.None, resultItem.Goal, resultItem.Corner, resultItem.FreeKick, resultItem.GoalKick, resultItem.ThrowIn }
+        .Exists(x => x);
 
     private static bool HasChoiceResultOfNextFiveMinutes(ResultItem resultItem)
-        => resultItem.None || resultItem.Goal || resultItem.Corner || resultItem.FreeKick
-        || resultItem.GoalKick || resultItem.ThrowIn || resultItem.Penalty;
+        => new List<bool> { resultItem.None, resultItem.Goal, resultItem.Corner, resultItem.FreeKick, resultItem.GoalKick, resultItem.ThrowIn, resultItem.Penalty }
+        .Exists(x => x);
 
     private static bool HasChoiceResultOfOther(ResultItem resultItem)
-        => resultItem.None || resultItem.Goal || resultItem.Corner || resultItem.FreeKick
-        || resultItem.GoalKick || resultItem.ThrowIn || resultItem.Bookings || resultItem.Penalty;
+        => new List<bool> { resultItem.None, resultItem.Goal, resultItem.Corner, resultItem.FreeKick, resultItem.GoalKick, resultItem.ThrowIn, resultItem.Bookings, resultItem.Penalty }
+        .Exists(x => x);
 }

@@ -25,14 +25,8 @@ public class SessionPoolService(IGetSpecialSessionHandler getSpecialSessionHandl
     {
         var sessions = await getSpecialSessionHandler.Handle();
 
-        var newSessions = new List<SpecialSession>();
-        foreach (var session in sessions)
-        {
-            if (poolOfSessions.TryAdd(session, session))
-            {
-                newSessions.Add(session);
-            }
-        }
-        return newSessions;
+        return [.. sessions
+            .Where(session => !poolOfSessions.ContainsKey(session)
+                && poolOfSessions.TryAdd(session, session))];
     }
 }

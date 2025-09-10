@@ -17,7 +17,7 @@
 	  <PackageReference Include="Fanex.Logging.Extensions" Version="2.0.2.1" />
 	  <PackageReference Include="Fanex.Logging.Extensions.Database" Version="2.0.2.1" />
 	  <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
-	  <PackageReference Include="Fanex.Settlement.MessageBridge" Version="1.0.8" />
+	  <PackageReference Include="Fanex.Settlement.MessageBridge" Version="1.0.11" />
 	  <PackageReference Include="Fanex.Settlement.ScaleOut" Version="1.4.6.4" />
 	  <PackageReference Include="Mapster" Version="7.4.0" />
 	  <PackageReference Include="ONEbook.UM" Version="3.2.5" />

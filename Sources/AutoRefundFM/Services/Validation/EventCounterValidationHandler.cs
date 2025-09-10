@@ -37,7 +37,7 @@ public class EventCounterValidationHandler(IValidationHandler? next = null) : Va
             return false;
         }
 
-        var eventCounter = eventCounters.First();
+        var eventCounter = eventCounters[0];
         var validationResults = new List<bool>
         {
             ValidateEventTypeForOneMinute(eventCounter, item, "Goal"),
@@ -47,7 +47,7 @@ public class EventCounterValidationHandler(IValidationHandler? next = null) : Va
             ValidateEventTypeForOneMinute(eventCounter, item, "ThrowIn")
         };
 
-        return validationResults.All(result => result);
+        return validationResults.TrueForAll(result => result);
     }
 
     private static bool ValidateNextFiveMinutes(List<EventCounter> eventCounters, FastMarketResultDetail item)
@@ -62,7 +62,7 @@ public class EventCounterValidationHandler(IValidationHandler? next = null) : Va
             ValidateEventTypeForFiveMinutes(eventCounters, item, "Penalty")
         };
 
-        return validationResults.All(result => result);
+        return validationResults.TrueForAll(result => result);
     }
 
     private static bool ValidateEventTypeForOneMinute(EventCounter eventCounter, FastMarketResultDetail item, string eventType)
@@ -103,16 +103,24 @@ public class EventCounterValidationHandler(IValidationHandler? next = null) : Va
         return ValidateEventValueForFiveMinutes(totalEvents, expectedValue, betValue);
     }
 
-    private static string GetEventValue(EventResultItem eventResultItem, string eventType) => eventType switch
+    private static readonly Dictionary<string, Func<EventResultItem, string?>> EventValueSelectors = new()
     {
-        "Goal" => eventResultItem.Goal ?? "0",
-        "Corner" => eventResultItem.Corner ?? "0",
-        "FreeKick" => eventResultItem.FreeKick ?? "0",
-        "GoalKick" => eventResultItem.GoalKick ?? "0",
-        "ThrowIn" => eventResultItem.ThrowIn ?? "0",
-        "Penalty" => eventResultItem.Penalty ?? "0",
-        _ => "0"
+        ["Goal"] = eri => eri.Goal,
+        ["Corner"] = eri => eri.Corner,
+        ["FreeKick"] = eri => eri.FreeKick,
+        ["GoalKick"] = eri => eri.GoalKick,
+        ["ThrowIn"] = eri => eri.ThrowIn,
+        ["Penalty"] = eri => eri.Penalty
     };
+
+    private static string GetEventValue(EventResultItem eventResultItem, string eventType)
+    {
+        if (EventValueSelectors.TryGetValue(eventType, out var selector))
+        {
+            return selector(eventResultItem) ?? "0";
+        }
+        return "0";
+    }
 
     private static bool GetBetValue(ResultItem resultItem, string eventType) => eventType switch
     {
@@ -132,16 +140,24 @@ public class EventCounterValidationHandler(IValidationHandler? next = null) : Va
         return double.Parse(value);
     }
 
-    private static string GetHandicapValue(ResultItemLabel resultItemLabel, string eventType) => eventType switch
+    private static readonly Dictionary<string, Func<ResultItemLabel, string?>> HandicapValueSelectors = new()
     {
-        "Goal" => resultItemLabel.Goal ?? "0",
-        "Corner" => resultItemLabel.Corner ?? "0",
-        "FreeKick" => resultItemLabel.FreeKick ?? "0",
-        "GoalKick" => resultItemLabel.GoalKick ?? "0",
-        "ThrowIn" => resultItemLabel.ThrowIn ?? "0",
-        "Penalty" => resultItemLabel.Penalty ?? "0",
-        _ => "0"
+        ["Goal"] = ril => ril.Goal,
+        ["Corner"] = ril => ril.Corner,
+        ["FreeKick"] = ril => ril.FreeKick,
+        ["GoalKick"] = ril => ril.GoalKick,
+        ["ThrowIn"] = ril => ril.ThrowIn,
+        ["Penalty"] = ril => ril.Penalty
     };
+
+    private static string GetHandicapValue(ResultItemLabel resultItemLabel, string eventType)
+    {
+        if (HandicapValueSelectors.TryGetValue(eventType, out var selector))
+        {
+            return selector(resultItemLabel) ?? "0";
+        }
+        return "0";
+    }
 
     private static bool ValidateEventValueForOneMinute(string eventValue, bool betValue)
     {

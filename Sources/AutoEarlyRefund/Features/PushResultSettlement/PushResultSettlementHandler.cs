@@ -32,6 +32,6 @@ public class PushResultSettlementHandler(
     private async Task PushResultSettlement(string server, PushResultSettlementCriteria criteria)
     {
         criteria.DbServer = server;
-        await repository.ExecuteAsync(criteria);
+        await repository.ExecuteAsync(criteria, cancellationToken: cancellationToken);
     }
 }

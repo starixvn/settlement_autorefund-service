@@ -6,7 +6,7 @@ namespace AutoRefundFM.Features.UpdateWaterBreak;
 
 public interface IUpdateWaterBreakHandler
 {
-    Task Handle(int matchId, List<SpecialSession> SpecialSessions, int statusId);
+    Task Handle(int matchId, List<SpecialSession> specialSessions, int statusId);
 }
 
 public class UpdateWaterBreakHandler(
