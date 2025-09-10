@@ -6,15 +6,15 @@ namespace AutoRefundFM.Services.Validation;
 
 public class CompletedResultsValidationHandler(IValidationHandler? next = null) : ValidationHandlerBase(next)
 {
-    protected override async Task<Result> ProcessAsync(SpecialSession session)
+    protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
         int[] completedStatuses = [Status.CompletedManualResult, Status.CompletedAutoResult];
-        var hasCompletedResults = session.FastMarketResultDetails.Exists(detail =>
+        var hasCompletedResults = validationContext.Session.FastMarketResultDetails.Exists(detail =>
             completedStatuses.Contains(detail.ResultStatus));
 
-        if (!hasCompletedResults)
+        if (hasCompletedResults)
         {
-            var errorMessage = $"Auto Refund failed: {session} due to some intervals have been calculated.";
+            var errorMessage = $"Auto FM Refund failed: {validationContext.Session} due to some intervals have been calculated.";
             return new Result
             {
                 ErrCode = FastMarketErrorCodes.NoCompletedResults,

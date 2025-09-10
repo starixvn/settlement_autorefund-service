@@ -25,8 +25,7 @@ public class PushFastMarketResultHandler(
     IOptions<AppSettingsKey> appSettingsKey,
     IUpdateWaterBreakHandler updateWaterBreakHandler,
     SettlementLogService logService,
-    IFmRefundResultService fmRefundResultService,
-    IFastMarketDataTransformationService fastMarketDataTransformationService
+    IDataTransformationService fastMarketDataTransformationService
         ) : IPushFastMarketResultHandler
 {
     private readonly AppSettingsKey appSettingsKey = appSettingsKey.Value;
@@ -43,14 +42,13 @@ public class PushFastMarketResultHandler(
 
         await ExecuteCalculate(criteria);
 
-        await updateWaterBreakHandler.Handle(session.MatchId, [session]);
+        await updateWaterBreakHandler.Handle(session.MatchId, [session], 2);
 
-        await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 2);
     }
 
     private async Task WriteSettlementLog(SpecialSession session)
     {
-        var (_, resourceXml) = fastMarketDataTransformationService.CreateResourceItemsFromResult(session.FastMarketResultDetails);
+        var (_, resourceXml) = fastMarketDataTransformationService.CreateResourcesFromFmResult(session.FastMarketResultDetails);
 
         var criteria = new InsertSettlementLogCriteria
         {

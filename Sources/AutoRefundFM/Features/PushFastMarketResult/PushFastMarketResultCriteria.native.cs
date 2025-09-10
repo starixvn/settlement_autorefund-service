@@ -17,6 +17,7 @@ public class PushFastMarketResultCriteria : NonQueryCommand
     public string Action { get; set; } = "REFUND";
 
     public bool IsAuto { get; set; } = false;
+    public bool IsAutoRefundFM { get; set; } = true;
 
     public bool IsReSettledTickets { get; set; }
 

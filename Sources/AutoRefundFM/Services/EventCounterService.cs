@@ -32,6 +32,4 @@ public class EventCounterService : IEventCounterService
 
         return [.. eventCounters.Where(ec => ec.Position >= startPosition && ec.Position <= endPosition)];
     }
-
-
 }

@@ -23,6 +23,9 @@ public class WaterBreakModel
     [XmlAttribute("o")]
     public string OtherInfo { get; set; } = string.Empty;
 
+    [XmlAttribute("st")]
+    public int StatusId { get; set; }
+
     [XmlAttribute("s")]
     public byte IsApply { get; set; } = 1;
 }

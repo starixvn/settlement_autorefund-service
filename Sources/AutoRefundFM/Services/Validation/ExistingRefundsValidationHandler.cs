@@ -8,10 +8,10 @@ public class ExistingRefundsValidationHandler(
     AutoRefundResultService refundResultService, IValidationHandler? next = null) : ValidationHandlerBase(next)
 {
 
-    protected async override Task<Result> ProcessAsync(SpecialSession session)
+    protected async override Task<Result> ProcessAsync(ValidationContext validationContext)
     {
-        var refundResults = await GetRefundResult(session);
-        var resultsWithExistingRefunds = FindResultsWithExistingRefunds(session.FastMarketResultDetails, refundResults);
+        var refundResults = await GetRefundResult(validationContext.Session);
+        var resultsWithExistingRefunds = FindResultsWithExistingRefunds(validationContext.Session.FastMarketResultDetails, refundResults);
 
         if (resultsWithExistingRefunds.Count > 0)
         {

@@ -4,14 +4,14 @@ using Fanex.Settlement.Converter.Services;
 
 namespace AutoRefundFM.Services;
 
-public interface IFastMarketDataTransformationService
+public interface IDataTransformationService
 {
     (BetTypesRoot, string) CreateBetTypesRoot(List<FastMarketResultDetail> fastMarketResultDetails);
-    (List<ResourceItem>, string) CreateResourceItemsFromResult(List<FastMarketResultDetail> fastMarketResultDetails, string errorMsg = "");
+    (List<ResourceItem>, string) CreateResourcesFromFmResult(List<FastMarketResultDetail> fastMarketResultDetails, string errorMsg = "");
     string CreateEventCountersXml(List<EventCounter> eventCounters);
 }
 
-public class FastMarketDataTransformationService(XmlConvertService xmlConvertService) : IFastMarketDataTransformationService
+public class DataTransformationService(XmlConvertService xmlConvertService) : IDataTransformationService
 {
     public string CreateEventCountersXml(List<EventCounter> eventCounters)
     {
@@ -24,7 +24,7 @@ public class FastMarketDataTransformationService(XmlConvertService xmlConvertSer
         return xmlConvertService.Serialize(eventCountersRoot);
     }
 
-    private List<EventCounterElement> GetEventCounters(List<EventCounter> eventCounters)
+    private static List<EventCounterElement> GetEventCounters(List<EventCounter> eventCounters)
     {
         var eventCountersElement = new List<EventCounterElement>();
         if (eventCounters.Count != 0)
@@ -75,7 +75,7 @@ public class FastMarketDataTransformationService(XmlConvertService xmlConvertSer
         return (betTypesRoot, betTypesRootXml);
     }
 
-    public (List<ResourceItem>, string) CreateResourceItemsFromResult(List<FastMarketResultDetail> fastMarketResultDetails, string errorMsg = "")
+    public (List<ResourceItem>, string) CreateResourcesFromFmResult(List<FastMarketResultDetail> fastMarketResultDetails, string errorMsg = "")
     {
         var resourceItems = fastMarketResultDetails
             .Select(x => new ResourceItem

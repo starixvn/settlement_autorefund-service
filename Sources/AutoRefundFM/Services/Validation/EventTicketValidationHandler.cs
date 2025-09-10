@@ -1,6 +1,5 @@
 ﻿using AutoRefund.Core.Models;
 using AutoRefundFM.Features.PushFastMarketResult;
-using AutoRefundFM.Models;
 using Fanex.Settlement.ScaleOut.Request;
 using Fanex.Settlement.ScaleOut.Services;
 using Mapster;
@@ -11,13 +10,13 @@ public class EventTicketValidationHandler(
     ScaleOutSettleService scaleOutSettleService,
     IValidationHandler? next = null) : ValidationHandlerBase(next)
 {
-    protected override async Task<Result> ProcessAsync(SpecialSession session)
+    protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
-        var betTypeRootXml = "";
         var criteria = new PushFastMarketResultCriteria
         {
-            MatchId = session.MatchId,
-            Results = betTypeRootXml,
+            MatchId = validationContext.Session.MatchId,
+            Results = validationContext.BetTypeRootXml,
+            EventCounters = validationContext.EventCountersXml
         };
 
         var validRequest = criteria.Adapt<EventTicketFastMarketRequest>();

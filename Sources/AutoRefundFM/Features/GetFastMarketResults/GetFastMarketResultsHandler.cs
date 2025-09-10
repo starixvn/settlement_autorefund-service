@@ -29,7 +29,7 @@ public class GetFastMarketResultsHandler(
         var combinedResults = fastMarketResults.Concat(newTicketResults);
 
         var finalResults = FilterResultsByWaterBreakAndStatus(combinedResults, session);
-        var finalEventCounters = filterWaterBreakService.ApplyFilterEventCountWaterBreak(evenCounters, session);
+        var finalEventCounters = filterWaterBreakService.ApplyFilterEventCountersByWaterBreak(evenCounters, session);
 
         SetResultWithLabelsAndCounters(finalResults, handicapValue, finalEventCounters);
 

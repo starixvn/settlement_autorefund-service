@@ -1,19 +1,17 @@
 ﻿using AutoRefund.Core.Models;
-using AutoRefundFM.Models;
 
 namespace AutoRefundFM.Services.Validation;
 
 public interface IValidationHandler
 {
-    Task<Result> Handle(SpecialSession session);
+    Task<Result> Handle(ValidationContext validationContext);
 }
-
 
 public abstract class ValidationHandlerBase(IValidationHandler? next = null) : IValidationHandler
 {
-    public async Task<Result> Handle(SpecialSession session)
+    public async Task<Result> Handle(ValidationContext validationContext)
     {
-        var result = await ProcessAsync(session);
+        var result = await ProcessAsync(validationContext);
         if (!result.IsSuccess)
         {
             return result;
@@ -21,18 +19,18 @@ public abstract class ValidationHandlerBase(IValidationHandler? next = null) : I
 
         if (next != null && result.IsSuccess)
         {
-            return await next.Handle(session);
+            return await next.Handle(validationContext);
         }
 
         return new Result();
     }
 
-    protected abstract Task<Result> ProcessAsync(SpecialSession session);
+    protected abstract Task<Result> ProcessAsync(ValidationContext validationContext);
 }
 
 public class DefaultValidationHandler : ValidationHandlerBase
 {
-    protected override async Task<Result> ProcessAsync(SpecialSession session)
+    protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
         return await Task.FromResult(new Result());
     }

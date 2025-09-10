@@ -5,9 +5,9 @@ namespace AutoRefundFM.Services.Validation;
 
 public class EventCounterValidationHandler(IValidationHandler? next = null) : ValidationHandlerBase(next)
 {
-    protected override async Task<Result> ProcessAsync(SpecialSession session)
+    protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
-        var z = session.FastMarketResultDetails.Exists(x => !ValidateEventCounterWithBetResult(x));
+        var z = validationContext.Session.FastMarketResultDetails.Exists(x => !ValidateEventCounterWithBetResult(x));
         if (z)
         {
             return new Result
@@ -17,16 +17,11 @@ public class EventCounterValidationHandler(IValidationHandler? next = null) : Va
             };
         }
 
-        return new Result();
+        return await Task.FromResult(new Result());
     }
 
-    private bool ValidateEventCounterWithBetResult(FastMarketResultDetail item)
+    private static bool ValidateEventCounterWithBetResult(FastMarketResultDetail item)
     {
-        if (item.EventCounters.Count == 0)
-        {
-            return false;
-        }
-
         return item.BetType switch
         {
             FastMarketBetType.NextOneMinute => ValidateNextOneMinute(item.EventCounters, item),
@@ -37,6 +32,11 @@ public class EventCounterValidationHandler(IValidationHandler? next = null) : Va
 
     private static bool ValidateNextOneMinute(List<EventCounter> eventCounters, FastMarketResultDetail item)
     {
+        if (eventCounters.Count == 0)
+        {
+            return false;
+        }
+
         var eventCounter = eventCounters.First();
         var validationResults = new List<bool>
         {
@@ -50,7 +50,7 @@ public class EventCounterValidationHandler(IValidationHandler? next = null) : Va
         return validationResults.All(result => result);
     }
 
-    private bool ValidateNextFiveMinutes(List<EventCounter> eventCounters, FastMarketResultDetail item)
+    private static bool ValidateNextFiveMinutes(List<EventCounter> eventCounters, FastMarketResultDetail item)
     {
         var validationResults = new List<bool>
         {

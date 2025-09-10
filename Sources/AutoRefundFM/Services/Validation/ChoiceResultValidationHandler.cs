@@ -5,10 +5,12 @@ namespace AutoRefundFM.Services.Validation;
 
 public class ChoiceResultValidationHandler(IValidationHandler? next = null) : ValidationHandlerBase(next)
 {
-    protected override async Task<Result> ProcessAsync(SpecialSession session)
+    protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
-        var hasValidChoice = session.FastMarketResultDetails.Exists(x => !HasChoiceResult(x.BetType, x.ResultItem, x.Result));
-        if (hasValidChoice)
+        var hasInValidResult = validationContext.Session.FastMarketResultDetails
+            .Exists(x => !HasChoiceResult(x.BetType, x.ResultItem, x.Result));
+
+        if (hasInValidResult)
         {
             return new Result
             {
@@ -17,7 +19,7 @@ public class ChoiceResultValidationHandler(IValidationHandler? next = null) : Va
             };
         }
 
-        return new Result();
+        return await Task.FromResult(new Result());
     }
 
     private static bool HasChoiceResult(int betType, ResultItem resultItem, int? result = null) => betType switch

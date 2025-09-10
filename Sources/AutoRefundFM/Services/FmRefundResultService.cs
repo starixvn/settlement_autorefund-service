@@ -44,6 +44,7 @@ public class FmRefundResultService(AutoRefundResultService refundResultService, 
             {
                 ResourceId = result.BetType.ToString(),
                 OtherInfo = result.Position.ToString(),
+                HomeValue = result.Result.ToString(),
                 Remark = errorMsg
             })];
     }

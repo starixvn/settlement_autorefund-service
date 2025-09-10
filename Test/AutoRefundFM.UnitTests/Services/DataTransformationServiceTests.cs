@@ -6,14 +6,14 @@ using NSubstitute;
 
 namespace AutoRefundFM.UnitTests.Services;
 
-public class FastMarketDataTransformationServiceTests
+public class DataTransformationServiceTests
 {
     private readonly XmlConvertService xmlConvertService = Substitute.For<XmlConvertService>();
-    private readonly FastMarketDataTransformationService sut;
+    private readonly DataTransformationService sut;
 
-    public FastMarketDataTransformationServiceTests()
+    public DataTransformationServiceTests()
     {
-        sut = new FastMarketDataTransformationService(xmlConvertService);
+        sut = new DataTransformationService(xmlConvertService);
     }
 
 
@@ -63,7 +63,7 @@ public class FastMarketDataTransformationServiceTests
         xmlConvertService.Serialize(Arg.Any<Resources<ResourceItem>>()).Returns("<emptyresources>");
 
         // Act
-        var (resourceItems, resourceXml) = sut.CreateResourceItemsFromResult(sessions);
+        var (resourceItems, resourceXml) = sut.CreateResourcesFromFmResult(sessions);
 
         // Assert
         Assert.Empty(resourceItems);

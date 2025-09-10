@@ -15,19 +15,25 @@ public static class AutoRefundFMExtensions
     {
         services
             .AddSingleton<IValidationHandler, DefaultValidationHandler>()
+
+            .Decorate<IValidationHandler, EventTicketValidationHandler>()
+            .Decorate<IValidationHandler, MarkedTicketsValidationHandler>()
+
             .Decorate<IValidationHandler, CompletedResultsValidationHandler>()
-            .Decorate<IValidationHandler, ExistingRefundsValidationHandler>();
+            .Decorate<IValidationHandler, ExistingRefundsValidationHandler>()
+
+            .Decorate<IValidationHandler, EventCounterValidationHandler>()
+            .Decorate<IValidationHandler, ChoiceResultValidationHandler>();
 
         services
             .AddTransient<IGetFastMarketResultsHandler, GetFastMarketResultsHandler>()
             .AddTransient<IGetSpecialSessionHandler, GetSpecialSessionHandler>()
             .AddTransient<IPushFastMarketResultHandler, PushFastMarketResultHandler>()
-            .AddTransient<IFastMarketDataTransformationService, FastMarketDataTransformationService>()
+            .AddTransient<IDataTransformationService, DataTransformationService>()
             .AddSingleton<ISessionPoolService, SessionPoolService>()
             .AddSingleton<IUpdateWaterBreakHandler, UpdateWaterBreakHandler>()
             .AddSingleton<ICheckMarkedTicketHandler, CheckMarkedTicketHandler>()
             .AddSingleton<IFmRefundResultService, FmRefundResultService>()
-            .AddSingleton<IFastMarketValidationService, FastMarketValidationService>()
             .AddSingleton<IFilterWaterBreakService, FilterWaterBreakService>()
             .AddSingleton<IEventCounterService, EventCounterService>()
             .AddSingleton<SettleOpaqueFacade, SettleOpaqueFacadeImp>();
