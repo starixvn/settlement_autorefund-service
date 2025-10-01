@@ -32,9 +32,9 @@ services.AddAutoEarlyRefund();
 
 builder.Services.AddAutoRefundFM();
 
-//services.AddHostedService<AutoRefundService>();
-//services.AddHostedService<AutoEarlyRefundWorker>();
-//services.AddHostedService<GetConfirmNtResultsSchedule>();
+services.AddHostedService<AutoRefundService>();
+services.AddHostedService<AutoEarlyRefundWorker>();
+services.AddHostedService<GetConfirmNtResultsSchedule>();
 builder.Services.AddHostedService<RefundFastMarketWorker>();
 services.AddHealthChecks();
 

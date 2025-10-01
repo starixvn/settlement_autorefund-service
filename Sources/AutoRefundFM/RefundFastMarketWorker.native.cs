@@ -14,7 +14,6 @@ public class RefundFastMarketWorker(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Console.WriteLine($"Start at {DateTimeOffset.UtcNow}");
         var intervalTime = TimeSpan.FromMilliseconds(configuration.GetValue<int>("ServiceInterval"));
         using PeriodicTimer timer = new(intervalTime);
 
@@ -30,7 +29,6 @@ public class RefundFastMarketWorker(
 
             sessions.ForEach(session =>
             {
-                Console.WriteLine($"{DateTime.UtcNow} {session.ToString()}");
                 Task.Run(() => settleOpaqueFacade.Refund(session));
             });
 
