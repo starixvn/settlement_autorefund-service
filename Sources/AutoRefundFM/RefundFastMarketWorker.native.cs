@@ -31,11 +31,6 @@ public class RefundFastMarketWorker(
             {
                 Task.Run(() => settleOpaqueFacade.Refund(session));
             });
-
-            //foreach (var session in sessions)
-            //{
-            //    //await settleOpaqueFacade.Refund(item);
-            //}
         }
     }
 }

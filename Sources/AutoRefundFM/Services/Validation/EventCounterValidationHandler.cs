@@ -13,7 +13,7 @@ public class EventCounterValidationHandler(IValidationHandler? next = null) : Va
             return new Result
             {
                 ErrCode = FastMarketErrorCodes.NoEventCounters,
-                ErrMsg = "Has result is not consistent with the event counter",
+                ErrMsg = "Auto FM Refund failed: Has result is not consistent with the event counter",
             };
         }
 

@@ -31,10 +31,10 @@ public class GetSpecialSessionHandler : IGetSpecialSessionHandler
         var results = await repository.FetchAsync<ResultDetail>(new GetSpecialSessionCriteria());
 
         var matches = results
-            .Where(x => x.MatchId > 0)
-            .Select(x => x.Adapt<SpecialSession>())
-            .DistinctBy(x => new { x.MatchId, x.ResourceId })
-            .ToList();
+             .Where(x => x.MatchId > 0)
+             .Select(x => x.Adapt<SpecialSession>())
+             .DistinctBy(x => new { x.MatchId, x.ResourceId })
+             .ToList();
 
 
         var (hasValue, leagueId) = await cache.TryGetAsync<int>(CacheKey.LeagueId);
