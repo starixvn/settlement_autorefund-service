@@ -16,6 +16,7 @@ public class ChoiceResultValidationHandler(IValidationHandler? next = null) : Va
             {
                 ErrCode = FastMarketErrorCodes.InvalidChoiceResult,
                 ErrMsg = "Auto FM Refund failed: Invalid choice result for the specified bet type",
+                MarkFail = false
             };
         }
 

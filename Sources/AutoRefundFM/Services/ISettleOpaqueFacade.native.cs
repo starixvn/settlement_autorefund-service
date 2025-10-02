@@ -29,7 +29,6 @@ public class SettleOpaqueFacadeImp(
     {
         try
         {
-            await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 1);
             var (fmResults, eventCounters) = await getFastMarketResultsHandler.Handle(session);
             var validationContext = CreateContext(session, fmResults, eventCounters);
 
@@ -76,6 +75,11 @@ public class SettleOpaqueFacadeImp(
 
     private async Task HandleSessionError(SpecialSession session, Result result)
     {
+        if (!result.MarkFail)
+        {
+            return;
+        }
+
         await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 3, result.ErrMsg);
         if (result.ErrCode != FastMarketErrorCodes.ExistingRefundsFound)
         {

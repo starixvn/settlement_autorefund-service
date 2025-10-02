@@ -14,6 +14,7 @@ public class EventCounterValidationHandler(IValidationHandler? next = null) : Va
             {
                 ErrCode = FastMarketErrorCodes.NoEventCounters,
                 ErrMsg = "Auto FM Refund failed: Has result is not consistent with the event counter",
+                MarkFail = false
             };
         }
 

@@ -16,6 +16,8 @@ public class Result
 
     public bool IsSuccess => ErrCode == 0;
 
+    public bool MarkFail { get; set; } = true;
+
 
     public override string ToString() => JsonSerializer.Serialize(this);
 }
