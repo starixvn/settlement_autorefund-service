@@ -21,7 +21,7 @@ public class GetFastMarketResultsHandler(
 
     public async Task<(List<FastMarketResultDetail>, List<EventCounter>)> Handle(SpecialSession session)
     {
-        var (evenCounters, handicapValue, fastMarketResults) = await GetFastMarketResults(session.MatchId);
+        var (eventCounters, handicapValue, fastMarketResults) = await GetFastMarketResults(session.MatchId);
         var ticketResults = await GetFastMarketTicketDetail(session.MatchId);
 
         var newTicketResults = ticketResults
@@ -29,7 +29,7 @@ public class GetFastMarketResultsHandler(
         var combinedResults = fastMarketResults.Concat(newTicketResults);
 
         var finalResults = FilterResultsByWaterBreakAndStatus(combinedResults, session);
-        var finalEventCounters = filterWaterBreakService.ApplyFilterEventCountersByWaterBreak(evenCounters, session);
+        var finalEventCounters = filterWaterBreakService.ApplyFilterEventCountersByWaterBreak(eventCounters, session);
 
         SetResultWithLabelsAndCounters(finalResults, handicapValue, finalEventCounters);
 
@@ -56,7 +56,7 @@ public class GetFastMarketResultsHandler(
             item.NewResultItem = item.ResultItem;
             return;
         }
-        item.RadioResult = GetRadioResultFromResultItem(item.ResultItem); ;
+        item.RadioResult = GetRadioResultFromResultItem(item.ResultItem);
         item.NewResultItem = CreateResultItemFromRadioResult(item);
     }
 
@@ -91,6 +91,7 @@ public class GetFastMarketResultsHandler(
                 resultItem.Penalty = true;
                 break;
             default:
+                resultItem.None = false;
                 break;
         }
         return resultItem;

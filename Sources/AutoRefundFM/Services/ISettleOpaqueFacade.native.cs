@@ -75,11 +75,6 @@ public class SettleOpaqueFacadeImp(
 
     private async Task HandleSessionError(SpecialSession session, Result result)
     {
-        //if (!result.MarkFail)
-        //{
-        //    return;
-        //}
-
         await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 3, result.ErrMsg);
         if (result.ErrCode != FastMarketErrorCodes.ExistingRefundsFound)
         {

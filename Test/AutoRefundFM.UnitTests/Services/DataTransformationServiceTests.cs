@@ -76,6 +76,67 @@ public class DataTransformationServiceTests
 
     #endregion
 
+    #region GetResult Branch Coverage (via public methods)
+
+
+    [Fact]
+    public void CreateBetTypesRoot_WithNextOneMinuteSetPiece_NoGoalSelected_UsesNewResultItemValue()
+    {
+        // Arrange
+        var details = new List<FastMarketResultDetail>
+        {
+            new() {
+                BetType = FastMarketBetType.NextOneMinuteSetPiece,
+                Position = 3,
+                ResultItem = new ResultItem { Goal = false, Corner = true },
+                NewResultItem = new ResultItem { Corner = true } // expect its value used
+            }
+        };
+        xmlConvertService.Serialize(Arg.Any<BetTypesRoot>()).Returns("<setpiece>");
+
+        // Act
+        var (betTypesRoot, _) = sut.CreateBetTypesRoot(details);
+
+        // Assert
+        var item = betTypesRoot.BetType.Single().Items.Single();
+        // Reconstruct expected value of binary flags for Corner only
+        var expectedValue = new ResultItem { Corner = true }.Value.ToString();
+        Assert.Equal(expectedValue, item.Result);
+    }
+
+    [Fact]
+    public void CreateBetTypesRoot_WithTimeMachineHdp_UsesRawResult()
+    {
+        // Arrange
+        var details = new List<FastMarketResultDetail>
+        {
+            new() { BetType = FastMarketBetType.TimeMachineHdp, Position = 7, Result = 17 } // 17 carried through
+        };
+        xmlConvertService.Serialize(Arg.Any<BetTypesRoot>()).Returns("<tmhdp>");
+
+        // Act
+        var (betTypesRoot, _) = sut.CreateBetTypesRoot(details);
+
+        // Assert
+        Assert.Equal("17", betTypesRoot.BetType.Single().Items.Single().Result);
+    }
+
+    [Fact]
+    public void CreateEventCountersXml_NoEvents_ReturnsRootWithNoChildren()
+    {
+        // Arrange
+        var empty = new List<EventCounter>();
+        xmlConvertService.Serialize(Arg.Any<EventCountersRoot>()).Returns("<root/>");
+
+        // Act
+        var xml = sut.CreateEventCountersXml(empty);
+
+        // Assert
+        Assert.Equal("<root/>", xml);
+        xmlConvertService.Received(1).Serialize(Arg.Is<EventCountersRoot>(r => r.EventCounter.Count == 0));
+    }
+
+    #endregion
     #region CreateBetTypesRoot Tests
 
     [Fact]

@@ -1,3 +1,4 @@
+using AutoRefund.Core.Models;
 using AutoRefundFM.Models;
 using AutoRefundFM.Services.Validation;
 
