@@ -14,6 +14,8 @@ public static class FastMarketBetType
     public const int TimeMachineMinutes = 228;
 
     public const int TimeMachineHdp = 229;
+
+    public static int[] RadioResults = [FirstNextOneMinute, NextOneMinuteSetPiece, CombinationNextOneMinute];
 }
 
 public static class PositionResult

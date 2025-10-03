@@ -102,9 +102,9 @@ public class DataTransformationService(XmlConvertService xmlConvertService) : ID
             FastMarketBetType.NextOneMinuteSetPiece
                 => resultDetail.ResultItem.Goal
                     ? SetPiece.CornerFreeKickGoalKickAndPenalty.ToString()
-                    : resultDetail.ResultItem.Value.ToString(),
+                    : resultDetail.NewResultItem.Value.ToString(),
 
-            _ => resultDetail.ResultItem.Value.ToString()
+            _ => resultDetail.NewResultItem.Value.ToString()
         };
     }
 

@@ -79,6 +79,8 @@ public class FastMarketResultDetail
         set => resultItem = value;
     }
 
+    public ResultItem NewResultItem { get; set; }
+
     private static string OneMinuteInterval(int position)
     {
         return position < TenMinutes ? $"0{position}:00-0{position}:59" : $"{position}:00-{position}:59";
@@ -194,13 +196,23 @@ public class FastMarketResultDetail
 
     public ResultItemLabel ResultItemLabel { get; set; } = new ResultItemLabel();
 
+    public int RadioResult { get; set; }
     public override bool Equals(object obj)
     {
         return obj is FastMarketResultDetail fastMarketResult && fastMarketResult.BetType == BetType && fastMarketResult.Position == Position;
     }
 
-    public override int GetHashCode()
-    {
-        return BetType * Position;
-    }
+    public override int GetHashCode() => HashCode.Combine(BetType, Position);
+}
+
+public enum ResultType
+{
+    None = 0,
+    Goals = 1,
+    Corners = 2,
+    FreeKick = 3,
+    GoalKick = 4,
+    ThrowIn = 5,
+    Bookings = 6,
+    Penalty = 7
 }

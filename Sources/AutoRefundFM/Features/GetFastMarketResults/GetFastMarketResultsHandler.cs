@@ -33,7 +33,6 @@ public class GetFastMarketResultsHandler(
 
         SetResultWithLabelsAndCounters(finalResults, handicapValue, finalEventCounters);
 
-
         return (finalResults, finalEventCounters);
     }
 
@@ -46,7 +45,72 @@ public class GetFastMarketResultsHandler(
         {
             item.ResultItemLabel = ResultItemLabel.Create(item.BetType, handicapValue);
             item.EventCounters = eventCounterService.GetEventCountersForBetType(item, filteredEventCounters);
+            SetResultItem(item);
         }
+    }
+
+    private static void SetResultItem(FastMarketResultDetail item)
+    {
+        if (!FastMarketBetType.RadioResults.Contains(item.BetType))
+        {
+            item.NewResultItem = item.ResultItem;
+            return;
+        }
+        item.RadioResult = GetRadioResultFromResultItem(item.ResultItem); ;
+        item.NewResultItem = CreateResultItemFromRadioResult(item);
+    }
+
+
+    private static ResultItem CreateResultItemFromRadioResult(FastMarketResultDetail item)
+    {
+        var resultItem = new ResultItem();
+        switch ((ResultType)item.RadioResult)
+        {
+            case ResultType.None:
+                resultItem.None = true;
+                break;
+            case ResultType.Goals:
+                resultItem.Goal = true;
+                break;
+            case ResultType.Corners:
+                resultItem.Corner = true;
+                break;
+            case ResultType.FreeKick:
+                resultItem.FreeKick = true;
+                break;
+            case ResultType.GoalKick:
+                resultItem.GoalKick = true;
+                break;
+            case ResultType.ThrowIn:
+                resultItem.ThrowIn = true;
+                break;
+            case ResultType.Bookings:
+                resultItem.Bookings = true;
+                break;
+            case ResultType.Penalty:
+                resultItem.Penalty = true;
+                break;
+            default:
+                break;
+        }
+        return resultItem;
+    }
+
+
+    private static int GetRadioResultFromResultItem(ResultItem resultItem)
+    {
+        return resultItem switch
+        {
+            { None: true } => (int)ResultType.None,
+            { Goal: true } => (int)ResultType.Goals,
+            { Corner: true } => (int)ResultType.Corners,
+            { FreeKick: true } => (int)ResultType.FreeKick,
+            { GoalKick: true } => (int)ResultType.GoalKick,
+            { ThrowIn: true } => (int)ResultType.ThrowIn,
+            { Bookings: true } => (int)ResultType.Bookings,
+            { Penalty: true } => (int)ResultType.Penalty,
+            _ => (int)ResultType.None
+        };
     }
 
     private List<FastMarketResultDetail> FilterResultsByWaterBreakAndStatus(

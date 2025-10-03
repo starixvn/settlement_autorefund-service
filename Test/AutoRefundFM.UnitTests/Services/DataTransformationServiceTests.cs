@@ -120,9 +120,9 @@ public class DataTransformationServiceTests
         // Arrange
         var details = new List<FastMarketResultDetail>
         {
-            new() { BetType = FastMarketBetType.NextOneMinute, Position = 1, ResultItem = new ResultItem { Goal = true } },
-            new() { BetType = FastMarketBetType.NextOneMinute, Position = 2, ResultItem = new ResultItem { Corner = true } },
-            new() { BetType = FastMarketBetType.NextFiveMinutes, Position = 1, ResultItem = new ResultItem { FreeKick = true } }
+            new() { BetType = FastMarketBetType.NextOneMinute, Position = 1, ResultItem = new ResultItem { Goal = true } , NewResultItem = new ResultItem { Goal = true }},
+            new() { BetType = FastMarketBetType.NextOneMinute, Position = 2, ResultItem = new ResultItem { Corner = true } , NewResultItem = new ResultItem { Corner = true }},
+            new() { BetType = FastMarketBetType.NextFiveMinutes, Position = 1, ResultItem = new ResultItem { FreeKick = true } , NewResultItem = new ResultItem { FreeKick = true }}
         };
         xmlConvertService.Serialize(Arg.Any<BetTypesRoot>()).Returns("<multiple>");
 
@@ -181,8 +181,8 @@ public class DataTransformationServiceTests
         // Arrange
         var sessions = new List<FastMarketResultDetail>
         {
-            new() { BetType = FastMarketBetType.NextOneMinute, Position = 1, ResultItem = new ResultItem { Goal = true } },
-            new() { BetType = FastMarketBetType.NextFiveMinutes, Position = 2, ResultItem = new ResultItem { Corner = true } }
+            new() { BetType = FastMarketBetType.NextOneMinute, Position = 1, ResultItem = new ResultItem { Goal = true }, NewResultItem = new ResultItem { Goal = true }  },
+            new() { BetType = FastMarketBetType.NextFiveMinutes, Position = 2, ResultItem = new ResultItem { Corner = true }, NewResultItem = new ResultItem { Corner = true } }
         };
         xmlConvertService.Serialize(Arg.Any<Resources<ResourceItem>>()).Returns("<resources>");
 
