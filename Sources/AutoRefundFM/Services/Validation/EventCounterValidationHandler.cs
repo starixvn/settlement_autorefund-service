@@ -8,12 +8,13 @@ public class EventCounterValidationHandler(IValidationHandler? next = null) : Va
     protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
         var z = validationContext.Session.FastMarketResultDetails.Exists(x => !ValidateEventCounterWithBetResult(x));
+        const string errorMessage = "Auto FM Refund failed: {0} Has result is not consistent with the event counter at {1}";
         if (z)
         {
             return new Result
             {
                 ErrCode = FastMarketErrorCodes.NoEventCounters,
-                ErrMsg = "Auto FM Refund failed: Has result is not consistent with the event counter",
+                ErrMsg = string.Format(errorMessage, validationContext.Session, DateTimeOffset.Now),
                 MarkFail = false
             };
         }

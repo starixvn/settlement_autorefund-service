@@ -1,4 +1,3 @@
-using AutoRefund.Core.Models;
 using AutoRefundFM.Models;
 using AutoRefundFM.Services.Validation;
 
@@ -44,7 +43,7 @@ public class ChoiceResultValidationHandlerTests
 
         // Assert
         Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
-        Assert.Contains("Invalid choice result", result.ErrMsg);
+        Assert.Contains("invalid choice result", result.ErrMsg);
     }
 
     [Fact]
@@ -84,7 +83,7 @@ public class ChoiceResultValidationHandlerTests
 
         // Assert
         Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
-        Assert.Contains("Invalid choice result", result.ErrMsg);
+        Assert.Contains("invalid choice result", result.ErrMsg);
     }
 
     #endregion
@@ -195,7 +194,7 @@ public class ChoiceResultValidationHandlerTests
 
         // Assert
         Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
-        Assert.Contains("Invalid choice result", result.ErrMsg);
+        Assert.Contains("invalid choice result", result.ErrMsg);
     }
 
     [Fact]
@@ -311,7 +310,7 @@ public class ChoiceResultValidationHandlerTests
 
         // Assert
         Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
-        Assert.Contains("Invalid choice result", result.ErrMsg);
+        Assert.Contains("invalid choice result", result.ErrMsg);
     }
 
     #endregion
@@ -358,7 +357,7 @@ public class ChoiceResultValidationHandlerTests
 
         // Assert
         Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
-        Assert.Contains("Invalid choice result", result.ErrMsg);
+        Assert.Contains("invalid choice result", result.ErrMsg);
     }
 
 

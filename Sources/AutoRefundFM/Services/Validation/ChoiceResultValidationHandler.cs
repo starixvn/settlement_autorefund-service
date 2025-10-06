@@ -10,12 +10,14 @@ public class ChoiceResultValidationHandler(IValidationHandler? next = null) : Va
         var hasInValidResult = validationContext.Session.FastMarketResultDetails
             .Exists(x => !HasChoiceResult(x.BetType, x.ResultItem, x.Result));
 
+        const string errorMessage = "Auto FM Refund failed: {0} has invalid choice result for the specified bet type at {1}";
+
         if (hasInValidResult)
         {
             return new Result
             {
                 ErrCode = FastMarketErrorCodes.InvalidChoiceResult,
-                ErrMsg = "Auto FM Refund failed: Invalid choice result for the specified bet type",
+                ErrMsg = string.Format(errorMessage, validationContext.Session, DateTimeOffset.Now),
                 MarkFail = false
             };
         }

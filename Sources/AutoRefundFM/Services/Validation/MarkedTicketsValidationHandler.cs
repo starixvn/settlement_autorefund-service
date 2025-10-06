@@ -10,13 +10,14 @@ public class MarkedTicketsValidationHandler(
     protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
         var hasMarkedTickets = await checkMarkedTicketHandler.Handle(validationContext.Session.MatchId, validationContext.BetTypeRootXml);
+        const string errorMessage = "Marked tickets found for the specified match and bet type";
 
         if (hasMarkedTickets)
         {
             return new Result
             {
                 ErrCode = FastMarketErrorCodes.MarkedTicketsFound,
-                ErrMsg = "Marked tickets found for the specified match and bet type"
+                ErrMsg = errorMessage
             };
         }
 

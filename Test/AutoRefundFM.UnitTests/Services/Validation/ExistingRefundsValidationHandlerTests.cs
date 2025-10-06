@@ -32,7 +32,7 @@ public class ExistingRefundsValidationHandlerTests
 
         // Assert
         Assert.Equal(FastMarketErrorCodes.ExistingRefundsFound, result.ErrCode);
-        Assert.Contains("Existing refunds found", result.ErrMsg);
+        Assert.Contains("has existing refunds", result.ErrMsg);
     }
 
     [Fact]

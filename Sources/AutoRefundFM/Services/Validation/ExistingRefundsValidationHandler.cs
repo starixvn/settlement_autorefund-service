@@ -12,13 +12,14 @@ public class ExistingRefundsValidationHandler(
     {
         var refundResults = await GetRefundResult(validationContext.Session);
         var resultsWithExistingRefunds = FindResultsWithExistingRefunds(validationContext.Session.FastMarketResultDetails, refundResults);
+        const string errorMessage = "Auto FM Refund failed: {0} has existing refunds for the specified results at {1}";
 
         if (resultsWithExistingRefunds.Count > 0)
         {
             return new Result
             {
                 ErrCode = FastMarketErrorCodes.ExistingRefundsFound,
-                ErrMsg = "Existing refunds found for the specified results"
+                ErrMsg = string.Format(errorMessage, validationContext.Session, DateTimeOffset.Now),
             };
         }
 
