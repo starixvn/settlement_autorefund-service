@@ -1,9 +1,9 @@
 ﻿using AutoEarlyRefund.Models;
+
 namespace AutoEarlyRefund.Conditions;
 
 public static class SpecificationFactory
 {
-
     public static ISpecification<SourcesConditions> CreateSpecification(SourcesConditions condition)
     {
         return condition switch
@@ -16,7 +16,6 @@ public static class SpecificationFactory
             { SourceAction: "CfmRefundAdminSite", SourceMatchType: 1, SourceChildMatchType: 202, Conditions: "3" } => new ConfirmedRefundNTSpecification(),
             { SourceAction: "CfmRefundSDT", SourceMatchType: 1, SourceChildMatchType: 202, Conditions: "0" } => new ConfirmedRefundSdtSpecification(),
             { SourceAction: "CfmRefund", SourceMatchType: 1, SourceChildMatchType: 202, Conditions: "0" } => new ConfirmedRefundSpecification(),
-
 
             _ => new DefaultSpecification()
         };
