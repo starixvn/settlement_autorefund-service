@@ -27,7 +27,6 @@ public class SettleOpaqueFacadeImp(
 {
     public async Task Settle(Match match)
     {
-        await LogService.InfoAsync($"Process Settle {match.MatchId} {match.ResultDetails.Count}");
         try
         {
             var result = await validateHandler.HandleAsync(match);
@@ -37,8 +36,6 @@ public class SettleOpaqueFacadeImp(
                 return;
             }
             var newMatch = match.WithResourcesXml(xmlConvertService);
-
-            await LogService.InfoAsync($"newMatch Process Settle {match.MatchId} {match.ResultDetails.Count}");
 
             await writeLogService.WriteLogPreSettlement(newMatch);
             await writeLogService.WriteLogSettle(newMatch);

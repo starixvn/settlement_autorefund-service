@@ -24,8 +24,6 @@ public sealed class RefundConsumer(
 {
     public async Task Consume(ConsumeContext<ResultsRefunded> context)
     {
-        await LogService.InfoAsync($"ResultsRefunded Received: {context.Message}");
-
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
             "Refund",
             context.Message.ShortType,
@@ -38,14 +36,10 @@ public sealed class RefundConsumer(
         {
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
-
-        await LogService.InfoAsync($"ResultsRefunded Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<ResultsRefundConfirmedSdt> context)
     {
-        await LogService.InfoAsync($"ResultsRefundConfirmedSdt Received: {context.Message}");
-
         var hasValidResource = ConsumerHelper.TryGetValidResources(context.Message.Resources, out var validResources);
 
         if (!hasValidResource)
@@ -65,14 +59,10 @@ public sealed class RefundConsumer(
         {
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
-
-        await LogService.InfoAsync($"ResultsRefundConfirmedSdt Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<MatchCalculated> context)
     {
-        await LogService.InfoAsync($"MatchCalculated Received: {context.Message}");
-
         var action = GetAction(context.Message.Action);
 
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
@@ -89,14 +79,10 @@ public sealed class RefundConsumer(
         {
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
-
-        await LogService.InfoAsync($"MatchCalculated Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<ResultsCalculated> context)
     {
-        await LogService.InfoAsync($"ResultsCalculated Received: {context.Message}");
-
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
            "Cal",
             context.Message.ShortType,
@@ -109,14 +95,10 @@ public sealed class RefundConsumer(
         {
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
-
-        await LogService.InfoAsync($"ResultsCalculated Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<ResultsRefundConfirmed> context)
     {
-        await LogService.InfoAsync($"ResultsRefundConfirmed Received: {context.Message}");
-
         var hasValidResource = ConsumerHelper.TryGetValidResources(context.Message.Resources, out var validResources);
 
         if (!hasValidResource) return;
@@ -133,14 +115,10 @@ public sealed class RefundConsumer(
         {
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
-
-        await LogService.InfoAsync($"ResultsRefundConfirmed Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<MatchRefunded> context)
     {
-        await LogService.InfoAsync($"MatchRefunded Received: {context.Message}");
-
         var action = GetAction(context.Message.Action);
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
             action,
@@ -154,14 +132,10 @@ public sealed class RefundConsumer(
         {
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
-
-        await LogService.InfoAsync($"MatchRefunded Done: {context.Message}");
     }
 
     public async Task Consume(ConsumeContext<NotTakenResultsConfirmed> context)
     {
-        await LogService.InfoAsync($"NotTakenResultsConfirmed Received: {context.Message}");
-
         var triggerResources = await getResourcesTriggerHandler.GetTargetResourceTriggersAsync(
             "CfmRefundAdminSite",
             context.Message.ShortType,
@@ -174,8 +148,6 @@ public sealed class RefundConsumer(
         {
             await insOrUpdAutoPayoutResultHandler.Handle(matches, 0);
         }
-
-        await LogService.InfoAsync($"NotTakenResultsConfirmed Done: {context.Message}");
     }
 
     private List<TargetResourceTrigger> TryGetValidTargetResourceTrigger(

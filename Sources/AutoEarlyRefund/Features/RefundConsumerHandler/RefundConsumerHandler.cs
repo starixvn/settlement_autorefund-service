@@ -39,7 +39,6 @@ public class RefundConsumerHandler(
             }
 
             var relatedMatchItems = await GetRelatedMatchItems(matchId, triggerResources);
-            await LogService.InfoAsync($"GetRelatedMatchItems: {string.Join(",", relatedMatchItems.Select(x => x))}");
 
             if (relatedMatchItems.Count == 0)
             {

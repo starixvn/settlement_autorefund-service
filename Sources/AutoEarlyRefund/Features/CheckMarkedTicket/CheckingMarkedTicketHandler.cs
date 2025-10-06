@@ -1,6 +1,5 @@
 ﻿using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using Fanex.Logging;
 
 namespace AutoEarlyRefund.Features.CheckMarkedTicket;
 
@@ -12,8 +11,6 @@ public class CheckingMarkedTicketHandler(
 {
     public async Task<Result> HandleAsync(Match match)
     {
-        await LogService.InfoAsync($"Before CheckingMarkedTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
-
         var criteria = new CheckingMarkedTicketCriteria
         {
             MatchId = match.MatchId,
@@ -23,8 +20,6 @@ public class CheckingMarkedTicketHandler(
         var tasks = appSettingsKey.Value.SiteDbServer.Select(s => CheckMarkedTicket(s, criteria));
 
         var results = await Task.WhenAll(tasks.ToArray());
-
-        await LogService.InfoAsync($"After CheckingMarkedTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
 
         if (results.ToList().TrueForAll(x => !x) && next != null)
         {

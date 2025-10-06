@@ -14,8 +14,6 @@ public class InsOrUpdAutoRefundResultHandler(IDynamicRepository repository) : II
 {
     public async Task Handle(Match match, int statusId)
     {
-        await LogService.InfoAsync($"InsOrUpdAutoRefundResultHandler.Handle: {match}");
-
         var criteria = new InsOrUpdAutoRefundResultCriteria
         {
             MatchId = match.MatchId,

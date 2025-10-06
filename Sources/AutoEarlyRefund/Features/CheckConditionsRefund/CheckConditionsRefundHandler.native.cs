@@ -20,8 +20,6 @@ public class CheckConditionsRefundHandler(
 {
     public async Task<Result> HandleAsync(Match match)
     {
-        await LogService.InfoAsync($"Before CheckConditionsRefundHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
-
         var request = match.ResultDetails.Select(x => new SourcesConditionsItem
         {
             ResourceId = x.ResourceId,
@@ -42,7 +40,6 @@ public class CheckConditionsRefundHandler(
 
         match.ResultDetails = [.. match.ResultDetails.Where(x => validResultsIds.Contains(x.ResourceId))];
 
-        await LogService.InfoAsync($"After CheckConditionsRefundHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
         if (match.ResultDetails.Count == 0)
         {
             throw new AppException();

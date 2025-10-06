@@ -25,7 +25,6 @@ public class GetAutoRefundResultsHandler(IDynamicRepository repository) : IGetAu
 
         var autoRefundResults = await repository.FetchAsync<ResultDetail>(criteria);
 
-        Fanex.Logging.LogService.Info($"GetAutoRefundResultsHandler: {string.Join(",", autoRefundResults.Select(x => x.ToString()))}");
         var autoRefundResultIds = new HashSet<string>(autoRefundResults.Select(x => x.ResourceId));
 
         return [.. sourcesConditions.Where(x => !autoRefundResultIds.Contains(x.ResourceId))];
@@ -37,5 +36,4 @@ public class GetAutoRefundResultsHandler(IDynamicRepository repository) : IGetAu
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         });
-
 }

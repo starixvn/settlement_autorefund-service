@@ -2,7 +2,6 @@
 using AutoEarlyRefund.Features.WriteLog;
 using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using Fanex.Logging;
 
 namespace AutoEarlyRefund.Features.CheckStatusRefundResults
 {
@@ -14,16 +13,12 @@ namespace AutoEarlyRefund.Features.CheckStatusRefundResults
     {
         public async Task<Result> HandleAsync(Match match)
         {
-            await LogService.InfoAsync($"Before CheckStatusRefundResultsHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
-
             var settledResults = match.ResultDetails
                 .Where(x => x.ResultStatusId is (int)ResultStatus.ManualSettled or (int)ResultStatus.AutoSettled);
 
             match.ResultDetails = [.. match.ResultDetails.Except(settledResults)];
 
             await HandleInvalidResults(match, [.. settledResults]);
-
-            await LogService.InfoAsync($"After CheckStatusRefundResultsHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
 
             if (match.ResultDetails.Count == 0)
             {

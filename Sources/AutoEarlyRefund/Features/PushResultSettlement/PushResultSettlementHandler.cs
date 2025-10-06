@@ -25,13 +25,13 @@ public class PushResultSettlementHandler(
         };
 
         var servers = appSettingsKey.Value.SiteDbServer ?? new List<string>();
-        var tasks = servers.Select(s => PushResultSettlement(s, criteria, cancellationToken));
+        var tasks = servers.Select(s => PushResultSettlement(s, criteria));
         await Task.WhenAll(tasks);
     }
 
-    private async Task PushResultSettlement(string server, PushResultSettlementCriteria criteria, CancellationToken cancellationToken)
+    private async Task PushResultSettlement(string server, PushResultSettlementCriteria criteria)
     {
         criteria.DbServer = server;
-        await repository.ExecuteAsync(criteria, "", cancellationToken);
+        await repository.ExecuteAsync(criteria);
     }
 }

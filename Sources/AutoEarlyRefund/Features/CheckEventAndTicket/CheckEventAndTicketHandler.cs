@@ -1,6 +1,5 @@
 ﻿using AutoEarlyRefund.Models;
 using AutoEarlyRefund.Services;
-using Fanex.Logging;
 using Fanex.Settlement.ScaleOut.Criteria.Normal;
 using Mapster;
 
@@ -15,8 +14,6 @@ public class CheckEventAndTicketHandler(
 {
     public async Task<Result> HandleAsync(Match match)
     {
-        await LogService.InfoAsync($"Before CheckEventAndTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
-
         var eventTicketRequest = CreateEventTicketRequest(match);
         var eventResult = await generalService.ExecuteSingle(eventTicketRequest.Adapt<ValidateEventCriteria>());
         if (eventResult.ErrorCode != 0)
@@ -29,8 +26,6 @@ public class CheckEventAndTicketHandler(
         }
 
         var result = await RetryValidateRefundTicketAsync(eventTicketRequest, match);
-
-        await LogService.InfoAsync($"After CheckEventAndTicketHandler: {match.MatchId} {string.Join(",", match.ResultDetails.Select(x => x.ResourceId))} at {DateTimeOffset.Now}");
 
         return result;
     }
