@@ -22,6 +22,7 @@ namespace AutoRefundFM.UnitTests.Features
         private readonly SettlementLogService logService = Substitute.For<SettlementLogService>();
         private readonly IDataTransformationService dataTransformationService = Substitute.For<IDataTransformationService>();
         private readonly AppSettingsKey appSettingsKey = new() { SiteDbServer = new List<string> { "server1", "server2" } };
+        private readonly IFmRefundResultService fmRefundResultService = Substitute.For<IFmRefundResultService>();
 
         private readonly PushFastMarketResultHandler sut;
 
@@ -34,7 +35,8 @@ namespace AutoRefundFM.UnitTests.Features
                 options,
                 updateWaterBreakHandler,
                 logService,
-                dataTransformationService);
+                dataTransformationService,
+                fmRefundResultService);
         }
 
         [Fact]

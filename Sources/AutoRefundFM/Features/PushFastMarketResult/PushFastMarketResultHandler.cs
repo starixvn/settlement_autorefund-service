@@ -25,7 +25,8 @@ public class PushFastMarketResultHandler(
     IOptions<AppSettingsKey> appSettingsKey,
     IUpdateWaterBreakHandler updateWaterBreakHandler,
     SettlementLogService logService,
-    IDataTransformationService fastMarketDataTransformationService
+    IDataTransformationService fastMarketDataTransformationService,
+     IFmRefundResultService fmRefundResultService
         ) : IPushFastMarketResultHandler
 {
     private readonly AppSettingsKey appSettingsKey = appSettingsKey.Value;
@@ -43,7 +44,9 @@ public class PushFastMarketResultHandler(
         await ExecuteCalculate(criteria);
 
         await updateWaterBreakHandler.Handle(session.MatchId, [session], 2);
+        await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 2);
 
+        await InsertLetstalkMessage(session);
     }
 
     private async Task WriteSettlementLog(SpecialSession session)
@@ -77,5 +80,21 @@ public class PushFastMarketResultHandler(
             criteria.DbServer = server;
             await repository.ExecuteAsync(criteria);
         }
+    }
+
+    private async Task InsertLetstalkMessage(SpecialSession session)
+    {
+        var date = DateTimeOffset.Now;
+        var offsetHours = date.Offset.Hours;
+        string executeTime = date.ToString("MMM dd, yyyy HH:mm:ss") + $" GMT{offsetHours:+#;-#;+0}";
+        var message = $"The match has been executed Auto Refund Water {session} successfully at {executeTime}";
+        var criteria = new AddNotificationCriteria
+        {
+            MatchId = session.MatchId,
+            MessageContent = message,
+            ActionName = $"Auto Refund WaterBreak {session}",
+            MessageGroupId = 6, // Auto Refund FM
+        };
+        await repository.ExecuteAsync(criteria);
     }
 }

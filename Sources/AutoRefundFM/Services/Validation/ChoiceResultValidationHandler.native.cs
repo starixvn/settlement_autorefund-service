@@ -4,7 +4,9 @@ using Microsoft.Extensions.Options;
 
 namespace AutoRefundFM.Services.Validation;
 
-public class ChoiceResultValidationHandler(IOptions<AppSettingsKey> options, IValidationHandler? next = null) : ValidationHandlerBase(next)
+public class ChoiceResultValidationHandler(
+    IOptions<AppSettingsKey> options,
+    IValidationHandler? next = null) : ValidationHandlerBase(next)
 {
     protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
@@ -15,7 +17,7 @@ public class ChoiceResultValidationHandler(IOptions<AppSettingsKey> options, IVa
 
         if (hasInValidResult)
         {
-            var isExpired = (DateTimeOffset.Now - validationContext.Session.FirstProcess).TotalMicroseconds > options.Value.RetryProcessScore;
+            var isExpired = (DateTimeOffset.Now - validationContext.Session.FirstProcess).TotalMilliseconds > options.Value.RetryProcessScore;
             return new Result
             {
                 ErrCode = FastMarketErrorCodes.InvalidChoiceResult,

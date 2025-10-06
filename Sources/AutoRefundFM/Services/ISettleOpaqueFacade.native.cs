@@ -46,8 +46,8 @@ public class SettleOpaqueFacadeImp(
             }
 
             await ProcessRefund(session, validationContext.BetTypeRootXml, validationContext.EventCountersXml);
+            await ProcessRefund(session, "", "");
 
-            await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 2);
         }
         catch (Exception ex)
         {
@@ -79,6 +79,11 @@ public class SettleOpaqueFacadeImp(
 
     private async Task HandleSessionError(SpecialSession session, Result result)
     {
+        if (!result.MarkFail)
+        {
+            return;
+        }
+
         await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 3, result.ErrMsg);
         var userLog = new UserLogCriteria
         {
@@ -105,7 +110,7 @@ public class SettleOpaqueFacadeImp(
     {
         session.FirstProcess = memoryCache.GetOrCreate($"{RefundTimeCachePrefix}{session.GetHashCode}", entry =>
         {
-            entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(6));
+            entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(11));
             return DateTimeOffset.Now;
         });
     }

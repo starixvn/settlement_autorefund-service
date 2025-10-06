@@ -7,8 +7,8 @@ namespace AutoRefundFM.UnitTests.Services.Validation;
 
 public class ChoiceResultValidationHandlerTests
 {
-    private static ChoiceResultValidationHandler CreateHandler(int retryProcessScoreMicroseconds = 2_000_000)
-        => new(Options.Create(new AppSettingsKey { RetryProcessScore = retryProcessScoreMicroseconds }));
+    private static ChoiceResultValidationHandler CreateHandler(int retryProcessScoreMiniseconds = 2_000)
+        => new(Options.Create(new AppSettingsKey { RetryProcessScore = retryProcessScoreMiniseconds }));
 
     private static FastMarketResultDetail CreateResultDetail(int betType, ResultItem? resultItem = null, int? result = null)
         => new()
@@ -216,7 +216,7 @@ public class ChoiceResultValidationHandlerTests
     public async Task ProcessAsync_Invalid_Expired_MarkFailTrue()
     {
         // RetryProcessScore = 2_000_000 microseconds (2s). FirstProcess 5s ago.
-        var handler = CreateHandler(2_000_000);
+        var handler = CreateHandler(2_000);
         var ctx = CreateContext(
             CreateResultDetail(FastMarketBetType.NextFiveMinutes, new ResultItem()) // invalid
         );
