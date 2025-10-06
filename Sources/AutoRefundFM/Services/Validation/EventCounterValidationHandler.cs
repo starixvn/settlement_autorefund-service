@@ -1,21 +1,23 @@
 ﻿using AutoRefund.Core.Models;
 using AutoRefundFM.Models;
+using Microsoft.Extensions.Options;
 
 namespace AutoRefundFM.Services.Validation;
 
-public class EventCounterValidationHandler(IValidationHandler? next = null) : ValidationHandlerBase(next)
+public class EventCounterValidationHandler(IOptions<AppSettingsKey> options, IValidationHandler? next = null) : ValidationHandlerBase(next)
 {
     protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
         var z = validationContext.Session.FastMarketResultDetails.Exists(x => !ValidateEventCounterWithBetResult(x));
-        const string errorMessage = "Auto FM Refund failed: {0} Has result is not consistent with the event counter at {1}";
+        var errorMessage = $"Auto FM Refund failed: {validationContext.Session} has result is mismatch with the event counter";
         if (z)
         {
+            var isExpired = (DateTimeOffset.Now - validationContext.Session.FirstProcess).TotalMicroseconds > options.Value.RetryProcessScore;
             return new Result
             {
                 ErrCode = FastMarketErrorCodes.NoEventCounters,
-                ErrMsg = string.Format(errorMessage, validationContext.Session, DateTimeOffset.Now),
-                MarkFail = false
+                ErrMsg = errorMessage,
+                MarkFail = isExpired
             };
         }
 

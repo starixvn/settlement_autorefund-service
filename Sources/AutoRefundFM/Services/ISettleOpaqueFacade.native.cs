@@ -8,6 +8,7 @@ using AutoRefundFM.Models;
 using AutoRefundFM.Services.Validation;
 using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.Database;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AutoRefundFM.Services;
 public interface SettleOpaqueFacade
@@ -23,12 +24,17 @@ public class SettleOpaqueFacadeImp(
     SettlementLogService settlementLogService,
     IFmRefundResultService fmRefundResultService,
     IDataTransformationService dataTransformationService,
-    IValidationHandler validationHandler) : SettleOpaqueFacade
+    IValidationHandler validationHandler,
+    IMemoryCache memoryCache) : SettleOpaqueFacade
 {
+
+    private const string RefundTimeCachePrefix = "FM_REFUND_FIRST_";
+
     public async Task Refund(SpecialSession session)
     {
         try
         {
+            SetFisrtProcessCache(session);
             var (fmResults, eventCounters) = await getFastMarketResultsHandler.Handle(session);
             var validationContext = CreateContext(session, fmResults, eventCounters);
 
@@ -42,8 +48,6 @@ public class SettleOpaqueFacadeImp(
             await ProcessRefund(session, validationContext.BetTypeRootXml, validationContext.EventCountersXml);
 
             await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 2);
-            await fmRefundResultService.AddOrUpdateFmResult(session.MatchId, session.FastMarketResultDetails, 2, result.ErrMsg);
-
         }
         catch (Exception ex)
         {
@@ -76,11 +80,6 @@ public class SettleOpaqueFacadeImp(
     private async Task HandleSessionError(SpecialSession session, Result result)
     {
         await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 3, result.ErrMsg);
-        if (result.ErrCode != FastMarketErrorCodes.ExistingRefundsFound)
-        {
-            await fmRefundResultService.AddOrUpdateFmResult(session.MatchId, session.FastMarketResultDetails, 3, result.ErrMsg);
-        }
-
         var userLog = new UserLogCriteria
         {
             MatchId = session.MatchId,
@@ -102,8 +101,17 @@ public class SettleOpaqueFacadeImp(
         await pushFastMarketResultHandler.Handle(session, criteria);
     }
 
+    private void SetFisrtProcessCache(SpecialSession session)
+    {
+        session.FirstProcess = memoryCache.GetOrCreate($"{RefundTimeCachePrefix}{session.GetHashCode}", entry =>
+        {
+            entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(6));
+            return DateTimeOffset.Now;
+        });
+    }
 
-    public static async Task ExceptionLog(SpecialSession session, Exception exception)
+
+    private static async Task ExceptionLog(SpecialSession session, Exception exception)
     {
         var logMessage = new LogMessage($"Match: {session.MatchId}[{session}] - {exception.Message}")
             .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(exception))

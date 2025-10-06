@@ -1,24 +1,26 @@
 ﻿using AutoRefund.Core.Models;
 using AutoRefundFM.Models;
+using Microsoft.Extensions.Options;
 
 namespace AutoRefundFM.Services.Validation;
 
-public class ChoiceResultValidationHandler(IValidationHandler? next = null) : ValidationHandlerBase(next)
+public class ChoiceResultValidationHandler(IOptions<AppSettingsKey> options, IValidationHandler? next = null) : ValidationHandlerBase(next)
 {
     protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
         var hasInValidResult = validationContext.Session.FastMarketResultDetails
             .Exists(x => !HasChoiceResult(x.BetType, x.ResultItem, x.Result));
 
-        const string errorMessage = "Auto FM Refund failed: {0} has invalid choice result for the specified bet type at {1}";
+        var errorMessage = $"Auto FM Refund failed: {validationContext.Session} has invalid choice result for the specified bet type";
 
         if (hasInValidResult)
         {
+            var isExpired = (DateTimeOffset.Now - validationContext.Session.FirstProcess).TotalMicroseconds > options.Value.RetryProcessScore;
             return new Result
             {
                 ErrCode = FastMarketErrorCodes.InvalidChoiceResult,
-                ErrMsg = string.Format(errorMessage, validationContext.Session, DateTimeOffset.Now),
-                MarkFail = false
+                ErrMsg = errorMessage,
+                MarkFail = isExpired
             };
         }
 

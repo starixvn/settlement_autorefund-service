@@ -11,14 +11,14 @@ public class CompletedResultsValidationHandler(IValidationHandler? next = null) 
         int[] completedStatuses = [Status.CompletedManualResult, Status.CompletedAutoResult];
         var hasCompletedResults = validationContext.Session.FastMarketResultDetails.Exists(detail =>
             completedStatuses.Contains(detail.ResultStatus));
-        const string errorMessage = "Auto FM Refund failed: {0} due to some intervals have been calculated at {1}.";
+        var errorMessage = $"Auto FM Refund failed: {validationContext.Session} due to some intervals have been calculated";
 
         if (hasCompletedResults)
         {
             return new Result
             {
                 ErrCode = FastMarketErrorCodes.NoCompletedResults,
-                ErrMsg = string.Format(errorMessage, validationContext.Session, DateTimeOffset.Now),
+                ErrMsg = errorMessage,
             };
         }
 

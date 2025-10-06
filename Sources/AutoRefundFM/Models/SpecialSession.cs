@@ -20,6 +20,8 @@ public class SpecialSession
     public List<FastMarketResultDetail> FastMarketResultDetails { get; set; } = [];
     public List<EventCounter> EventCounters { get; set; } = [];
 
+    public DateTimeOffset FirstProcess { get; set; } = DateTimeOffset.Now;
+
     public override string ToString() => $"{ResourceId}({OtherInfo})";
 
     public override bool Equals(object? obj) => (obj is SpecialSession session)

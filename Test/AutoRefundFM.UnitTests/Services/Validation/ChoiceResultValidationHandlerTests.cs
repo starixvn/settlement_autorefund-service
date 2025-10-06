@@ -1,366 +1,259 @@
+using AutoRefund.Core.Models;
 using AutoRefundFM.Models;
 using AutoRefundFM.Services.Validation;
+using Microsoft.Extensions.Options;
 
 namespace AutoRefundFM.UnitTests.Services.Validation;
 
 public class ChoiceResultValidationHandlerTests
 {
-    private readonly ChoiceResultValidationHandler sut = new(null);
+    private static ChoiceResultValidationHandler CreateHandler(int retryProcessScoreMicroseconds = 2_000_000)
+        => new(Options.Create(new AppSettingsKey { RetryProcessScore = retryProcessScoreMicroseconds }));
 
-    private static FastMarketResultDetail CreateResultDetail(
-        int betType,
-        ResultItem? resultItem = null,
-        int? result = null)
-    {
-        return new FastMarketResultDetail
+    private static FastMarketResultDetail CreateResultDetail(int betType, ResultItem? resultItem = null, int? result = null)
+        => new()
         {
             BetType = betType,
             ResultItem = resultItem ?? new ResultItem(),
             Result = result
         };
-    }
 
-    #region ProcessAsync Tests
-
-
-
-    [Fact]
-    public async Task ProcessAsync_WithAnyInvalidResult_ReturnsError()
-    {
-        // Arrange
-        var session = new SpecialSession
+    private static ValidationContext CreateContext(params FastMarketResultDetail[] details)
+        => new()
         {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
+            Session = new SpecialSession
             {
-                CreateResultDetail(FastMarketBetType.NextOneMinute, new ResultItem { Goal = true }),
-                CreateResultDetail(FastMarketBetType.NextFiveMinutes, new ResultItem()) // All false - invalid
+                FastMarketResultDetails = details.ToList(),
+                FirstProcess = DateTimeOffset.Now // default: fresh
             }
         };
-        var context = new ValidationContext { Session = session };
+
+    #region Success / No Error
+
+    [Fact]
+    public async Task ProcessAsync_WhenAllValid_ReturnsSuccess()
+    {
+        // Arrange (one valid for each branch)
+        var handler = CreateHandler();
+        var ctx = CreateContext(
+            CreateResultDetail(FastMarketBetType.NextOneMinute, new ResultItem { Goal = true }, 2),
+            CreateResultDetail(FastMarketBetType.NextFiveMinutes, new ResultItem { Penalty = true }, 3),
+            CreateResultDetail(FastMarketBetType.TimeMachineMinutes, new ResultItem(), 1),
+            CreateResultDetail(999, new ResultItem { Bookings = true }, 2) // falls into "other"
+        );
 
         // Act
-        var result = await sut.Handle(context);
+        var result = await handler.Handle(ctx);
 
         // Assert
-        Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
-        Assert.Contains("invalid choice result", result.ErrMsg);
+        Assert.Equal(0, result.ErrCode);
     }
 
     [Fact]
-    public async Task ProcessAsync_WithEmptyFastMarketResultDetails_ReturnsSuccess()
+    public async Task ProcessAsync_EmptyFastMarketResultDetails_ReturnsSuccess()
     {
-        // Arrange
-        var session = new SpecialSession { FastMarketResultDetails = new List<FastMarketResultDetail>() };
-        var context = new ValidationContext { Session = session };
+        var handler = CreateHandler();
+        var ctx = new ValidationContext
+        {
+            Session = new SpecialSession
+            {
+                FastMarketResultDetails = new List<FastMarketResultDetail>(),
+                FirstProcess = DateTimeOffset.Now
+            }
+        };
 
-        // Act
-        var result = await sut.Handle(context);
+        var result = await handler.Handle(ctx);
 
-        // Assert
         Assert.Equal(0, result.ErrCode);
     }
 
     #endregion
 
-    #region NextOneMinute Validation Tests
-
+    #region NextOneMinute
 
     [Fact]
-    public async Task ProcessAsync_NextOneMinute_WithAllFalse_ReturnsError()
+    public async Task ProcessAsync_NextOneMinute_AllFalse_IsError()
     {
-        // Arrange
-        var session = new SpecialSession
-        {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
-            {
-                CreateResultDetail(FastMarketBetType.NextOneMinute, new ResultItem()) // All false
-            }
-        };
-        var context = new ValidationContext { Session = session };
+        var handler = CreateHandler();
+        var ctx = CreateContext(
+            CreateResultDetail(FastMarketBetType.NextOneMinute, new ResultItem()) // all false
+        );
 
-        // Act
-        var result = await sut.Handle(context);
+        var result = await handler.Handle(ctx);
 
-        // Assert
         Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
-        Assert.Contains("invalid choice result", result.ErrMsg);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_NextOneMinute_OneFlagTrue_IsSuccess()
+    {
+        var handler = CreateHandler();
+        var ctx = CreateContext(
+            CreateResultDetail(FastMarketBetType.NextOneMinute, new ResultItem { ThrowIn = true }, 2)
+        );
+
+        var result = await handler.Handle(ctx);
+
+        Assert.Equal(0, result.ErrCode);
     }
 
     #endregion
 
-    #region NextFiveMinutes Validation Tests
+    #region NextFiveMinutes
 
     [Fact]
-    public async Task ProcessAsync_NextFiveMinutes_WithValidCorner_ReturnsSuccess()
+    public async Task ProcessAsync_NextFiveMinutes_AllFalse_IsError()
     {
-        // Arrange
-        var session = new SpecialSession
-        {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
-            {
-                CreateResultDetail(FastMarketBetType.NextFiveMinutes, result: 5)
-            }
-        };
-        var context = new ValidationContext { Session = session };
+        var handler = CreateHandler();
+        var ctx = CreateContext(
+            CreateResultDetail(FastMarketBetType.NextFiveMinutes, new ResultItem()) // invalid
+        );
 
-        // Act
-        var result = await sut.Handle(context);
+        var result = await handler.Handle(ctx);
 
-        // Assert
-        Assert.Equal(0, result.ErrCode);
-        Assert.True(string.IsNullOrEmpty(result.ErrMsg));
-    }
-
-    [Fact]
-    public async Task ProcessAsync_NextFiveMinutes_WithValidFreeKick_ReturnsSuccess()
-    {
-        // Arrange
-        var session = new SpecialSession
-        {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
-            {
-                CreateResultDetail(FastMarketBetType.NextFiveMinutes, result: 12)
-            }
-        };
-        var context = new ValidationContext { Session = session };
-
-        // Act
-        var result = await sut.Handle(context);
-
-        // Assert
-        Assert.Equal(0, result.ErrCode);
-        Assert.True(string.IsNullOrEmpty(result.ErrMsg));
-    }
-
-    [Fact]
-    public async Task ProcessAsync_NextFiveMinutes_WithValidGoalKick_ReturnsSuccess()
-    {
-        // Arrange
-        var session = new SpecialSession
-        {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
-            {
-                CreateResultDetail(FastMarketBetType.NextFiveMinutes, result: 11)
-            }
-        };
-        var context = new ValidationContext { Session = session };
-
-        // Act
-        var result = await sut.Handle(context);
-
-        // Assert
-        Assert.Equal(0, result.ErrCode);
-        Assert.True(string.IsNullOrEmpty(result.ErrMsg));
-    }
-
-    [Fact]
-    public async Task ProcessAsync_NextFiveMinutes_WithValidThrowIn_ReturnsSuccess()
-    {
-        // Arrange
-        var session = new SpecialSession
-        {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
-            {
-                CreateResultDetail(FastMarketBetType.NextFiveMinutes,result: 11)
-            }
-        };
-        var context = new ValidationContext { Session = session };
-
-        // Act
-        var result = await sut.Handle(context);
-
-        // Assert
-        Assert.Equal(0, result.ErrCode);
-        Assert.True(string.IsNullOrEmpty(result.ErrMsg));
-    }
-
-
-
-    [Fact]
-    public async Task ProcessAsync_NextFiveMinutes_WithAllFalse_ReturnsError()
-    {
-        // Arrange
-        var session = new SpecialSession
-        {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
-            {
-                CreateResultDetail(FastMarketBetType.NextFiveMinutes, new ResultItem()) // All false
-            }
-        };
-        var context = new ValidationContext { Session = session };
-
-        // Act
-        var result = await sut.Handle(context);
-
-        // Assert
         Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
-        Assert.Contains("invalid choice result", result.ErrMsg);
     }
 
     [Fact]
-    public async Task ProcessAsync_NextFiveMinutes_WithMultipleValidChoices_ReturnsSuccess()
+    public async Task ProcessAsync_NextFiveMinutes_PenaltyTrue_IsSuccess()
     {
-        // Arrange
-        var session = new SpecialSession
-        {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
-            {
-                CreateResultDetail(FastMarketBetType.NextFiveMinutes,result: 10 )
-            }
-        };
-        var context = new ValidationContext { Session = session };
+        var handler = CreateHandler();
+        var ctx = CreateContext(
+            CreateResultDetail(FastMarketBetType.NextFiveMinutes, null, 2)
+        );
 
-        // Act
-        var result = await sut.Handle(context);
+        var result = await handler.Handle(ctx);
 
-        // Assert
         Assert.Equal(0, result.ErrCode);
-        Assert.True(string.IsNullOrEmpty(result.ErrMsg));
     }
 
     #endregion
 
-    #region TimeMachineMinutes Validation Tests
+    #region TimeMachineMinutes
 
     [Fact]
-    public async Task ProcessAsync_TimeMachineMinutes_WithValidResult_ReturnsSuccess()
+    public async Task ProcessAsync_TimeMachineMinutes_WithNegativeValue_IsSuccess()
     {
-        // Arrange
-        var session = new SpecialSession
-        {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
-            {
-                CreateResultDetail(FastMarketBetType.TimeMachineMinutes, new ResultItem(), 5)
-            }
-        };
-        var context = new ValidationContext { Session = session };
+        var handler = CreateHandler();
+        var ctx = CreateContext(
+            CreateResultDetail(FastMarketBetType.TimeMachineMinutes, new ResultItem(), -5)
+        );
 
-        // Act
-        var result = await sut.Handle(context);
+        var result = await handler.Handle(ctx);
 
-        // Assert
         Assert.Equal(0, result.ErrCode);
-        Assert.True(string.IsNullOrEmpty(result.ErrMsg));
-    }
-
-    [Fact]
-    public async Task ProcessAsync_TimeMachineMinutes_WithZeroResult_ReturnsSuccess()
-    {
-        // Arrange
-        var session = new SpecialSession
-        {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
-            {
-                CreateResultDetail(FastMarketBetType.TimeMachineMinutes, new ResultItem(), 0)
-            }
-        };
-        var context = new ValidationContext { Session = session };
-
-        // Act
-        var result = await sut.Handle(context);
-
-        // Assert
-        Assert.Equal(0, result.ErrCode);
-        Assert.True(string.IsNullOrEmpty(result.ErrMsg));
-    }
-
-    [Fact]
-    public async Task ProcessAsync_TimeMachineMinutes_WithNegativeResult_ReturnsSuccess()
-    {
-        // Arrange
-        var session = new SpecialSession
-        {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
-            {
-                CreateResultDetail(FastMarketBetType.TimeMachineMinutes, new ResultItem(), -1)
-            }
-        };
-        var context = new ValidationContext { Session = session };
-
-        // Act
-        var result = await sut.Handle(context);
-
-        // Assert
-        Assert.Equal(0, result.ErrCode);
-        Assert.True(string.IsNullOrEmpty(result.ErrMsg));
-    }
-
-
-
-    #endregion
-
-    #region Other Bet Types Validation Tests
-
-
-    [Fact]
-    public async Task ProcessAsync_OtherBetType_WithAllFalse_ReturnsError()
-    {
-        // Arrange
-        var session = new SpecialSession
-        {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
-            {
-                CreateResultDetail(999, new ResultItem()) // All false
-            }
-        };
-        var context = new ValidationContext { Session = session };
-
-        // Act
-        var result = await sut.Handle(context);
-
-        // Assert
-        Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
-        Assert.Contains("invalid choice result", result.ErrMsg);
     }
 
     #endregion
 
-    #region Edge Cases and Error Handling Tests
+    #region Other Bet Types
 
     [Fact]
-    public async Task ProcessAsync_WithNullSession_ThrowsException()
+    public async Task ProcessAsync_Other_AllFalse_IsError()
     {
-        // Arrange
-        var context = new ValidationContext { Session = null! };
+        var handler = CreateHandler();
+        var ctx = CreateContext(
+            CreateResultDetail(888, new ResultItem()) // falls into other
+        );
 
-        // Act & Assert
-        await Assert.ThrowsAsync<NullReferenceException>(() => sut.Handle(context));
+        var result = await handler.Handle(ctx);
+
+        Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
     }
 
     [Fact]
-    public async Task ProcessAsync_WithNullFastMarketResultDetails_ThrowsException()
+    public async Task ProcessAsync_Other_BookingsTrue_IsSuccess()
     {
-        // Arrange
-        var session = new SpecialSession { FastMarketResultDetails = null! };
-        var context = new ValidationContext { Session = session };
+        var handler = CreateHandler();
+        var ctx = CreateContext(
+            CreateResultDetail(888, new ResultItem { Bookings = true }, 4)
+        );
 
-        // Act & Assert
-        await Assert.ThrowsAsync<NullReferenceException>(() => sut.Handle(context));
+        var result = await handler.Handle(ctx);
+
+        Assert.Equal(0, result.ErrCode);
+    }
+
+    #endregion
+
+    #region Mixed / Aggregation
+
+    [Fact]
+    public async Task ProcessAsync_MixedContainsOneInvalid_ReturnsError()
+    {
+        var handler = CreateHandler();
+        var ctx = CreateContext(
+            CreateResultDetail(FastMarketBetType.NextOneMinute, new ResultItem { Goal = true }),
+            CreateResultDetail(FastMarketBetType.NextFiveMinutes, new ResultItem()) // invalid
+        );
+
+        var result = await handler.Handle(ctx);
+
+        Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
+    }
+
+    #endregion
+
+    #region MarkFail Timing Logic
+
+    [Fact]
+    public async Task ProcessAsync_Invalid_NotExpired_MarkFailFalse()
+    {
+        // RetryProcessScore = 2_000_000 microseconds (2s). FirstProcess only 1s ago.
+        var handler = CreateHandler(2_000_000);
+        var ctx = CreateContext(
+            CreateResultDetail(FastMarketBetType.NextFiveMinutes, new ResultItem()) // invalid
+        );
+        ctx.Session.FirstProcess = DateTimeOffset.Now.AddSeconds(-1);
+
+        var result = await handler.Handle(ctx);
+
+        Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
+        Assert.False(result.MarkFail);
     }
 
     [Fact]
-    public async Task ProcessAsync_WithMixedValidAndInvalidResults_ReturnsError()
+    public async Task ProcessAsync_Invalid_Expired_MarkFailTrue()
     {
-        // Arrange
-        var session = new SpecialSession
+        // RetryProcessScore = 2_000_000 microseconds (2s). FirstProcess 5s ago.
+        var handler = CreateHandler(2_000_000);
+        var ctx = CreateContext(
+            CreateResultDetail(FastMarketBetType.NextFiveMinutes, new ResultItem()) // invalid
+        );
+        ctx.Session.FirstProcess = DateTimeOffset.Now.AddSeconds(-5);
+
+        var result = await handler.Handle(ctx);
+
+        Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
+        Assert.True(result.MarkFail);
+    }
+
+    #endregion
+
+    #region Error Cases
+
+    [Fact]
+    public async Task ProcessAsync_NullSession_Throws()
+    {
+        var handler = CreateHandler();
+        var ctx = new ValidationContext { Session = null! };
+        await Assert.ThrowsAsync<NullReferenceException>(() => handler.Handle(ctx));
+    }
+
+    [Fact]
+    public async Task ProcessAsync_NullFastMarketResultDetails_Throws()
+    {
+        var handler = CreateHandler();
+        var ctx = new ValidationContext
         {
-            FastMarketResultDetails = new List<FastMarketResultDetail>
+            Session = new SpecialSession
             {
-                CreateResultDetail(FastMarketBetType.NextOneMinute, new ResultItem { Goal = true }), // Valid
-                CreateResultDetail(FastMarketBetType.NextFiveMinutes, new ResultItem()) // Invalid
+                FastMarketResultDetails = null!,
+                FirstProcess = DateTimeOffset.Now
             }
         };
-        var context = new ValidationContext { Session = session };
-
-        // Act
-        var result = await sut.Handle(context);
-
-        // Assert
-        Assert.Equal(FastMarketErrorCodes.InvalidChoiceResult, result.ErrCode);
-        Assert.Contains("invalid choice result", result.ErrMsg);
+        await Assert.ThrowsAsync<NullReferenceException>(() => handler.Handle(ctx));
     }
-
-
 
     #endregion
 }

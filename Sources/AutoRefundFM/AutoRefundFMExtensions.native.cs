@@ -20,7 +20,6 @@ public static class AutoRefundFMExtensions
             .Decorate<IValidationHandler, MarkedTicketsValidationHandler>()
 
             .Decorate<IValidationHandler, CompletedResultsValidationHandler>()
-            .Decorate<IValidationHandler, ExistingRefundsValidationHandler>()
 
             .Decorate<IValidationHandler, EventCounterValidationHandler>()
             .Decorate<IValidationHandler, ChoiceResultValidationHandler>();
