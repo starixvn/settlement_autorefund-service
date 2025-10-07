@@ -118,11 +118,12 @@ public class GetFastMarketResultsHandler(
         IEnumerable<FastMarketResultDetail> combinedResults,
         SpecialSession specialSession)
     {
-        List<int> runnableStatus = [0, 1, 2, 3, Status.CompletedAutoResult, Status.CompletedManualResult];
+        //List<int> runnableStatus = [0, 1, 2, 3, Status.CompletedAutoResult, Status.CompletedManualResult];
 
         return [.. filterWaterBreakService
             .ApplyFilterByWaterBreak(combinedResults, specialSession)
-            .Where(result => runnableStatus.Contains(result.ResultStatus))];
+            //.Where(result => runnableStatus.Contains(result.ResultStatus))
+            ];
     }
 
 

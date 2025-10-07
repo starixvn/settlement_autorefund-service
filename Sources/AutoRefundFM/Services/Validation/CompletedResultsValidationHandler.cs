@@ -8,7 +8,7 @@ public class CompletedResultsValidationHandler(IValidationHandler? next = null) 
 {
     protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
-        int[] completedStatuses = [Status.CompletedManualResult, Status.CompletedAutoResult];
+        int[] completedStatuses = [Status.CompletedManualResult, Status.CompletedAutoResult, Status.RefundResult, Status.RefundDeterminedResult];
         var hasCompletedResults = validationContext.Session.FastMarketResultDetails.Exists(detail =>
             completedStatuses.Contains(detail.ResultStatus));
         var errorMessage = $"Auto FM Refund failed: {validationContext.Session} due to some intervals have been calculated";

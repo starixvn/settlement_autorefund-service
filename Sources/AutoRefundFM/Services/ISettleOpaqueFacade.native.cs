@@ -46,8 +46,6 @@ public class SettleOpaqueFacadeImp(
             }
 
             await ProcessRefund(session, validationContext.BetTypeRootXml, validationContext.EventCountersXml);
-            await ProcessRefund(session, "", "");
-
         }
         catch (Exception ex)
         {

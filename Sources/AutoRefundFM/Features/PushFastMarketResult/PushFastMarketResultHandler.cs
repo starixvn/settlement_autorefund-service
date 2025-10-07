@@ -43,7 +43,7 @@ public class PushFastMarketResultHandler(
 
         await ExecuteCalculate(criteria);
 
-        await updateWaterBreakHandler.Handle(session.MatchId, [session], 2);
+        await updateWaterBreakHandler.Handle(session.MatchId, [session], 5);
         await fmRefundResultService.AddOrUpdateSessionResult(session.MatchId, [session], 2);
 
         await InsertLetstalkMessage(session);

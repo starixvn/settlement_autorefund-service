@@ -24,3 +24,4 @@ public class AddNotificationCriteria : NonQueryCommand
 
     public override string GetSettingKey() => "NAP_Set_LetstalkMessage_Insert";
 }
+
