@@ -12,7 +12,6 @@ public class ChoiceResultValidationHandler(
     {
         var hasInValidResult = validationContext.Session.FastMarketResultDetails
             .Exists(x => !HasChoiceResult(x.BetType, x.ResultItem, x.Result));
-
         var errorMessage = $"Auto Refund failed: {validationContext.Session} has invalid choice result for the specified bet type";
 
         if (hasInValidResult)

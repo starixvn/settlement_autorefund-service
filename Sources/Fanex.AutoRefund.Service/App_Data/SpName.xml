@@ -16,14 +16,14 @@
 	</Function>
 	<Function Name="AutoEarlyRefund">
 		<Setting Key="NAP_Set_AutoRefund_Resource_ScheduleSel" SpName="NAP_Set_AutoRefund_Resource_ScheduleSel" DbName="DBPRO.bodb02.wsv_nap" />
-		<Setting Key="NAP_Set_AutoRefundResult_Update" SpName="NAP_Set_AutoRefundResult_Update_xtest" DbName="DBPRO.bodb02.wsv_nap" />
+		<Setting Key="NAP_Set_AutoRefundResult_Update" SpName="NAP_Set_AutoRefundResult_Update" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_AutoRefund_ResourceTrigger_Sel" SpName="NAP_Set_AutoRefund_ResourceTrigger_Sel" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_AutoRefund_ResourceConditions_Sel" SpName="NAP_Set_AutoRefund_ResourceConditions_Sel" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_AutoRefund_ResourceInfo_Sel" SpName="NAP_Set_AutoRefund_ResourceInfo_Sel" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_AutoRefund_MatchInfo_Sel" SpName="NAP_Set_AutoRefund_MatchInfo_Sel" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_AutoRefund_ResourceStatusInfo_Sel" SpName="NAP_Set_AutoRefund_ResourceStatusInfo_Sel" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_AutoRefund_ResourceCfm_ScheduleSel" SpName="NAP_Set_AutoRefund_ResourceCfm_ScheduleSel" DbName="DBPRO.bodb02.wsv_nap" />
-		<Setting Key="NAP_Set_AutoRefundResult_Select" SpName="NAP_Set_AutoRefundResult_Select_xtest" DbName="DBPRO.bodb02.wsv_nap" />
+		<Setting Key="NAP_Set_AutoRefundResult_Select" SpName="NAP_Set_AutoRefundResult_Select" DbName="DBPRO.bodb02.wsv_nap" />
 		<Function Name="NAP_Admin_Settlement_Auto_1s_Push">
 			<Setting Key="NAP_Admin_Settlement_Auto_1s_Push_DBTXN" SpName="NAP_Admin_Settlement_Auto_1s_Push" DbName="DBTXN.bodb02.wsv_nap" />
 			<Setting Key="NAP_Admin_Settlement_Auto_1s_Push_DBSITE01" SpName="NAP_Admin_Settlement_Auto_1s_Push" DbName="DBSITE01.bodb02.wsv_nap" />
@@ -60,9 +60,9 @@
 	<Function Name="Fast Market">
 		<Setting Key="WriteLog_UserLog_Settle" SpName="WriteLog_UserLog_Settle" DbName="DBLOG.bodb_CustomerLog.wsv_nap" TimeOut="20" />
 		<Setting Key="NAP_Set_FastMarket_MatchSelDetail" SpName="NAP_Set_FastMarket_MatchSelDetail" DbName="DBPRO.bodb02.wsv_nap" />
-		<Setting Key="NAP_Set_AutoRefund_FM_ScheduleSel" SpName="NAP_Set_AutoRefund_FM_ScheduleSel_xtest" DbName="DBPRO.bodb02.wsv_nap" />
-		<Setting Key="NAP_Admin_Settlement_ValidationFM_Event" SpName="NAP_Admin_Settlement_ValidationFM_Event_xtest" DbName="DBPRO.bodb02.wsv_nap" />
-		<Setting Key="NAP_Set_FastMarket_ResultDetailUpd" SpName="NAP_Set_FastMarket_ResultDetailUpd_xtest" DbName="DBPRO.bodb02.wsv_nap" />
+		<Setting Key="NAP_Set_AutoRefund_FM_ScheduleSel" SpName="NAP_Set_AutoRefund_FM_ScheduleSel" DbName="DBPRO.bodb02.wsv_nap" />
+		<Setting Key="NAP_Admin_Settlement_ValidationFM_Event" SpName="NAP_Admin_Settlement_ValidationFM_Event" DbName="DBPRO.bodb02.wsv_nap" />
+		<Setting Key="NAP_Set_FastMarket_ResultDetailUpd" SpName="NAP_Set_FastMarket_ResultDetailUpd" DbName="DBPRO.bodb02.wsv_nap" />
 		<Function Name="NAP_Set_FastMarket_MatchSelDetail_Ticket">
 			<Setting Key="NAP_Set_FastMarket_MatchSelDetail_Ticket_DBTXN" SpName="NAP_Set_FastMarket_MatchSelDetail_Ticket" DbName="DBTXN.bodb02.wsv_nap" />
 			<Setting Key="NAP_Set_FastMarket_MatchSelDetail_Ticket_DBSITE01" SpName="NAP_Set_FastMarket_MatchSelDetail_Ticket" DbName="DBSITE01.bodb02.wsv_nap" />
@@ -70,10 +70,10 @@
 			<Setting Key="NAP_Set_FastMarket_MatchSelDetail_Ticket_DBSITE03" SpName="NAP_Set_FastMarket_MatchSelDetail_Ticket" DbName="DBSITE03.bodb02.wsv_nap" />
 		</Function>
 		<Function Name="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push">
-			<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBTXN" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_xtest" DbName="DBTXN.bodb02.wsv_nap" />
-			<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBSITE01" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_xtest" DbName="DBSITE01.bodb02.wsv_nap" />
-			<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBSITE02" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_xtest" DbName="DBSITE02.bodb02.wsv_nap" />
-			<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBSITE03" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_xtest" DbName="DBSITE03.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBTXN" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push" DbName="DBTXN.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBSITE01" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push" DbName="DBSITE01.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBSITE02" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push" DbName="DBSITE02.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBSITE03" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push" DbName="DBSITE03.bodb02.wsv_nap" />
 		</Function>
 		<Function Name="NAP_Admin_Settlement_ValidationFM_Ticket">
 			<Setting Key="NAP_Admin_Settlement_ValidationFM_Ticket_DBTXN" SpName="NAP_Admin_Settlement_ValidationFM_Ticket" DbName="DBTXN.bodb02.wsv_nap" />
