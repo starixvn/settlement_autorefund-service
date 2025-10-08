@@ -25,7 +25,7 @@ public class CompletedResultsValidationHandlerTests
 
         // Assert
         Assert.Equal(FastMarketErrorCodes.NoCompletedResults, result.ErrCode);
-        Assert.Contains("Auto FM Refund failed", result.ErrMsg);
+        Assert.Contains("Auto Refund failed", result.ErrMsg);
     }
 
     [Fact]
@@ -71,6 +71,6 @@ public class CompletedResultsValidationHandlerTests
 
         // Assert
         Assert.Equal(FastMarketErrorCodes.NoCompletedResults, result.ErrCode);
-        Assert.Contains("Auto FM Refund failed", result.ErrMsg);
+        Assert.Contains("Auto Refund failed", result.ErrMsg);
     }
 }

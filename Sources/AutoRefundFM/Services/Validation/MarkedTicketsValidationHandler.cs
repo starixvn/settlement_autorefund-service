@@ -10,7 +10,7 @@ public class MarkedTicketsValidationHandler(
     protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
         var hasMarkedTickets = await checkMarkedTicketHandler.Handle(validationContext.Session.MatchId, validationContext.BetTypeRootXml);
-        const string errorMessage = "Marked tickets found for the specified match and bet type";
+        const string errorMessage = "Auto Refund failed: marked tickets exist.";
 
         if (hasMarkedTickets)
         {

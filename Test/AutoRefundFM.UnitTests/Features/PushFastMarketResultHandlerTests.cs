@@ -105,7 +105,7 @@ namespace AutoRefundFM.UnitTests.Features
             await sut.Handle(session, criteria);
 
             // Assert
-            await updateWaterBreakHandler.Received(1).Handle(1, Arg.Is<List<SpecialSession>>(l => l.Contains(session)), 2);
+            await updateWaterBreakHandler.Received(1).Handle(1, Arg.Is<List<SpecialSession>>(l => l.Contains(session)), 5);
         }
     }
 }

@@ -11,7 +11,7 @@ public class CompletedResultsValidationHandler(IValidationHandler? next = null) 
         int[] completedStatuses = [Status.CompletedManualResult, Status.CompletedAutoResult, Status.RefundResult, Status.RefundDeterminedResult];
         var hasCompletedResults = validationContext.Session.FastMarketResultDetails.Exists(detail =>
             completedStatuses.Contains(detail.ResultStatus));
-        var errorMessage = $"Auto FM Refund failed: {validationContext.Session} due to some intervals have been calculated";
+        var errorMessage = $"Auto Refund failed: {validationContext.Session} due to some intervals have been calculated";
 
         if (hasCompletedResults)
         {

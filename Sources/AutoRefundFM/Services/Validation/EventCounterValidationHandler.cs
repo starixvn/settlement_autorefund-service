@@ -9,7 +9,7 @@ public class EventCounterValidationHandler(IOptions<AppSettingsKey> options, IVa
     protected override async Task<Result> ProcessAsync(ValidationContext validationContext)
     {
         var isEventCounterInvalid = validationContext.Session.FastMarketResultDetails.Exists(x => !ValidateEventCounterWithBetResult(x));
-        var errorMessage = $"Auto FM Refund failed: {validationContext.Session} has result is mismatch with the event counter";
+        var errorMessage = $"Auto Refund failed: {validationContext.Session} has result is mismatch with the event counter";
         if (isEventCounterInvalid)
         {
             var isExpired = (DateTimeOffset.Now - validationContext.Session.FirstProcess).TotalMilliseconds > options.Value.RetryProcessScore;

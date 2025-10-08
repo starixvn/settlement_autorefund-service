@@ -25,7 +25,7 @@ public class MarkedTicketsValidationHandlerTests
 
         // Assert
         Assert.Equal(FastMarketErrorCodes.MarkedTicketsFound, result.ErrCode);
-        Assert.Contains("Marked tickets found", result.ErrMsg);
+        Assert.Contains("marked tickets exist", result.ErrMsg);
     }
 
     [Fact]
