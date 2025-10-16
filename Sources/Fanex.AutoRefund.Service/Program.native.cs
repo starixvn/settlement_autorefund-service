@@ -1,5 +1,6 @@
 ﻿using AutoEarlyRefund;
 using AutoRefund.Core.Models;
+using AutoRefundFM;
 using Fanex.AutoRefund.Service;
 using Fanex.Data.SqlServer;
 using Fanex.Logging.Sentry.RavenClient;
@@ -29,9 +30,12 @@ services.AddAutoMapper();
 
 services.AddAutoEarlyRefund();
 
+builder.Services.AddAutoRefundFM();
+
 services.AddHostedService<AutoRefundService>();
 services.AddHostedService<AutoEarlyRefundWorker>();
 services.AddHostedService<GetConfirmNtResultsSchedule>();
+builder.Services.AddHostedService<RefundFastMarketWorker>();
 services.AddHealthChecks();
 
 var app = builder.Build();

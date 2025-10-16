@@ -1,0 +1,23 @@
+﻿using Fanex.Data.Repository;
+
+namespace AutoRefund.Core.Criteria;
+public class InsertSettlementLogCriteria : NonQueryCommand
+{
+    public int MatchId { get; set; }
+
+    public string Action { get; set; }
+
+    public int SportType { get; set; }
+
+    public string Mode { get; set; }
+
+    public bool IsAuto { get; set; }
+
+    public int AdminId { get; set; }
+
+    public string SelectedResources { get; set; }
+
+    public override string GetSettingKey() => "NAP_SettlementLog_Ins";
+
+    public override bool IsValid() => MatchId > 0;
+}

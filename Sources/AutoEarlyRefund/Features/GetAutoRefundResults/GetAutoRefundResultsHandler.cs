@@ -1,7 +1,8 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using AutoEarlyRefund.Features.GetResourcesConditions;
+﻿using AutoEarlyRefund.Features.GetResourcesConditions;
 using AutoEarlyRefund.Models;
+using AutoRefund.Core.Services;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace AutoEarlyRefund.Features.GetAutoRefundResults;
 
@@ -15,7 +16,11 @@ public class GetAutoRefundResultsHandler(IDynamicRepository repository) : IGetAu
     public async Task<List<SourcesConditionsItem>> Handle(List<int> matchIds, List<SourcesConditionsItem> sourcesConditions)
     {
         var requestItems = matchIds.SelectMany(matchId => sourcesConditions
-                .Select(sourceCondition => new GetAutoRefundResultsItem(matchId, sourceCondition.ResourceId)))
+                .Select(sourceCondition => new GetRefundResultsItem(
+                    matchId,
+                    sourceCondition.ResourceId,
+                    7, // Assuming TypeId is 7 for Auto Early Refund
+                    string.Empty)))
             .ToList();
 
         var criteria = new GetAutoRefundResultsCriteria
@@ -30,7 +35,7 @@ public class GetAutoRefundResultsHandler(IDynamicRepository repository) : IGetAu
         return [.. sourcesConditions.Where(x => !autoRefundResultIds.Contains(x.ResourceId))];
     }
 
-    private static string SerializeToJson(List<GetAutoRefundResultsItem> request)
+    private static string SerializeToJson(List<GetRefundResultsItem> request)
         => JsonSerializer.Serialize(request, new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

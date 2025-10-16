@@ -1,4 +1,6 @@
 ﻿using AutoEarlyRefund.Consumers;
+using AutoMapper;
+using AutoRefund.Core.Services;
 using AutoRefund.Services;
 using Fanex.Caching;
 using Fanex.Caching.Redis;
@@ -32,6 +34,13 @@ public static class AutoRefundInjector
         service.AddSingleton<ScaleOutSettleService, ScaleOutSettleServiceImp>();
         service.AddTransient<GeneralService, GeneralServiceImp>();
         service.AddTransient<XmlConvertService, XmlConvertServiceImp>();
+        service.AddCoreService();
+    }
+
+    public static void AddCoreService(this IServiceCollection services)
+    {
+        services.AddSingleton<AutoRefundResultService, AutoRefundResultServiceImp>();
+        services.AddSingleton<SettlementLogService, SettlementLogServiceImp>();
     }
 
     public static void AddConfigRedisCache(this IServiceCollection services, IConfiguration configuration)

@@ -8,6 +8,8 @@ public class InsertLogCriteria : NonQueryCommand
 
     public int SportType { get; set; }
 
+    public string Mode { get; set; }
+
     public bool IsAuto { get; set; } = false;
 
     public int AdminId { get; set; }

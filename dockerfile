@@ -4,6 +4,7 @@ WORKDIR /src
 COPY ./Sources/AutoRefund.Core ./AutoRefund.Core
 COPY ./Sources/AutoEarlyRefund ./AutoEarlyRefund
 COPY ./Sources/AutoRefund ./AutoRefund
+COPY ./Sources/AutoRefundFM ./AutoRefundFM
 COPY ./Sources/Fanex.AutoRefund.Service/Fanex.AutoRefund.Service.csproj ./Fanex.AutoRefund.Service/Fanex.AutoRefund.Service.csproj
 
 WORKDIR /src/Fanex.AutoRefund.Service
@@ -18,5 +19,16 @@ FROM hub.nexdev.net/base/dotnet/core/aspnet:9.0-alpine AS base
 
 WORKDIR /app
 COPY --from=builder /app .
+
+ENV TZ="America/La_Paz"
+ENV COMPlus_EnableDiagnostics=0
+
+
+# Don t run as root
+RUN adduser --disabled-password \
+  --home /app \
+  --gecos '' dotnetuser && chown -R dotnetuser /app && chown -R dotnetuser /tmp
+USER dotnetuser
+#
 
 ENTRYPOINT ["dotnet", "Fanex.AutoRefund.Service.dll"]
