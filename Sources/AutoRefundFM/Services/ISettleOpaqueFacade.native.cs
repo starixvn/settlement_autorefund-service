@@ -6,6 +6,7 @@ using AutoRefundFM.Features.GetSpecialSession;
 using AutoRefundFM.Features.PushFastMarketResult;
 using AutoRefundFM.Models;
 using AutoRefundFM.Services.Validation;
+using Fanex.Data.Repository;
 using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.Database;
 using Microsoft.Extensions.Caching.Memory;
@@ -25,7 +26,8 @@ public class SettleOpaqueFacadeImp(
     IFmRefundResultService fmRefundResultService,
     IDataTransformationService dataTransformationService,
     IValidationHandler validationHandler,
-    IMemoryCache memoryCache) : SettleOpaqueFacade
+    IMemoryCache memoryCache,
+    IDynamicRepository repository) : SettleOpaqueFacade
 {
 
     private const string RefundTimeCachePrefix = "FM_REFUND_FIRST_";
@@ -90,6 +92,23 @@ public class SettleOpaqueFacadeImp(
             Remark = result.ErrMsg
         };
         await settlementLogService.WriteUserLogSettle(userLog);
+        await InsertLetstalkFailMessage(session, result.ErrMsg);
+    }
+
+    private async Task InsertLetstalkFailMessage(SpecialSession session, string errorMsg)
+    {
+        var date = DateTimeOffset.Now;
+        var offsetHours = date.Offset.Hours;
+        string executeTime = date.ToString("MMM dd, yyyy HH:mm:ss") + $" GMT{offsetHours:+#;-#;+0}";
+        var message = $"The match has been executed {errorMsg} at {executeTime}";
+        var criteria = new AddNotificationCriteria
+        {
+            MatchId = session.MatchId,
+            MessageContent = message,
+            ActionName = $"Auto Refund WaterBreak {session}",
+            MessageGroupId = 6, // Auto Refund FM
+        };
+        await repository.ExecuteAsync(criteria);
     }
 
     private async Task ProcessRefund(SpecialSession session, string betTypeRootXml, string eventCounterXml)

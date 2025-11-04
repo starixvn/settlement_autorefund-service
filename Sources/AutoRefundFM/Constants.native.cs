@@ -82,5 +82,5 @@ public static class FastMarketErrorCodes
     public const int InvalidChoiceResult = 105;
     public const int NoEventCounters = 106;
     public const int EventCounterValidationFailed = 107;
-
+    public const int InvalidMatchTime = 108;
 }

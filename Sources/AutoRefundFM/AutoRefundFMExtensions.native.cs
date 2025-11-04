@@ -22,7 +22,8 @@ public static class AutoRefundFMExtensions
             .Decorate<IValidationHandler, CompletedResultsValidationHandler>()
 
             .Decorate<IValidationHandler, EventCounterValidationHandler>()
-            .Decorate<IValidationHandler, ChoiceResultValidationHandler>();
+            .Decorate<IValidationHandler, ChoiceResultValidationHandler>()
+            .Decorate<IValidationHandler, MatchTimeValidationHandler>();
 
         services
             .AddTransient<IGetFastMarketResultsHandler, GetFastMarketResultsHandler>()
