@@ -1,4 +1,7 @@
 ﻿using AutoEarlyRefund.Features.GetConfirmNtResults;
+using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.Database;
 using ONEbook.UM.Services;
 
 namespace AutoEarlyRefund;
@@ -16,13 +19,25 @@ public class GetConfirmNtResultsSchedule(
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
-            var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
-            if (isMaintenance)
+            try
             {
-                continue;
-            }
+                var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
+                if (isMaintenance)
+                {
+                    continue;
+                }
 
-            await confirmNtResultsHandler.Handle();
+                await confirmNtResultsHandler.Handle();
+            }
+            catch (Exception ex)
+            {
+                var logMessage = new LogMessage(ex.Message)
+                    .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
+                    .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                    .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
+                    .ToString();
+                await LogService.ErrorAsync(logMessage);
+            }
         }
     }
 }
