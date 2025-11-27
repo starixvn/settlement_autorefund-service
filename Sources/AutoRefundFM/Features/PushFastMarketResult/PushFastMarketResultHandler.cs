@@ -87,7 +87,7 @@ public class PushFastMarketResultHandler(
         var date = DateTimeOffset.Now;
         var offsetHours = date.Offset.Hours;
         string executeTime = date.ToString("MMM dd, yyyy HH:mm:ss") + $" GMT{offsetHours:+#;-#;+0}";
-        var message = $"The match has been executed Auto Refund Water {session} successfully at {executeTime}";
+        var message = $"The match has been executed Auto Refund WaterBreak {session} successfully at {executeTime}";
         var criteria = new AddNotificationCriteria
         {
             MatchId = session.MatchId,

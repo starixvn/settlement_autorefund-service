@@ -8,31 +8,12 @@ public class MatchTimeValidationHandler(IValidationHandler? next = null) : Valid
     {
         var session = validationContext.Session;
 
-        if (!int.TryParse(session.HomeValue, out var startTime))
+        if (session.StartMinute < 45 && session.EndMinute >= 45)
         {
             return new Result
             {
                 ErrCode = FastMarketErrorCodes.InvalidMatchTime,
-                ErrMsg = $"Auto FM Refund failed: Invalid start time '{session.HomeValue}'",
-            };
-        }
-
-        if (!int.TryParse(session.AwayValue, out var endTime))
-        {
-            return new Result
-            {
-                ErrCode = FastMarketErrorCodes.InvalidMatchTime,
-                ErrMsg = $"Auto FM Refund failed: Invalid end time '{session.AwayValue}'",
-                MarkFail = true
-            };
-        }
-
-        if (startTime < 45 && endTime > 45)
-        {
-            return new Result
-            {
-                ErrCode = FastMarketErrorCodes.InvalidMatchTime,
-                ErrMsg = $"Auto FM Refund failed: Invalid time range. Start time ({startTime}) < 45 but end time ({endTime}) > 45",
+                ErrMsg = $"Auto FM Refund failed: Invalid time range. Start time ({session.StartMinute}) < 45 but end time ({session.EndMinute}) >= 45",
                 MarkFail = true
             };
         }
