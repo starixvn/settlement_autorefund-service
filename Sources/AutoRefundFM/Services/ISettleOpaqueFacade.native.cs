@@ -31,6 +31,7 @@ public class SettleOpaqueFacadeImp(
 {
 
     private const string RefundTimeCachePrefix = "FM_REFUND_FIRST_";
+    private const int AutoRefundFastMarket = 6;
 
     public async Task Refund(SpecialSession session)
     {
@@ -106,7 +107,7 @@ public class SettleOpaqueFacadeImp(
             MatchId = session.MatchId,
             MessageContent = message,
             ActionName = $"Auto Refund WaterBreak {session}",
-            MessageGroupId = 6, // Auto Refund FM
+            MessageGroupId = AutoRefundFastMarket, // Auto Refund FM
         };
         await repository.ExecuteAsync(criteria);
     }
